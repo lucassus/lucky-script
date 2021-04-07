@@ -10,10 +10,12 @@ import {
   LeftBrace,
   Letters,
   Multiply,
+  Newlines,
   Operations,
   Power,
   RightBrace,
   symbolToTokenType,
+  Whitespaces,
 } from "./symbols";
 import { Token, TokenType } from "./Token";
 
@@ -43,8 +45,7 @@ export class Lexer {
       return new Token(TokenType.End, "", this.position);
     }
 
-    // TODO: Create a constant
-    if ([";", "\n"].includes(this.currentSymbol)) {
+    if (Newlines.includes(this.currentSymbol)) {
       return new Token(TokenType.NewLine, this.currentSymbol, this.position);
     }
 
@@ -106,8 +107,7 @@ export class Lexer {
   }
 
   private skipWhitespaces() {
-    // TODO: Create a constant
-    while ([" ", "\t"].includes(this.currentSymbol)) {
+    while (Whitespaces.includes(this.currentSymbol)) {
       this.advance();
     }
   }

@@ -1,6 +1,9 @@
 import { charRange } from "./charRange";
 import { TokenType } from "./Token";
 
+export const Whitespaces = [" ", "\t"];
+export const Newlines = [";", "\n"];
+
 export const ZeroDigit = "0";
 export const NonZeroDigits = charRange("1", "9");
 export const Digits = [ZeroDigit, ...NonZeroDigits];
