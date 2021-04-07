@@ -127,11 +127,13 @@ export class Lexer {
   private recognizeWith(recognizer: Recognizer, tokenType: TokenType): Token {
     const { position: startPosition } = this;
 
-    // TODO: Do not use `remainingInput` here ;)
-    const { recognized, value } = recognizer.recognize(this.remainingInput);
+    recognizer.next(this.currentSymbol);
 
-    const offset = value.length - 1;
-    this.position += offset;
+    while (recognizer.next(this.nextSymbol)) {
+      this.advance();
+    }
+
+    const { recognized, value } = recognizer.result;
 
     if (!recognized) {
       throw new SyntaxError(this.currentSymbol, this.position);

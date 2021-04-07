@@ -1,26 +1,24 @@
 import { State } from "./State";
 
 export abstract class Recognizer {
+  private value = "";
+
   protected constructor(private currentState: State) {}
 
-  recognize(input: string): { recognized: boolean; value: string } {
-    let value = "";
+  next(symbol: string): boolean {
+    const nextState = this.currentState.next(symbol);
 
-    for (const symbol of input) {
-      const nextState = this.currentState.next(symbol);
-
-      if (!nextState) {
-        break;
-      }
-
-      value += symbol;
-      this.currentState = nextState;
+    if (!nextState) {
+      return false;
     }
 
-    if (!this.currentState.isFinal) {
-      return { recognized: false, value };
-    }
+    this.currentState = nextState;
+    this.value += symbol;
 
-    return { recognized: true, value };
+    return true;
+  }
+
+  get result() {
+    return { recognized: this.currentState.isFinal, value: this.value };
   }
 }

@@ -15,8 +15,12 @@ describe("NumeralRecognizer", () => {
     ${"1.1_000"}
   `("recognizes a valid numeral, like $input", ({ input }) => {
     const recognizer = new NumeralRecognizer();
-    const { recognized, value } = recognizer.recognize(input);
 
+    for (const symbol of input.split("")) {
+      recognizer.next(symbol);
+    }
+
+    const { recognized, value } = recognizer.result;
     expect(recognized).toBe(true);
     expect(value).toBe(input);
   });
@@ -30,8 +34,12 @@ describe("NumeralRecognizer", () => {
     ${"1.2.3"}
   `("does not recognize invalid numeral, like $input", ({ input }) => {
     const recognizer = new NumeralRecognizer();
-    const { recognized } = recognizer.recognize(input);
 
+    for (const symbol of input.split("")) {
+      recognizer.next(symbol);
+    }
+
+    const { recognized } = recognizer.result;
     expect(recognized).toBe(false);
   });
 });
