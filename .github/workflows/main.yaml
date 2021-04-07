@@ -17,4 +17,3 @@ jobs:
       - run: yarn typecheck
       - run: yarn test --coverage --runInBand
       - run: yarn build
-      - run: yarn start
