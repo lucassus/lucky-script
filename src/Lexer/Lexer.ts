@@ -43,6 +43,7 @@ export class Lexer {
       return new Token(TokenType.End, "", this.position);
     }
 
+    // TODO: Create a constant
     if ([";", "\n"].includes(this.currentSymbol)) {
       return new Token(TokenType.NewLine, this.currentSymbol, this.position);
     }
@@ -105,6 +106,7 @@ export class Lexer {
   }
 
   private skipWhitespaces() {
+    // TODO: Create a constant
     while ([" ", "\t"].includes(this.currentSymbol)) {
       this.advance();
     }
