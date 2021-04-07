@@ -147,7 +147,7 @@ describe("Lexer", () => {
 
     expect(tokens.length).toBe(10);
     expect(tokens).toEqual([
-      new Token(TokenType.KeywordFunction, "function", 0),
+      new Token(TokenType.Function, "function", 0),
       new Token(TokenType.Identifier, "add", 9),
       new Token(TokenType.LeftBracket, "(", 12),
       new Token(TokenType.RightBracket, ")", 13),

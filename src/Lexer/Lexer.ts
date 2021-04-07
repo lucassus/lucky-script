@@ -55,7 +55,7 @@ export class Lexer {
       const { position } = this;
       this.position += keywordFunction.length;
 
-      return new Token(TokenType.KeywordFunction, keywordFunction, position);
+      return new Token(TokenType.Function, keywordFunction, position);
     }
 
     // TODO: Dry it, see `this.recognizeBrackets` or something similar

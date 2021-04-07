@@ -87,7 +87,7 @@ describe("Parser", () => {
   });
 
   it("raises an error when the matching bracket is not found", () => {
-    expect(() => parse("(1 + 2")).toThrow("Expecting ) but got end");
+    expect(() => parse("(1 + 2")).toThrow("Expecting ) but got EndOfInput");
 
     expect(() => parse(")")).toThrow("Unexpected token )");
   });
@@ -171,7 +171,7 @@ describe("Parser", () => {
       );
 
       expect(() => parse("x = ")).toThrow(
-        new SyntaxError("Unexpected token end of input")
+        new SyntaxError("Unexpected token EndOfInput")
       );
     });
   });
@@ -214,7 +214,7 @@ describe("Parser", () => {
 
     it("can't parse declaration assigment to a variable", () => {
       expect(() => parse("x = function abc() {}")).toThrow(
-        "Unexpected token keyword:function"
+        "Unexpected token function"
       );
     });
   });
