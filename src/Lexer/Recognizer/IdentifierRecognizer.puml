@@ -1,0 +1,16 @@
+@startuml
+
+digraph NumeralRecognizer {
+  rankdir = LR;
+
+  node [shape = point]; start
+  node [shape = doublecircle] 1
+  node [shape = circle]
+
+  start -> 0;
+  0 -> 1 [label = Letter]
+  1 -> 1 [label = Letter]
+  1 -> 1 [label = Digit]
+}
+
+@enduml
