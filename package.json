@@ -10,6 +10,7 @@
     "@typescript-eslint/parser": "4.9.1",
     "eslint": "7.15.0",
     "eslint-config-prettier": "7.0.0",
+    "eslint-plugin-import": "2.22.1",
     "eslint-plugin-prettier": "3.3.0",
     "jest": "26.6.3",
     "prettier": "2.2.1",
@@ -19,10 +20,8 @@
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
+    "lint": "eslint . --ext .js,.ts",
     "test": "jest",
-    "dev": "ts-node src/index.ts",
-    "build": "tsc",
-    "start": "node dist/index.js"
+    "build": "tsc"
   }
 }
