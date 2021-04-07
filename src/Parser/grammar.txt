@@ -1,0 +1,34 @@
+<program> = <statements> End
+
+<statements> = { "\n"* <statement>? "\n"* }
+
+<statement> =
+  | <function-declaration>
+  | <expression>
+
+<expression> =
+  | <assigment>
+  | <term> { "+" | "-" <term> }
+
+<assigment> = <identifier> "=" <expression>
+
+<term> = <factor> { "*" | "/" <factor> }
+
+<factor> =
+  | "+" | "-" <factor>
+  | <power>
+
+<function-declaration> = "function" <identifier> "(" ")" "{" <expressions> "}"
+
+TODO: Maybe the function call should be implemented as postfix unary operation?
+<function-call> = <identifier> "(" ")"
+
+<power> = <atom> { "**" <factor> }
+
+<atom> =
+  | <number>
+  | <function-call>
+  | <identifier>
+  | <group>
+
+<group> = "(" <expression> ")"
