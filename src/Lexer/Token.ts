@@ -1,23 +1,28 @@
 export enum TokenType {
-  NumberLiteral = "number literal",
-  Identifier = "identifier",
-  Assigment = "=",
+  // Literals
+  NumberLiteral = "NUMBER",
+  Identifier = "IDENTIFIER",
 
+  // Operators
   Plus = "+",
   Minus = "-",
   Multiply = "*",
   Divide = "/",
   Power = "**",
+  Assigment = "=",
 
+  // Keywords
+  Function = "function",
+  Return = "return",
+
+  // Delimiters
   LeftBracket = "(",
   RightBracket = ")",
   LeftBrace = "{",
   RightBrace = "}",
+  NewLine = "\n",
 
-  KeywordFunction = "keyword:function",
-
-  NewLine = "new line",
-  End = "end of input",
+  End = "EndOfInput",
 }
 
 export class Token {

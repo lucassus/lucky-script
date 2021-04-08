@@ -1,7 +1,11 @@
+import { charRange } from "./charRange";
 import { TokenType } from "./Token";
 
+export const Whitespaces = [" ", "\t"];
+export const Newlines = [";", "\n"];
+
 export const ZeroDigit = "0";
-export const NonZeroDigits = ["1", "2", "3", "4", "5", "6", "7", "8", "9"];
+export const NonZeroDigits = charRange("1", "9");
 export const Digits = [ZeroDigit, ...NonZeroDigits];
 export const Separator = "_";
 export const Dot = ".";
@@ -11,7 +15,7 @@ export const Minus = "-";
 export const Multiply = "*";
 export const Divide = "/";
 export const Power = "**";
-export const Operations = [Plus, Minus, Multiply, Divide, Power];
+export const Operators = [Plus, Minus, Multiply, Divide, Power];
 
 export const LeftBracket = "(";
 export const RightBracket = ")";
@@ -23,60 +27,9 @@ export const Braces = [LeftBrace, RightBrace];
 
 export const Assigment = "=";
 
-export const Letters = [
-  "a",
-  "b",
-  "c",
-  "d",
-  "e",
-  "f",
-  "g",
-  "h",
-  "i",
-  "j",
-  "k",
-  "l",
-  "m",
-  "n",
-  "o",
-  "p",
-  "q",
-  "r",
-  "s",
-  "t",
-  "u",
-  "v",
-  "w",
-  "x",
-  "y",
-  "z",
-  "A",
-  "B",
-  "C",
-  "D",
-  "E",
-  "F",
-  "G",
-  "H",
-  "I",
-  "J",
-  "K",
-  "L",
-  "M",
-  "N",
-  "O",
-  "P",
-  "Q",
-  "R",
-  "S",
-  "T",
-  "U",
-  "V",
-  "W",
-  "X",
-  "Y",
-  "Z",
-];
+const SmallLetters = charRange("a", "z");
+const CapitalLetters = charRange("A", "Z");
+export const Letters = [...SmallLetters, ...CapitalLetters];
 
 export const symbolToTokenType: ReadonlyMap<string, TokenType> = new Map([
   [Plus, TokenType.Plus],
@@ -86,4 +39,9 @@ export const symbolToTokenType: ReadonlyMap<string, TokenType> = new Map([
   [Power, TokenType.Power],
   [LeftBracket, TokenType.LeftBracket],
   [RightBracket, TokenType.RightBracket],
+]);
+
+export const keywordToTokenType: ReadonlyMap<string, TokenType> = new Map([
+  ["function", TokenType.Function],
+  ["return", TokenType.Return],
 ]);

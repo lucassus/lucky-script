@@ -47,7 +47,7 @@ export class Parser {
   }
 
   private statement(): AstNode {
-    if (this.currentToken.type === TokenType.KeywordFunction) {
+    if (this.currentToken.type === TokenType.Function) {
       return this.functionDeclaration();
     }
 
@@ -66,7 +66,7 @@ export class Parser {
   }
 
   private functionDeclaration(): AstNode {
-    this.match(TokenType.KeywordFunction);
+    this.match(TokenType.Function);
 
     const name = this.currentToken.value;
     this.match(TokenType.Identifier);
