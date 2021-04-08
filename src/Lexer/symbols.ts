@@ -15,7 +15,7 @@ export const Minus = "-";
 export const Multiply = "*";
 export const Divide = "/";
 export const Power = "**";
-export const Operations = [Plus, Minus, Multiply, Divide, Power];
+export const Operators = [Plus, Minus, Multiply, Divide, Power];
 
 export const LeftBracket = "(";
 export const RightBracket = ")";
@@ -39,4 +39,9 @@ export const symbolToTokenType: ReadonlyMap<string, TokenType> = new Map([
   [Power, TokenType.Power],
   [LeftBracket, TokenType.LeftBracket],
   [RightBracket, TokenType.RightBracket],
+]);
+
+export const keywordToTokenType: ReadonlyMap<string, TokenType> = new Map([
+  ["function", TokenType.Function],
+  ["return", TokenType.Return],
 ]);

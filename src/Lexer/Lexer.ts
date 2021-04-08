@@ -11,11 +11,12 @@ import {
   Letters,
   Multiply,
   Newlines,
-  Operations,
+  Operators,
   Power,
   RightBrace,
-  symbolToTokenType,
   Whitespaces,
+  symbolToTokenType,
+  keywordToTokenType,
 } from "./symbols";
 import { Token, TokenType } from "./Token";
 
@@ -49,15 +50,6 @@ export class Lexer {
       return new Token(TokenType.NewLine, this.currentSymbol, this.position);
     }
 
-    // TODO: Is it a good idea?
-    const keywordFunction = "function";
-    if (this.remainingInput.startsWith(keywordFunction)) {
-      const { position } = this;
-      this.position += keywordFunction.length;
-
-      return new Token(TokenType.Function, keywordFunction, position);
-    }
-
     // TODO: Dry it, see `this.recognizeBrackets` or something similar
     if (this.currentSymbol === LeftBrace) {
       return new Token(TokenType.LeftBrace, this.currentSymbol, this.position);
@@ -68,7 +60,7 @@ export class Lexer {
     }
 
     if (Letters.includes(this.currentSymbol)) {
-      return this.recognizeIdentifier();
+      return this.recognizeKeywordOrIdentifier();
     }
 
     if ([...Digits, Dot].includes(this.currentSymbol)) {
@@ -79,8 +71,8 @@ export class Lexer {
       return this.recognizeAssigment();
     }
 
-    if (Operations.includes(this.currentSymbol)) {
-      return this.recognizeOperation();
+    if (Operators.includes(this.currentSymbol)) {
+      return this.recognizeOperator();
     }
 
     if (Brackets.includes(this.currentSymbol)) {
@@ -102,10 +94,6 @@ export class Lexer {
     return this.input[this.position + 1];
   }
 
-  private get remainingInput(): string {
-    return this.input.substr(this.position);
-  }
-
   private skipWhitespaces() {
     while (Whitespaces.includes(this.currentSymbol)) {
       this.advance();
@@ -113,20 +101,25 @@ export class Lexer {
   }
 
   private recognizeNumber(): Token {
-    return this.recognizeWith(new NumeralRecognizer(), TokenType.NumberLiteral);
+    const startPosition = this.position;
+    const value = this.recognizeWith(new NumeralRecognizer());
+
+    return new Token(TokenType.NumberLiteral, value, startPosition);
   }
 
-  private recognizeIdentifier(): Token {
-    return this.recognizeWith(new IdentifierRecognizer(), TokenType.Identifier);
+  private recognizeKeywordOrIdentifier(): Token {
+    const startPosition = this.position;
+    const value = this.recognizeWith(new IdentifierRecognizer());
+    const tokenType = keywordToTokenType.get(value) || TokenType.Identifier;
+
+    return new Token(tokenType, value, startPosition);
   }
 
   private recognizeAssigment(): Token {
     return new Token(TokenType.Assigment, this.currentSymbol, this.position);
   }
 
-  private recognizeWith(recognizer: Recognizer, tokenType: TokenType): Token {
-    const { position: startPosition } = this;
-
+  private recognizeWith(recognizer: Recognizer): string {
     recognizer.next(this.currentSymbol);
 
     while (recognizer.next(this.nextSymbol)) {
@@ -139,10 +132,10 @@ export class Lexer {
       throw new SyntaxError(this.currentSymbol, this.position);
     }
 
-    return new Token(tokenType, value, startPosition);
+    return value;
   }
 
-  private recognizeOperation(): Token {
+  private recognizeOperator(): Token {
     if (this.currentSymbol === Multiply && this.nextSymbol === Multiply) {
       const { position } = this;
       this.advance();

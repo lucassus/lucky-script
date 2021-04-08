@@ -13,6 +13,7 @@ export enum TokenType {
 
   // Keywords
   Function = "function",
+  Return = "return",
 
   // Delimiters
   LeftBracket = "(",
