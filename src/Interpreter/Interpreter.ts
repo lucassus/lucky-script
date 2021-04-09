@@ -9,13 +9,12 @@ import {
 } from "../Parser/AstNode";
 import { NameError, RuntimeError } from "./errors";
 import { LuckyFunction, LuckyNumber, LuckyObject } from "./LuckyObject";
-
-type SymbolTable = Map<string, LuckyObject>;
+import { SymbolTable } from "./SymbolTable";
 
 export class Interpreter {
   constructor(
     public readonly node: AstNode,
-    private readonly symbolTable: SymbolTable = new Map()
+    private readonly symbolTable = new SymbolTable()
   ) {}
 
   run(): undefined | number {

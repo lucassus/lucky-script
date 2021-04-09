@@ -1,12 +1,10 @@
 import { parse } from "../testingUtils";
 import { NameError, RuntimeError, ZeroDivisionError } from "./errors";
 import { Interpreter } from "./Interpreter";
-import { LuckyNumber, LuckyObject } from "./LuckyObject";
+import { LuckyNumber } from "./LuckyObject";
+import { SymbolTable } from "./SymbolTable";
 
-function run(
-  script: string,
-  symbolTable?: Map<string, LuckyObject>
-): undefined | number {
+function run(script: string, symbolTable?: SymbolTable): undefined | number {
   const ast = parse(script);
   const interpreter = new Interpreter(ast, symbolTable);
 
@@ -46,14 +44,14 @@ describe("Interpreter", () => {
 
   describe("variables handling", () => {
     it("sets variables", () => {
-      const symbolTable = new Map<string, LuckyObject>();
+      const symbolTable = new SymbolTable();
 
       expect(run("pi = 3.14", symbolTable)).toBe(3.14);
       expect(symbolTable.get("pi")).toEqual(new LuckyNumber(3.14));
     });
 
     it("sets a chain of variables", () => {
-      const symbolTable = new Map<string, LuckyObject>();
+      const symbolTable = new SymbolTable();
 
       expect(run("x = y = 1", symbolTable)).toBe(1);
       expect(symbolTable.get("x")).toEqual(new LuckyNumber(1));
@@ -61,18 +59,16 @@ describe("Interpreter", () => {
     });
 
     it("reads variables", () => {
-      const symbolTable = new Map<string, LuckyObject>([
-        ["x", new LuckyNumber(1)],
-        ["y", new LuckyNumber(2)],
-      ]);
+      const symbolTable = new SymbolTable();
+      symbolTable.set("x", new LuckyNumber(1));
+      symbolTable.set("y", new LuckyNumber(2));
 
       expect(run("x + y + 3", symbolTable)).toBe(6);
     });
 
     it("increments the given variable", () => {
-      const symbolTable = new Map<string, LuckyObject>([
-        ["x", new LuckyNumber(1)],
-      ]);
+      const symbolTable = new SymbolTable();
+      symbolTable.set("x", new LuckyNumber(1));
 
       expect(run("x = x + 1", symbolTable)).toBe(2);
       expect(symbolTable.get("x")).toEqual(new LuckyNumber(2));
@@ -293,7 +289,7 @@ describe("Interpreter", () => {
     }
     `;
 
-    const symbolTable = new Map<string, LuckyObject>();
+    const symbolTable = new SymbolTable();
     run(script, symbolTable);
 
     expect(symbolTable.has("a")).toBe(true);
