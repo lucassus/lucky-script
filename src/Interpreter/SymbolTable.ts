@@ -5,16 +5,20 @@ export type MyObject = number | FunctionDeclaration;
 export class SymbolTable {
   private map: Map<string, MyObject> = new Map();
 
-  constructor(private parent?: SymbolTable) {}
+  constructor(public readonly parent?: SymbolTable) {}
 
   set(key: string, value: MyObject): void {
-    let curr: SymbolTable = this;
+    let parent = this.parent;
 
-    while (curr.parent !== undefined && !curr.map.has("key")) {
-      curr = curr.parent;
+    while (parent !== undefined) {
+      if (parent.has(key)) {
+        break;
+      }
+
+      parent = parent.parent;
     }
 
-    curr.map.set(key, value);
+    (parent || this).map.set(key, value);
   }
 
   get(key: string): undefined | MyObject {

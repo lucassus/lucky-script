@@ -11,27 +11,42 @@ describe("SymbolTable", () => {
     expect(symbolTable.has("y")).toBe(false);
   });
 
-  it("can access variables from the parent scope", () => {
-    const root = new SymbolTable();
-    root.set("a", 1);
+  describe("when the given variable is defined on the parent scope", () => {
+    it("can access it", () => {
+      const parent = new SymbolTable();
+      parent.set("a", 1);
 
-    const child = new SymbolTable(root);
+      const child = new SymbolTable(parent);
 
-    expect(child.has("a")).toBe(true);
-    expect(child.get("a")).toBe(1);
+      expect(child.has("a")).toBe(true);
+      expect(child.get("a")).toBe(1);
+    });
+
+    it("can update it", () => {
+      const grandFather = new SymbolTable();
+      const father = new SymbolTable();
+      father.set("a", 1);
+      const child = new SymbolTable(father);
+
+      child.set("a", 2);
+
+      expect(child.has("a")).toBe(true);
+      expect(father.has("a")).toBe(true);
+      expect(father.get("a")).toBe(2);
+      expect(grandFather.has("a")).toBe(false);
+    });
   });
 
-  it("can set variables on the parent scope", () => {
-    const grandFather = new SymbolTable();
-    const father = new SymbolTable();
-    father.set("a", 1);
-    const child = new SymbolTable(father);
+  describe("when the given variable is not defined on the parent scope", () => {
+    it("sets a new variable on the current scope", () => {
+      const parent = new SymbolTable();
+      const child = new SymbolTable(parent);
 
-    child.set("a", 2);
+      child.set("a", 1);
 
-    expect(child.has("a")).toBe(true);
-    expect(father.has("a")).toBe(true);
-    expect(father.get("a")).toBe(2);
-    expect(grandFather.has("a")).toBe(false);
+      expect(child.has("a")).toBe(true);
+      expect(child.get("a")).toBe(1);
+      expect(parent.has("a")).toBe(false);
+    });
   });
 });
