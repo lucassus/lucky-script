@@ -14,7 +14,7 @@ import { SymbolTable } from "./SymbolTable";
 export class Interpreter {
   constructor(
     public readonly node: AstNode,
-    private readonly symbolTable = new SymbolTable()
+    private symbolTable = new SymbolTable()
   ) {}
 
   run(): undefined | number {
@@ -107,13 +107,18 @@ export class Interpreter {
       this.symbolTable.set(parameter, this.visit(argument));
     }
 
+    this.enterScope();
+
     for (const statement of luckyFunction.statements) {
       if (statement instanceof ReturnStatement) {
+        this.exitScope();
         return this.visit(statement.expression);
       }
 
       this.visit(statement);
     }
+
+    this.exitScope();
 
     return new LuckyNumber(0);
   }
@@ -174,5 +179,17 @@ export class Interpreter {
     }
 
     return value;
+  }
+
+  private enterScope(): void {
+    this.symbolTable = new SymbolTable(this.symbolTable);
+  }
+
+  private exitScope(): void {
+    const parent = this.symbolTable.parent;
+
+    if (parent) {
+      this.symbolTable = parent;
+    }
   }
 }

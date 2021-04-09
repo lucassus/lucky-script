@@ -300,4 +300,37 @@ describe("Interpreter", () => {
     expect(symbolTable.has("c")).toBe(true);
     expect(symbolTable.get("c")).toBe(3);
   });
+
+  it("obeys variable scopes", () => {
+    const symbolTable = new SymbolTable();
+    const ast = parse(`
+    a = 1
+    
+    function foo() {
+      a = 2
+      b = 1
+      
+      function bar() {
+        c = 3
+        a + b + c
+      }
+      
+      bar()
+    }
+    
+    d = foo()
+    `);
+
+    const interpreter = new Interpreter(ast, symbolTable);
+    interpreter.run();
+
+    expect(symbolTable.get("d")).toBe(6);
+
+    expect(symbolTable.has("a")).toBe(true);
+    expect(symbolTable.get("a")).toBe(2);
+
+    expect(symbolTable.has("b")).toBe(false);
+    expect(symbolTable.has("bar")).toBe(false);
+    expect(symbolTable.has("c")).toBe(false);
+  });
 });
