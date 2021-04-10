@@ -1,13 +1,13 @@
-import { FunctionDeclaration } from "../Parser/AstNode";
+import { LuckyFunction } from "./LuckyFunction";
 
-export type MyObject = number | FunctionDeclaration;
+export type LuckyObject = number | LuckyFunction;
 
 export class SymbolTable {
-  private map: Map<string, MyObject> = new Map();
+  private map: Map<string, LuckyObject> = new Map();
 
   constructor(public readonly parent?: SymbolTable) {}
 
-  set(key: string, value: MyObject): void {
+  set(key: string, value: LuckyObject): void {
     let parent = this.parent;
 
     while (parent !== undefined) {
@@ -21,7 +21,7 @@ export class SymbolTable {
     (parent || this).map.set(key, value);
   }
 
-  get(key: string): undefined | MyObject {
+  get(key: string): undefined | LuckyObject {
     if (this.map.has(key)) {
       return this.map.get(key);
     }

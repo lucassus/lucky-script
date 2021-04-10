@@ -8,13 +8,13 @@ import {
   VariableAssigment,
 } from "../Parser/AstNode";
 import { NameError, RuntimeError } from "./errors";
-import { LuckyFunction, LuckyNumber, LuckyObject } from "./LuckyObject";
+import { LuckyObject, LuckyNumber, LuckyFunction } from "./LuckyFunction";
 import { SymbolTable } from "./SymbolTable";
 
 export class Interpreter {
   constructor(
     public readonly node: AstNode,
-    private symbolTable = new SymbolTable()
+    private scope = new SymbolTable()
   ) {}
 
   run(): undefined | number {
@@ -66,18 +66,18 @@ export class Interpreter {
   private visitProgram(program: Program): LuckyObject {
     let result: LuckyObject = new LuckyNumber(0);
 
-    program.statements.forEach((instruction) => {
-      result = this.visit(instruction);
+    program.statements.forEach((statements) => {
+      result = this.visit(statements);
     });
 
     return result;
   }
 
   private visitFunctionDeclaration(node: FunctionDeclaration) {
-    const luckyFunction = new LuckyFunction(node.parameters, node.statements);
+    const luckyFunction = new LuckyFunction(this.scope, node.parameters, node.instructions);
 
     if (node.name) {
-      this.symbolTable.set(node.name, luckyFunction);
+      this.scope.set(node.name, luckyFunction);
     }
 
     return luckyFunction;
@@ -86,7 +86,7 @@ export class Interpreter {
   private visitFunctionCall(node: FunctionCall): LuckyObject {
     const { name } = node;
 
-    if (!this.symbolTable.has(name)) {
+    if (!this.scope.has(name)) {
       throw new RuntimeError(`Undefined function ${name}`);
     }
 
@@ -104,23 +104,31 @@ export class Interpreter {
 
     for (const [index, parameter] of luckyFunction.parameters.entries()) {
       const argument = node.args[index];
-      this.symbolTable.set(parameter, this.visit(argument));
+      this.scope.set(parameter, this.visit(argument));
     }
+
+    let result = new LuckyNumber(0);
+
+    // TODO: Actually it's not that bad idea. It just need some polish
+    this.switchScope(luckyFunction.scope, () => {
+      luckyFunction.instructions.forEach((instruction) => {
+        // TODO: Bring back return (use reduce or something?)
+        result = this.visit(instruction);
+      });
+    });
+
+    return result;
+  }
+
+  private switchScope(scope: SymbolTable, fn: () => void) {
+    const prevScope = this.scope;
+    this.scope = scope;
 
     this.enterScope();
-
-    for (const statement of luckyFunction.statements) {
-      if (statement instanceof ReturnStatement) {
-        this.exitScope();
-        return this.visit(statement.expression);
-      }
-
-      this.visit(statement);
-    }
-
+    fn();
     this.exitScope();
 
-    return new LuckyNumber(0);
+    this.scope = prevScope;
   }
 
   private visitBinaryOperation(node: BinaryOperation): LuckyObject {
@@ -166,14 +174,15 @@ export class Interpreter {
 
   private visitVariableAssigment(node: VariableAssigment): LuckyObject {
     const value = this.visit(node.value);
-    this.symbolTable.set(node.name, value);
+    this.scope.set(node.name, value);
 
     return value;
   }
 
   private visitVariableAccess(node: VariableAccess) {
-    const value = this.symbolTable.get(node.name);
+    const value = this.scope.get(node.name);
 
+    // TODO: Maybe `get` should throw an error?
     if (value === undefined) {
       throw new NameError(node.name);
     }
@@ -182,14 +191,14 @@ export class Interpreter {
   }
 
   private enterScope(): void {
-    this.symbolTable = new SymbolTable(this.symbolTable);
+    this.scope = new SymbolTable(this.scope);
   }
 
   private exitScope(): void {
-    const parent = this.symbolTable.parent;
+    const parent = this.scope.parent;
 
     if (parent) {
-      this.symbolTable = parent;
+      this.scope = parent;
     }
   }
 }

@@ -333,4 +333,80 @@ describe("Interpreter", () => {
     expect(symbolTable.has("bar")).toBe(false);
     expect(symbolTable.has("c")).toBe(false);
   });
+
+  // TODO: Dynamic scoping like JavaScript
+  it("obeys variable scopes 2", () => {
+    const symbolTable = new SymbolTable();
+    const ast = parse(`
+    a = 1
+    
+    function add() {
+     a + 1
+    }
+    
+    first = add()
+    
+    a = 2
+    second = add()
+    `);
+
+    const interpreter = new Interpreter(ast, symbolTable);
+    interpreter.run();
+
+    expect(symbolTable.get("first")).toBe(2);
+    expect(symbolTable.get("second")).toBe(3);
+  });
+
+  // TODO: Function that returns a function
+  it("obeys variable scopes 3", () => {
+    const symbolTable = new SymbolTable();
+    const ast = parse(`
+    a = 1
+    
+    function foo() {
+      b = 2
+     
+      function bar() {
+        a + b
+      }
+      
+      bar
+    }
+    
+    bar = foo()
+    c = bar()
+    `);
+
+    const interpreter = new Interpreter(ast, symbolTable);
+    interpreter.run();
+
+    expect(symbolTable.get("c")).toBe(3);
+  });
+
+  it("xxx", () => {
+    const symbolTable = new SymbolTable();
+    const ast = parse(`
+    a = 1
+    
+    function foo() {
+      b = 2
+      a + b
+    }
+
+    # TODO: Add a support for comments    
+    function bar() {
+      b = 3
+      a + b
+    }
+    
+    x = foo()
+    y = bar()
+    `);
+
+    const interpreter = new Interpreter(ast, symbolTable);
+    interpreter.run();
+
+    expect(symbolTable.get("x")).toBe(3);
+    expect(symbolTable.get("y")).toBe(4);
+  });
 });
