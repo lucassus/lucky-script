@@ -50,6 +50,29 @@ describe("Lexer", () => {
     ]);
   });
 
+  // TODO: How to split this test scenario?
+  it("ignores line comments", () => {
+    const lexer = new Lexer(
+      "1 # First comment\n2\n# Second comment;3\n# And the last one"
+    );
+    const tokens = [...lexer.tokenize()];
+
+    expect(tokens.length).toBe(11);
+    expect(tokens).toEqual([
+      new Token(TokenType.NumberLiteral, "1", 0),
+      new Token(TokenType.Comment, "# First comment", 2),
+      new Token(TokenType.NewLine, "\n", 17),
+      new Token(TokenType.NumberLiteral, "2", 18),
+      new Token(TokenType.NewLine, "\n", 19),
+      new Token(TokenType.Comment, "# Second comment", 20),
+      new Token(TokenType.NewLine, ";", 36),
+      new Token(TokenType.NumberLiteral, "3", 37),
+      new Token(TokenType.NewLine, "\n", 38),
+      new Token(TokenType.Comment, "# And the last one", 39),
+      new Token(TokenType.End, "", 57),
+    ]);
+  });
+
   describe("number literals", () => {
     it.each`
       input

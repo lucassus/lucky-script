@@ -22,6 +22,7 @@ export enum TokenType {
   RightBrace = "}",
   NewLine = "\n",
 
+  Comment = "COMMENT",
   End = "EndOfInput",
 }
 

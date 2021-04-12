@@ -1,15 +1,15 @@
 import { Digits, Dot, NonZeroDigits, Separator, ZeroDigit } from "../symbols";
 import { Recognizer } from "./Recognizer";
-import { State } from "./State";
+import { Case } from "./state/Case";
 
-const beginNumber = new State(0, false);
-const zero = new State(1, true);
-const integer = new State(2, true);
-const beginIntegerSeparator = new State(3, false);
-const beginFractionalPart = new State(4, false);
-const numberWithFractionalPart = new State(5, true);
-const beginFractionalPartSeparator = new State(6, false);
-const invalid = new State(10, false);
+const beginNumber = new Case(0, false);
+const zero = new Case(1, true);
+const integer = new Case(2, true);
+const beginIntegerSeparator = new Case(3, false);
+const beginFractionalPart = new Case(4, false);
+const numberWithFractionalPart = new Case(5, true);
+const beginFractionalPartSeparator = new Case(6, false);
+const invalid = new Case(10, false);
 
 beginNumber.on(ZeroDigit).switchTo(zero);
 beginNumber.on(...NonZeroDigits).switchTo(integer);

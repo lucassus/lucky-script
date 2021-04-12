@@ -16,7 +16,7 @@ import {
   RightBrace,
   Whitespaces,
   symbolToTokenType,
-  keywordToTokenType,
+  keywordToTokenType, BeginLineComment
 } from "./symbols";
 import { Token, TokenType } from "./Token";
 
@@ -40,10 +40,14 @@ export class Lexer {
   nextToken(): Token {
     this.advance();
 
-    this.skipWhitespaces();
-
     if (this.position > this.input.length - 1) {
       return new Token(TokenType.End, "", this.position);
+    }
+
+    this.skipWhitespaces();
+
+    if (this.currentSymbol === BeginLineComment) {
+      return this.recognizeLineComment();
     }
 
     if (Newlines.includes(this.currentSymbol)) {
@@ -98,6 +102,20 @@ export class Lexer {
     while (Whitespaces.includes(this.currentSymbol)) {
       this.advance();
     }
+  }
+
+  // TODO: Refactor with a state machine?
+  private recognizeLineComment() {
+    const startPosition = this.position;
+
+    let comment = this.currentSymbol;
+
+    while (this.nextSymbol && !Newlines.includes(this.nextSymbol)) {
+      this.advance();
+      comment += this.currentSymbol;
+    }
+
+    return new Token(TokenType.Comment, comment, startPosition);
   }
 
   private recognizeNumber(): Token {
