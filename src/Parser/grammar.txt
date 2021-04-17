@@ -18,7 +18,7 @@
   | "+" | "-" <factor>
   | <power>
 
-<function-declaration> = "function" <identifier> "(" ")" "{" <expressions> "}"
+<function-declaration> = "function" <identifier> "(" ")" "{" <statements> "}"
 
 TODO: Maybe the function call should be implemented as postfix unary operation?
 <function-call> = <identifier> "(" ")"
