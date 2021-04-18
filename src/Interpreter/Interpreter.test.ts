@@ -1,5 +1,3 @@
-import { toUnicode } from "punycode";
-
 import { parse } from "../testingUtils";
 import { Interpreter } from "./Interpreter";
 
