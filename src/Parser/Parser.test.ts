@@ -199,6 +199,18 @@ describe("Parser", () => {
     );
   });
 
+  it("ignores line comments", () => {
+    const ast = parse(`
+    1 + 2 # This is a simple addition
+    `);
+
+    expect(ast).toEqual(
+      new Program([
+        new BinaryOperation(new Numeral("1"), "+", new Numeral("2")),
+      ])
+    );
+  });
+
   describe("function declaration", () => {
     it("parses a declaration without arguments", () => {
       const ast = parse("function add() {\n\t1 + 2\n}");

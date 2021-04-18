@@ -1,10 +1,21 @@
-<program> = <statements> End
+<program> = <statement>* End
 
-<statements> = { "\n"* <statement>? "\n"* }
+<statements> = <statement>*
 
 <statement> =
+  | <empty-statement>
+  | <comment>
   | <function-declaration>
-  | <expression>
+  | <expression-statement>
+
+<empty-statement> = "\n"
+
+TODO: Add <function-expression> without <identifier>
+<function-declaration> = "function" <identifier> "(" ")" <block>
+
+<block> = "{" <statements> "}"
+
+<expression-statement> = <expression> "\n"
 
 <expression> =
   | <assigment>
@@ -18,11 +29,6 @@
   | "+" | "-" <factor>
   | <power>
 
-<function-declaration> = "function" <identifier> "(" ")" "{" <statements> "}"
-
-TODO: Maybe the function call should be implemented as postfix unary operation?
-<function-call> = <identifier> "(" ")"
-
 <power> = <atom> { "**" <factor> }
 
 <atom> =
@@ -30,5 +36,8 @@ TODO: Maybe the function call should be implemented as postfix unary operation?
   | <function-call>
   | <identifier>
   | <group>
+
+TODO: Maybe a function call should be implemented as postfix unary operation?
+<function-call> = <identifier> "(" ")"
 
 <group> = "(" <expression> ")"
