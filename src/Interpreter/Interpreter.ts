@@ -1,6 +1,5 @@
 import { AstNode, BinaryOperation, Numeral, UnaryOperation } from "../Parser";
 import {
-  Block,
   FunctionCall,
   FunctionDeclaration,
   Program,
@@ -22,14 +21,9 @@ export class Interpreter {
     return this.visit(this.node);
   }
 
-  // TODO: Find a better idea, how to generate it dynamically
   private visit(node: AstNode): MyObject {
     if (node instanceof Program) {
       return this.visitProgram(node);
-    }
-
-    if (node instanceof Block) {
-      return this.visitBlock(node);
     }
 
     if (node instanceof FunctionDeclaration) {
@@ -63,14 +57,10 @@ export class Interpreter {
     throw new Error(`Unsupported AST node type ${node.constructor.name}`);
   }
 
-  private visitProgram(node: Program): MyObject {
-    return this.visitBlock(node.body);
-  }
-
-  private visitBlock(node: Block): MyObject {
+  private visitProgram(program: Program): MyObject {
     let result: MyObject = 0;
 
-    node.instructions.forEach((instruction) => {
+    program.instructions.forEach((instruction) => {
       result = this.visit(instruction);
     });
 
@@ -96,7 +86,13 @@ export class Interpreter {
       throw new Error(`The given identifier '${name}' is not callable`);
     }
 
-    return this.visitBlock(functionDeclaration.body);
+    let result: MyObject = 0;
+
+    functionDeclaration.instructions.forEach((instruction) => {
+      result = this.visit(instruction);
+    });
+
+    return result;
   }
 
   private handleBinaryOperation(node: BinaryOperation): number {
