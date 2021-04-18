@@ -307,8 +307,8 @@ describe("Interpreter", () => {
     a = 1
     
     function foo() {
-      a = 2
-      b = 1
+      a = 2 # Should replace value of on the parent scope
+      b = 1 # Should not be accessible in the parent scopes
       
       function bar() {
         c = 3
@@ -370,7 +370,7 @@ describe("Interpreter", () => {
         a + b
       }
       
-      bar
+      bar # Return the function
     }
     
     bar = foo()
