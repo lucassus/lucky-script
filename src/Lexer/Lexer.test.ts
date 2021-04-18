@@ -11,8 +11,8 @@ describe("Lexer", () => {
   describe("new line separators", () => {
     it("tokenizes \\n", () => {
       const lexer = new Lexer("\n1\n2\n\n");
-
       const tokens = [...lexer.tokenize()];
+
       expect(tokens.length).toBe(7);
       expect(tokens).toEqual([
         new Token(TokenType.NewLine, "\n", 0),
@@ -43,34 +43,37 @@ describe("Lexer", () => {
 
     expect(tokens.length).toBe(4);
     expect(tokens).toEqual([
-      new Token(TokenType.NumberLiteral, "1", 2),
-      new Token(TokenType.Plus, "+", 4),
-      new Token(TokenType.NumberLiteral, "2", 6),
-      new Token(TokenType.End, "", 9),
+      new Token(TokenType.NumberLiteral, "1", expect.any(Number)),
+      new Token(TokenType.Plus, "+", expect.any(Number)),
+      new Token(TokenType.NumberLiteral, "2", expect.any(Number)),
+      new Token(TokenType.End, "", expect.any(Number)),
     ]);
   });
 
-  // TODO: How to split this test scenario?
-  it("ignores line comments", () => {
-    const lexer = new Lexer(
-      "1 # First comment\n2\n# Second comment;3\n# And the last one"
-    );
-    const tokens = [...lexer.tokenize()];
+  describe("line comments", () => {
+    it("tokenizes line comments to end of the line", () => {
+      const lexer = new Lexer("1 # The comment\n2");
+      const tokens = [...lexer.tokenize()];
 
-    expect(tokens.length).toBe(11);
-    expect(tokens).toEqual([
-      new Token(TokenType.NumberLiteral, "1", 0),
-      new Token(TokenType.Comment, "# First comment", 2),
-      new Token(TokenType.NewLine, "\n", 17),
-      new Token(TokenType.NumberLiteral, "2", 18),
-      new Token(TokenType.NewLine, "\n", 19),
-      new Token(TokenType.Comment, "# Second comment", 20),
-      new Token(TokenType.NewLine, ";", 36),
-      new Token(TokenType.NumberLiteral, "3", 37),
-      new Token(TokenType.NewLine, "\n", 38),
-      new Token(TokenType.Comment, "# And the last one", 39),
-      new Token(TokenType.End, "", 57),
-    ]);
+      expect(tokens).toEqual([
+        new Token(TokenType.NumberLiteral, "1", expect.any(Number)),
+        new Token(TokenType.Comment, "# The comment", expect.any(Number)),
+        new Token(TokenType.NewLine, "\n", expect.any(Number)),
+        new Token(TokenType.NumberLiteral, "2", expect.any(Number)),
+        new Token(TokenType.End, "", expect.any(Number)),
+      ]);
+    });
+
+    it("tokenizes line comments to end of input", () => {
+      const lexer = new Lexer("1 # The comment");
+      const tokens = [...lexer.tokenize()];
+
+      expect(tokens).toEqual([
+        new Token(TokenType.NumberLiteral, "1", expect.any(Number)),
+        new Token(TokenType.Comment, "# The comment", expect.any(Number)),
+        new Token(TokenType.End, "", expect.any(Number)),
+      ]);
+    });
   });
 
   describe("number literals", () => {
@@ -218,7 +221,7 @@ describe("Lexer", () => {
   });
 
   it("throws SyntaxError when unexpected symbol is given", () => {
-    const lexer = new Lexer("1 ###");
-    expect(() => [...lexer.tokenize()]).toThrow(new SyntaxError("#", 2));
+    const lexer = new Lexer("1 @");
+    expect(() => [...lexer.tokenize()]).toThrow(new SyntaxError("@", 2));
   });
 });
