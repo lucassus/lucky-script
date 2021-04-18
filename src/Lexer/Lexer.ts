@@ -21,6 +21,8 @@ import {
 } from "./Token";
 
 export class Lexer {
+  private line = 0;
+  private column = -1;
   private position = -1;
 
   constructor(private readonly input: string) {}
@@ -106,6 +108,13 @@ export class Lexer {
   }
 
   private advance() {
+    if (this.currentSymbol === "\n") {
+      this.column = 0;
+      this.line += 1;
+    } else {
+      this.column += 1;
+    }
+
     this.position += 1;
   }
 
@@ -129,20 +138,26 @@ export class Lexer {
   }
 
   private recognizeNumber(): Token {
-    const startPosition = this.position;
+    const startPosition = this.getPosition();
     const value = this.recognizeWith(new NumeralRecognizer());
 
-    return this.createToken(Literal.Number, startPosition, value);
+    return this.createToken(Literal.Number, {
+      start: startPosition,
+      end: this.getPosition(),
+    }, value);
   }
 
   private recognizeKeywordOrIdentifier(): Token {
-    const startPosition = this.position;
+    const startPosition = this.getPosition();
     const value = this.recognizeWith(new IdentifierRecognizer());
     const tokenType = Keyword.fromString(value) || Literal.Identifier;
 
     return this.createToken(
       tokenType,
-      startPosition,
+      {
+      start: startPosition,
+      end: this.getPosition(),
+    },
       tokenType === Literal.Identifier ? value : undefined
     );
   }
@@ -163,6 +178,15 @@ export class Lexer {
     return value;
   }
 
+    // TODO: This is messy, find a more elegant solution
+  private getPosition(): Position {
+    return {
+      position: this.position,
+      line: this.line,
+      column: this.column,
+    };
+  }
+
   private createToken(
     type: TokenType,
     startPosition?: number | undefined,
@@ -170,4 +194,5 @@ export class Lexer {
   ): Token {
     return new Token(type, startPosition ?? this.position, value);
   }
+
 }

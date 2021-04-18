@@ -42,10 +42,23 @@ export class Delimiter extends TokenType {
   static End = new Delimiter("End");
 }
 
+export interface Location {
+  readonly start: Position;
+  readonly end: Position;
+}
+
+export interface Position {
+  // TODO: Rename it to index?
+  readonly position: number;
+
+  readonly line: number;
+  readonly column: number;
+}
+
 export class Token {
   constructor(
     public readonly type: TokenType,
-    public readonly position: number,
-    public readonly value?: string
+    public readonly value: string,
+    public readonly location: Location
   ) {}
 }
