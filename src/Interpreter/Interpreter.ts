@@ -1,5 +1,6 @@
 import { AstNode, BinaryOperation, Numeral, UnaryOperation } from "../Parser";
 import {
+  Block,
   FunctionCall,
   FunctionDeclaration,
   Program,
@@ -25,6 +26,10 @@ export class Interpreter {
   private visit(node: AstNode): MyObject {
     if (node instanceof Program) {
       return this.visitProgram(node);
+    }
+
+    if (node instanceof Block) {
+      return this.visitBlock(node);
     }
 
     if (node instanceof FunctionDeclaration) {
@@ -59,6 +64,10 @@ export class Interpreter {
   }
 
   private visitProgram(node: Program): MyObject {
+    return this.visitBlock(node.body);
+  }
+
+  private visitBlock(node: Block): MyObject {
     let result: MyObject = 0;
 
     node.instructions.forEach((instruction) => {
@@ -74,7 +83,7 @@ export class Interpreter {
   }
 
   // TODO: A function call should create a new variable scope
-  public visitFunctionCall(node: FunctionCall): number {
+  public visitFunctionCall(node: FunctionCall): MyObject {
     const { name } = node;
 
     if (!this.symbolTable.has(name)) {
@@ -87,13 +96,7 @@ export class Interpreter {
       throw new Error(`The given identifier '${name}' is not callable`);
     }
 
-    let result: MyObject = 0;
-
-    functionDeclaration.instructions.forEach((instruction) => {
-      result = this.visit(instruction);
-    });
-
-    return result;
+    return this.visitBlock(functionDeclaration.body);
   }
 
   private handleBinaryOperation(node: BinaryOperation): number {

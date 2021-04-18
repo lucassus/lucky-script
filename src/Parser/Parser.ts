@@ -3,6 +3,7 @@ import { TokenType } from "../Lexer/Token";
 import {
   AstNode,
   BinaryOperation,
+  Block,
   FunctionCall,
   FunctionDeclaration,
   Numeral,
@@ -28,7 +29,7 @@ export class Parser {
     const statements = this.statements(TokenType.End);
     this.match(TokenType.End);
 
-    return new Program(statements);
+    return new Program(new Block(statements));
   }
 
   private statements(end: TokenType): AstNode[] {
@@ -57,6 +58,10 @@ export class Parser {
 
     if (this.currentToken.type === TokenType.Function) {
       return this.functionDeclaration();
+    }
+
+    if (this.currentToken.type === TokenType.LeftBrace) {
+      return this.block();
     }
 
     return this.expressionStatement();
@@ -104,12 +109,12 @@ export class Parser {
     return new FunctionDeclaration(name, this.block());
   }
 
-  private block(): AstNode[] {
+  private block(): Block {
     this.match(TokenType.LeftBrace);
     const statements = this.statements(TokenType.RightBrace);
     this.match(TokenType.RightBrace);
 
-    return statements;
+    return new Block(statements);
   }
 
   private functionCall(): AstNode {

@@ -1,3 +1,5 @@
+import { toUnicode } from "punycode";
+
 import { parse } from "../testingUtils";
 import { Interpreter } from "./Interpreter";
 
@@ -164,5 +166,29 @@ describe("Interpreter", () => {
       const interpreter = new Interpreter(ast);
       expect(interpreter.run()).toBe(41);
     });
+  });
+
+  it("interprets blocks of code", () => {
+    const ast = parse(`
+    a = 1
+    c = 0
+    
+    {
+      b = 2
+      c = a + b
+    }
+    `);
+
+    const symbolTable = new Map<string, number>();
+    const interpreter = new Interpreter(ast, symbolTable);
+    interpreter.run();
+
+    expect(symbolTable.has("a")).toBe(true);
+
+    // TODO: It should create a new scope for block variable
+    expect(symbolTable.has("b")).toBe(true);
+
+    expect(symbolTable.has("c")).toBe(true);
+    expect(symbolTable.get("c")).toBe(3);
   });
 });

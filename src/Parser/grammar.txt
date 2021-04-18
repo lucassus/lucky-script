@@ -7,6 +7,7 @@
   | <comment>
   | <function-declaration>
   | <expression-statement>
+  | <block>
 
 <empty-statement> = "\n"
 

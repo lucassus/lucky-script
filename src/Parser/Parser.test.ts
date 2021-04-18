@@ -1,6 +1,7 @@
 import { parse } from "../testingUtils";
 import {
   BinaryOperation,
+  Block,
   FunctionCall,
   FunctionDeclaration,
   Numeral,
@@ -14,16 +15,18 @@ describe("Parser", () => {
   it("parses empty input", () => {
     const ast = parse("");
 
-    expect(ast).toEqual(new Program([]));
+    expect(ast).toEqual(new Program(new Block([])));
   });
 
   it("parses simple addition", () => {
     const ast = parse("1 + 2");
 
     expect(ast).toEqual(
-      new Program([
-        new BinaryOperation(new Numeral("1"), "+", new Numeral("2")),
-      ])
+      new Program(
+        new Block([
+          new BinaryOperation(new Numeral("1"), "+", new Numeral("2")),
+        ])
+      )
     );
   });
 
@@ -31,13 +34,15 @@ describe("Parser", () => {
     const ast = parse("1 + 2 - 3");
 
     expect(ast).toEqual(
-      new Program([
-        new BinaryOperation(
-          new BinaryOperation(new Numeral("1"), "+", new Numeral("2")),
-          "-",
-          new Numeral("3")
-        ),
-      ])
+      new Program(
+        new Block([
+          new BinaryOperation(
+            new BinaryOperation(new Numeral("1"), "+", new Numeral("2")),
+            "-",
+            new Numeral("3")
+          ),
+        ])
+      )
     );
   });
 
@@ -45,17 +50,19 @@ describe("Parser", () => {
     const ast = parse("24 / 3 - 2.5 * 2 ** 3");
 
     expect(ast).toEqual(
-      new Program([
-        new BinaryOperation(
-          new BinaryOperation(new Numeral("24"), "/", new Numeral("3")),
-          "-",
+      new Program(
+        new Block([
           new BinaryOperation(
-            new Numeral("2.5"),
-            "*",
-            new BinaryOperation(new Numeral("2"), "**", new Numeral("3"))
-          )
-        ),
-      ])
+            new BinaryOperation(new Numeral("24"), "/", new Numeral("3")),
+            "-",
+            new BinaryOperation(
+              new Numeral("2.5"),
+              "*",
+              new BinaryOperation(new Numeral("2"), "**", new Numeral("3"))
+            )
+          ),
+        ])
+      )
     );
   });
 
@@ -63,12 +70,14 @@ describe("Parser", () => {
     const ast = parse("-2 ** 3");
 
     expect(ast).toEqual(
-      new Program([
-        new UnaryOperation(
-          "-",
-          new BinaryOperation(new Numeral("2"), "**", new Numeral("3"))
-        ),
-      ])
+      new Program(
+        new Block([
+          new UnaryOperation(
+            "-",
+            new BinaryOperation(new Numeral("2"), "**", new Numeral("3"))
+          ),
+        ])
+      )
     );
   });
 
@@ -76,13 +85,15 @@ describe("Parser", () => {
     const ast = parse("(1 + 2) * 3");
 
     expect(ast).toEqual(
-      new Program([
-        new BinaryOperation(
-          new BinaryOperation(new Numeral("1"), "+", new Numeral("2")),
-          "*",
-          new Numeral("3")
-        ),
-      ])
+      new Program(
+        new Block([
+          new BinaryOperation(
+            new BinaryOperation(new Numeral("1"), "+", new Numeral("2")),
+            "*",
+            new Numeral("3")
+          ),
+        ])
+      )
     );
   });
 
@@ -102,13 +113,15 @@ describe("Parser", () => {
       const ast = parse(input);
 
       expect(ast).toEqual(
-        new Program([
-          new BinaryOperation(
-            new Numeral("1"),
-            "+",
-            new UnaryOperation(operator, new Numeral("2"))
-          ),
-        ])
+        new Program(
+          new Block([
+            new BinaryOperation(
+              new Numeral("1"),
+              "+",
+              new UnaryOperation(operator, new Numeral("2"))
+            ),
+          ])
+        )
       );
     }
   );
@@ -118,7 +131,9 @@ describe("Parser", () => {
       const ast = parse("pi = 3.14");
 
       expect(ast).toEqual(
-        new Program([new VariableAssigment("pi", new Numeral("3.14"))])
+        new Program(
+          new Block([new VariableAssigment("pi", new Numeral("3.14"))])
+        )
       );
     });
 
@@ -126,16 +141,18 @@ describe("Parser", () => {
       const ast = parse("someVar123 = (1 + 2) * 3");
 
       expect(ast).toEqual(
-        new Program([
-          new VariableAssigment(
-            "someVar123",
-            new BinaryOperation(
-              new BinaryOperation(new Numeral("1"), "+", new Numeral("2")),
-              "*",
-              new Numeral("3")
-            )
-          ),
-        ])
+        new Program(
+          new Block([
+            new VariableAssigment(
+              "someVar123",
+              new BinaryOperation(
+                new BinaryOperation(new Numeral("1"), "+", new Numeral("2")),
+                "*",
+                new Numeral("3")
+              )
+            ),
+          ])
+        )
       );
     });
 
@@ -143,15 +160,17 @@ describe("Parser", () => {
       const ast = parse("x = y = z = 3");
 
       expect(ast).toEqual(
-        new Program([
-          new VariableAssigment(
-            "x",
+        new Program(
+          new Block([
             new VariableAssigment(
-              "y",
-              new VariableAssigment("z", new Numeral("3"))
-            )
-          ),
-        ])
+              "x",
+              new VariableAssigment(
+                "y",
+                new VariableAssigment("z", new Numeral("3"))
+              )
+            ),
+          ])
+        )
       );
     });
 
@@ -159,9 +178,11 @@ describe("Parser", () => {
       const ast = parse("x + 3");
 
       expect(ast).toEqual(
-        new Program([
-          new BinaryOperation(new VariableAccess("x"), "+", new Numeral("3")),
-        ])
+        new Program(
+          new Block([
+            new BinaryOperation(new VariableAccess("x"), "+", new Numeral("3")),
+          ])
+        )
       );
     });
 
@@ -187,15 +208,17 @@ describe("Parser", () => {
     `);
 
     expect(ast).toEqual(
-      new Program([
-        new VariableAssigment("x", new Numeral("1")),
-        new VariableAssigment("y", new Numeral("2")),
-        new BinaryOperation(
-          new VariableAccess("x"),
-          "+",
-          new BinaryOperation(new VariableAccess("y"), "*", new Numeral("3"))
-        ),
-      ])
+      new Program(
+        new Block([
+          new VariableAssigment("x", new Numeral("1")),
+          new VariableAssigment("y", new Numeral("2")),
+          new BinaryOperation(
+            new VariableAccess("x"),
+            "+",
+            new BinaryOperation(new VariableAccess("y"), "*", new Numeral("3"))
+          ),
+        ])
+      )
     );
   });
 
@@ -205,9 +228,11 @@ describe("Parser", () => {
     `);
 
     expect(ast).toEqual(
-      new Program([
-        new BinaryOperation(new Numeral("1"), "+", new Numeral("2")),
-      ])
+      new Program(
+        new Block([
+          new BinaryOperation(new Numeral("1"), "+", new Numeral("2")),
+        ])
+      )
     );
   });
 
@@ -216,11 +241,16 @@ describe("Parser", () => {
       const ast = parse("function add() {\n\t1 + 2\n}");
 
       expect(ast).toEqual(
-        new Program([
-          new FunctionDeclaration("add", [
-            new BinaryOperation(new Numeral("1"), "+", new Numeral("2")),
-          ]),
-        ])
+        new Program(
+          new Block([
+            new FunctionDeclaration(
+              "add",
+              new Block([
+                new BinaryOperation(new Numeral("1"), "+", new Numeral("2")),
+              ])
+            ),
+          ])
+        )
       );
     });
 
@@ -235,14 +265,18 @@ describe("Parser", () => {
     it("parses a call without arguments", () => {
       const ast = parse("doSomething()");
 
-      expect(ast).toEqual(new Program([new FunctionCall("doSomething")]));
+      expect(ast).toEqual(
+        new Program(new Block([new FunctionCall("doSomething")]))
+      );
     });
 
     it("parses assigment of a call result to a variable", () => {
       const ast = parse("x = abc()");
 
       expect(ast).toEqual(
-        new Program([new VariableAssigment("x", new FunctionCall("abc"))])
+        new Program(
+          new Block([new VariableAssigment("x", new FunctionCall("abc"))])
+        )
       );
     });
 
@@ -250,20 +284,22 @@ describe("Parser", () => {
       const ast = parse("foo() + -bar() ** baz()");
 
       expect(ast).toEqual(
-        new Program([
-          new BinaryOperation(
-            new FunctionCall("foo"),
-            "+",
-            new UnaryOperation(
-              "-",
-              new BinaryOperation(
-                new FunctionCall("bar"),
-                "**",
-                new FunctionCall("baz")
+        new Program(
+          new Block([
+            new BinaryOperation(
+              new FunctionCall("foo"),
+              "+",
+              new UnaryOperation(
+                "-",
+                new BinaryOperation(
+                  new FunctionCall("bar"),
+                  "**",
+                  new FunctionCall("baz")
+                )
               )
-            )
-          ),
-        ])
+            ),
+          ])
+        )
       );
     });
   });
