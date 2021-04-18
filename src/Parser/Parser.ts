@@ -25,33 +25,64 @@ export class Parser {
   }
 
   private program(): Program {
-    const instructions = this.statements();
+    const statements = this.statements(TokenType.End);
     this.match(TokenType.End);
 
-    return new Program(instructions);
+    return new Program(statements);
   }
 
-  private statements(): AstNode[] {
-    const expressions: AstNode[] = [];
+  private statements(end: TokenType): AstNode[] {
+    const statements: AstNode[] = [];
 
-    while (
-      this.currentToken.type !== TokenType.End &&
-      this.currentToken.type !== TokenType.RightBrace
-    ) {
-      this.discardNewLines();
-      expressions.push(this.statement());
-      this.discardNewLines();
+    while (this.currentToken.type !== end) {
+      const statement = this.statement();
+
+      if (statement) {
+        statements.push(statement);
+      }
     }
 
-    return expressions;
+    return statements;
   }
 
-  private statement(): AstNode {
+  private statement(): undefined | AstNode {
+    if (this.currentToken.type === TokenType.NewLine) {
+      return this.emptyStatement();
+    }
+
+    if (this.currentToken.type === TokenType.Comment) {
+      this.comment();
+      return undefined;
+    }
+
     if (this.currentToken.type === TokenType.Function) {
       return this.functionDeclaration();
     }
 
-    return this.expression();
+    if (this.currentToken.type === TokenType.LeftBrace) {
+      return this.block();
+    }
+
+    return this.expressionStatement();
+  }
+
+  private emptyStatement() {
+    this.match(TokenType.NewLine);
+    return undefined;
+  }
+
+  private expressionStatement(): AstNode {
+    const expression = this.expression();
+
+    if (this.currentToken.type === TokenType.NewLine) {
+      this.match(TokenType.NewLine);
+    }
+
+    return expression;
+  }
+
+  private comment(): void {
+    this.match(TokenType.Comment);
   }
 
   private expression(): AstNode {
@@ -74,11 +105,15 @@ export class Parser {
     this.match(TokenType.LeftBracket);
     this.match(TokenType.RightBracket);
 
+    return new FunctionDeclaration(name, this.block());
+  }
+
+  private block(): AstNode[] {
     this.match(TokenType.LeftBrace);
-    const expressions = this.statements();
+    const statements = this.statements(TokenType.RightBrace);
     this.match(TokenType.RightBrace);
 
-    return new FunctionDeclaration(name, expressions);
+    return statements;
   }
 
   private functionCall(): AstNode {
@@ -182,13 +217,7 @@ export class Parser {
       );
     }
 
-    this.advance();
-  }
-
-  private discardNewLines(): void {
-    while (this.currentToken.type === TokenType.NewLine) {
-      this.match(TokenType.NewLine);
-    }
+    this.lexer.advance();
   }
 
   private get currentToken(): Token {
@@ -197,9 +226,5 @@ export class Parser {
 
   private get nextToken(): Token {
     return this.lexer.next;
-  }
-
-  private advance(): void {
-    this.lexer.advance();
   }
 }

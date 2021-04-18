@@ -1,7 +1,10 @@
 import { SyntaxError } from "./errors";
-import { NumeralRecognizer } from "./Recognizer";
-import { IdentifierRecognizer } from "./Recognizer/IdentifierRecognizer";
-import { Recognizer } from "./Recognizer/Recognizer";
+import {
+  CommentRecognizer,
+  IdentifierRecognizer,
+  NumeralRecognizer,
+  Recognizer,
+} from "./Recognizer";
 import {
   Assigment,
   Brackets,
@@ -17,6 +20,7 @@ import {
   Whitespaces,
   symbolToTokenType,
   keywordToTokenType,
+  BeginLineComment,
 } from "./symbols";
 import { Token, TokenType } from "./Token";
 
@@ -44,6 +48,10 @@ export class Lexer {
 
     if (this.position > this.input.length - 1) {
       return new Token(TokenType.End, "", this.position);
+    }
+
+    if (this.currentSymbol === BeginLineComment) {
+      return this.recognizeLineComment();
     }
 
     if (Newlines.includes(this.currentSymbol)) {
@@ -90,7 +98,7 @@ export class Lexer {
     return this.input[this.position];
   }
 
-  private get nextSymbol(): string {
+  private get nextSymbol(): string | undefined {
     return this.input[this.position + 1];
   }
 
@@ -98,6 +106,13 @@ export class Lexer {
     while (Whitespaces.includes(this.currentSymbol)) {
       this.advance();
     }
+  }
+
+  private recognizeLineComment() {
+    const startPosition = this.position;
+    const comment = this.recognizeWith(new CommentRecognizer());
+
+    return new Token(TokenType.Comment, comment, startPosition);
   }
 
   private recognizeNumber(): Token {

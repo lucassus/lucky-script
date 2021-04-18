@@ -31,6 +31,8 @@ const SmallLetters = charRange("a", "z");
 const CapitalLetters = charRange("A", "Z");
 export const Letters = [...SmallLetters, ...CapitalLetters];
 
+export const BeginLineComment = "#";
+
 export const symbolToTokenType: ReadonlyMap<string, TokenType> = new Map([
   [Plus, TokenType.Plus],
   [Minus, TokenType.Minus],

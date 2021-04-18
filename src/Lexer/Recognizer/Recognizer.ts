@@ -1,12 +1,12 @@
-import { State } from "./State";
+import { State } from "./state/State";
 
 export abstract class Recognizer {
-  private value = "";
+  protected value = "";
 
-  protected constructor(private currentState: State) {}
+  protected constructor(protected currentState: State) {}
 
-  next(symbol: string): boolean {
-    const nextState = this.currentState.next(symbol);
+  next(symbol: undefined | string): boolean {
+    const nextState = symbol && this.currentState.next(symbol);
 
     if (!nextState) {
       return false;
@@ -19,6 +19,9 @@ export abstract class Recognizer {
   }
 
   get result() {
-    return { recognized: this.currentState.isFinal, value: this.value };
+    return {
+      recognized: this.currentState.isFinal,
+      value: this.value,
+    };
   }
 }

@@ -21,7 +21,6 @@ export class Interpreter {
     return this.visit(this.node);
   }
 
-  // TODO: Find a better idea, how to generate it dynamically
   private visit(node: AstNode): MyObject {
     if (node instanceof Program) {
       return this.visitProgram(node);
@@ -58,10 +57,10 @@ export class Interpreter {
     throw new Error(`Unsupported AST node type ${node.constructor.name}`);
   }
 
-  private visitProgram(node: Program): MyObject {
+  private visitProgram(program: Program): MyObject {
     let result: MyObject = 0;
 
-    node.instructions.forEach((instruction) => {
+    program.instructions.forEach((instruction) => {
       result = this.visit(instruction);
     });
 
@@ -74,7 +73,7 @@ export class Interpreter {
   }
 
   // TODO: A function call should create a new variable scope
-  public visitFunctionCall(node: FunctionCall): number {
+  public visitFunctionCall(node: FunctionCall): MyObject {
     const { name } = node;
 
     if (!this.symbolTable.has(name)) {

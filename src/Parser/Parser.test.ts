@@ -199,6 +199,18 @@ describe("Parser", () => {
     );
   });
 
+  it("ignores line comments", () => {
+    const ast = parse(`
+    1 + 2 # This is a simple addition
+    `);
+
+    expect(ast).toEqual(
+      new Program([
+        new BinaryOperation(new Numeral("1"), "+", new Numeral("2")),
+      ])
+    );
+  });
+
   describe("function declaration", () => {
     it("parses a declaration without arguments", () => {
       const ast = parse("function add() {\n\t1 + 2\n}");
@@ -253,6 +265,23 @@ describe("Parser", () => {
           ),
         ])
       );
+    });
+  });
+
+  describe("several statements in a single line", () => {
+    it("parses when statements are separated", () => {
+      const ast = parse("1+2;3+4");
+
+      expect(ast).toEqual(
+        new Program([
+          new BinaryOperation(new Numeral("1"), "+", new Numeral("2")),
+          new BinaryOperation(new Numeral("3"), "+", new Numeral("4")),
+        ])
+      );
+    });
+
+    it.skip("raises an error when statements are not separated", () => {
+      expect(() => parse("1+2 3+4")).toThrow();
     });
   });
 });
