@@ -182,9 +182,7 @@ describe("Parser", () => {
     x = 1
     y = 2
     
-    x + y * 3
-    
-    `);
+    x + y * 3`);
 
     expect(ast).toEqual(
       new Program([
@@ -199,6 +197,7 @@ describe("Parser", () => {
     );
   });
 
+  // TODO: Add a case for a comment in the same line and for a comment in the separated one
   it("ignores line comments", () => {
     const ast = parse(`
     1 + 2 # This is a simple addition
@@ -269,7 +268,8 @@ describe("Parser", () => {
   });
 
   describe("several statements in a single line", () => {
-    it("parses when statements are separated", () => {
+    // TODO: This is no longer valid!
+    it.skip("parses when statements are separated", () => {
       const ast = parse("1+2;3+4");
 
       expect(ast).toEqual(
@@ -280,7 +280,7 @@ describe("Parser", () => {
       );
     });
 
-    it.skip("raises an error when statements are not separated", () => {
+    it("raises an error when statements are not separated", () => {
       expect(() => parse("1+2 3+4")).toThrow();
     });
   });

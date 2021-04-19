@@ -1,22 +1,21 @@
-<program> = <statements> End
+<program> =
+  | End
+  | <statements> End
 
-<statements> = <statement>*
+<statements> = "\n"* <statement> { "\n"+ <statement> }
 
 <statement> =
-  | <empty-statement>
   | <comment>
   | <function-declaration>
-  | <expression-statement>
+  | <expression>
   | <block>
-
-<empty-statement> = "\n"
 
 TODO: Add <function-expression> without <identifier>
 <function-declaration> = "function" <identifier> "(" ")" <block>
 
-<block> = "{" <statements> "}"
-
-<expression-statement> = <expression> "\n"
+<block> =
+  | "{" "}"
+  | "{" <statements> "}"
 
 <expression> =
   | <assigment>

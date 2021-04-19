@@ -25,16 +25,41 @@ export class Parser {
   }
 
   private program(): Program {
+    if (this.currentToken.type === TokenType.End) {
+      return new Program([]);
+    }
+
     const statements = this.statements(TokenType.End);
     this.match(TokenType.End);
-
     return new Program(statements);
   }
 
   private statements(end: TokenType): AstNode[] {
-    const statements: AstNode[] = [];
+    while (this.currentToken.type === TokenType.NewLine) {
+      this.match(TokenType.NewLine);
+    }
+
+    const statements: AstNode[] = [this.statement()];
 
     while (this.currentToken.type !== end) {
+      // TODO: A workaround for comments
+      // TODO: Drop comments in Lexer
+      if (this.currentToken.type === TokenType.Comment) {
+        this.match(TokenType.Comment);
+        continue;
+      }
+
+      // 1+ NewLines
+      this.match(TokenType.NewLine);
+      // @ts-ignore
+      while (this.currentToken.type === TokenType.NewLine) {
+        this.match(TokenType.NewLine);
+      }
+
+      if (this.currentToken.type === end) {
+        break;
+      }
+
       const statement = this.statement();
 
       if (statement) {
@@ -45,15 +70,14 @@ export class Parser {
     return statements;
   }
 
-  private statement(): undefined | AstNode {
-    if (this.currentToken.type === TokenType.NewLine) {
-      return this.emptyStatement();
-    }
+  private statement(): AstNode {
+    // if (this.currentToken.type === TokenType.NewLine) {
+    //   return this.emptyStatement();
+    // }
 
-    if (this.currentToken.type === TokenType.Comment) {
-      this.comment();
-      return undefined;
-    }
+    // if (this.currentToken.type === TokenType.Comment) {
+    //   return this.comment();
+    // }
 
     if (this.currentToken.type === TokenType.Function) {
       return this.functionDeclaration();
@@ -63,26 +87,27 @@ export class Parser {
       return this.block();
     }
 
-    return this.expressionStatement();
+    return this.expression();
   }
 
-  private emptyStatement() {
+  private emptyStatement(): undefined {
     this.match(TokenType.NewLine);
     return undefined;
   }
 
-  private expressionStatement(): AstNode {
-    const expression = this.expression();
+  // private expressionStatement(): AstNode {
+  //   const expression = this.expression();
+  //
+  //   if (this.currentToken.type === TokenType.NewLine) {
+  //     this.match(TokenType.NewLine);
+  //   }
+  //
+  //   return expression;
+  // }
 
-    if (this.currentToken.type === TokenType.NewLine) {
-      this.match(TokenType.NewLine);
-    }
-
-    return expression;
-  }
-
-  private comment(): void {
+  private comment(): undefined {
     this.match(TokenType.Comment);
+    return undefined;
   }
 
   private expression(): AstNode {
@@ -108,6 +133,7 @@ export class Parser {
     return new FunctionDeclaration(name, this.block());
   }
 
+  // TODO: Write a test for a function with empty body
   private block(): AstNode[] {
     this.match(TokenType.LeftBrace);
     const statements = this.statements(TokenType.RightBrace);
