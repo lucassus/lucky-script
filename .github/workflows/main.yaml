@@ -15,5 +15,5 @@ jobs:
       - run: yarn install --frozen-lockfile
       - run: yarn lint
       - run: yarn typecheck
-      - run: yarn test --coverage --runInBand
+      - run: yarn test --verbose --coverage --runInBand
       - run: yarn build
