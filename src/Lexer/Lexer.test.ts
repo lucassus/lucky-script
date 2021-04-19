@@ -8,8 +8,8 @@ describe("Lexer", () => {
     expect(lexer.nextToken()).toEqual(new Token(TokenType.End, "", 0));
   });
 
-  describe("new line separators", () => {
-    it("tokenizes \\n", () => {
+  describe("statements separators", () => {
+    it("tokenizes new lines", () => {
       const lexer = new Lexer("\n1\n2\n\n");
       const tokens = [...lexer.tokenize()];
 
@@ -25,7 +25,7 @@ describe("Lexer", () => {
       ]);
     });
 
-    it("tokenizes ;", () => {
+    it("tokenizes semicolons", () => {
       const lexer = new Lexer(";");
       const tokens = [...lexer.tokenize()];
 
@@ -37,8 +37,14 @@ describe("Lexer", () => {
     });
   });
 
-  it("ignores whitespaces", () => {
-    const lexer = new Lexer("  1 +\t2  ");
+  it.each`
+    input
+    ${"1+2"}
+    ${" 1 + 2 "}
+    ${"\t1\t+\t2\t"}
+    ${"1 + \t \t 2"}
+  `("ignores whitespaces", ({ input }) => {
+    const lexer = new Lexer(input);
     const tokens = [...lexer.tokenize()];
 
     expect(tokens.length).toBe(4);
@@ -50,30 +56,23 @@ describe("Lexer", () => {
     ]);
   });
 
-  describe("line comments", () => {
-    it("tokenizes line comments to end of the line", () => {
-      const lexer = new Lexer("1 # The comment\n2");
-      const tokens = [...lexer.tokenize()];
+  it.each`
+    input
+    ${"\nfirst\nsecond\n"}
+    ${"# A comment that takes the whole line\nfirst\nsecond\n"}
+    ${"\nfirst # A comment in the same like\nsecond\n # The last comment"}
+  `("ignores comments", ({ input }) => {
+    const lexer = new Lexer(input);
+    const tokens = [...lexer.tokenize()];
 
-      expect(tokens).toEqual([
-        new Token(TokenType.NumberLiteral, "1", expect.any(Number)),
-        new Token(TokenType.Comment, "# The comment", expect.any(Number)),
-        new Token(TokenType.NewLine, "\n", expect.any(Number)),
-        new Token(TokenType.NumberLiteral, "2", expect.any(Number)),
-        new Token(TokenType.End, "", expect.any(Number)),
-      ]);
-    });
-
-    it("tokenizes line comments to end of input", () => {
-      const lexer = new Lexer("1 # The comment");
-      const tokens = [...lexer.tokenize()];
-
-      expect(tokens).toEqual([
-        new Token(TokenType.NumberLiteral, "1", expect.any(Number)),
-        new Token(TokenType.Comment, "# The comment", expect.any(Number)),
-        new Token(TokenType.End, "", expect.any(Number)),
-      ]);
-    });
+    expect(tokens).toEqual([
+      new Token(TokenType.NewLine, "\n", expect.any(Number)),
+      new Token(TokenType.Identifier, "first", expect.any(Number)),
+      new Token(TokenType.NewLine, "\n", expect.any(Number)),
+      new Token(TokenType.Identifier, "second", expect.any(Number)),
+      new Token(TokenType.NewLine, "\n", expect.any(Number)),
+      new Token(TokenType.End, "", expect.any(Number)),
+    ]);
   });
 
   describe("number literals", () => {

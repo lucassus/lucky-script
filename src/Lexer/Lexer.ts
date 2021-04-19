@@ -20,7 +20,7 @@ import {
   Whitespaces,
   symbolToTokenType,
   keywordToTokenType,
-  BeginLineComment,
+  BeginComment,
 } from "./symbols";
 import { Token, TokenType } from "./Token";
 
@@ -46,12 +46,12 @@ export class Lexer {
 
     this.skipWhitespaces();
 
-    if (this.position > this.input.length - 1) {
-      return new Token(TokenType.End, "", this.position);
+    if (this.currentSymbol === BeginComment) {
+      this.skipComment();
     }
 
-    if (this.currentSymbol === BeginLineComment) {
-      return this.recognizeLineComment();
+    if (this.position > this.input.length - 1) {
+      return new Token(TokenType.End, "", this.position);
     }
 
     if (Newlines.includes(this.currentSymbol)) {
@@ -102,17 +102,15 @@ export class Lexer {
     return this.input[this.position + 1];
   }
 
-  private skipWhitespaces() {
+  private skipWhitespaces(): void {
     while (Whitespaces.includes(this.currentSymbol)) {
       this.advance();
     }
   }
 
-  private recognizeLineComment() {
-    const startPosition = this.position;
-    const comment = this.recognizeWith(new CommentRecognizer());
-
-    return new Token(TokenType.Comment, comment, startPosition);
+  private skipComment(): void {
+    this.recognizeWith(new CommentRecognizer());
+    this.advance();
   }
 
   private recognizeNumber(): Token {

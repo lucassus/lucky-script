@@ -183,7 +183,6 @@ describe("Parser", () => {
     y = 2
     
     x + y * 3
-    
     `);
 
     expect(ast).toEqual(
@@ -199,21 +198,13 @@ describe("Parser", () => {
     );
   });
 
-  it("ignores line comments", () => {
-    const ast = parse(`
-    1 + 2 # This is a simple addition
-    `);
-
-    expect(ast).toEqual(
-      new Program([
-        new BinaryOperation(new Numeral("1"), "+", new Numeral("2")),
-      ])
-    );
-  });
-
   describe("function declaration", () => {
-    it("parses a declaration without arguments", () => {
-      const ast = parse("function add() {\n\t1 + 2\n}");
+    it.each`
+      input
+      ${"function add() { 1 + 2 }"}
+      ${"function add() {\n\t1 + 2\n}"}
+    `("parses a declaration without arguments", ({ input }) => {
+      const ast = parse(input);
 
       expect(ast).toEqual(
         new Program([
@@ -222,6 +213,20 @@ describe("Parser", () => {
           ]),
         ])
       );
+    });
+
+    it.each`
+      input
+      ${"function add() {}"}
+      ${"function add() { }"}
+    `("parses a declaration with empty body", ({ input }) => {
+      const ast = parse(input);
+
+      expect(ast).toEqual(new Program([new FunctionDeclaration("add", [])]));
+    });
+
+    it("can't parse a declaration with empty body and new line", () => {
+      expect(() => parse("function add() {\n}")).toThrow();
     });
 
     it("can't parse declaration assigment to a variable", () => {
@@ -280,7 +285,7 @@ describe("Parser", () => {
       );
     });
 
-    it.skip("raises an error when statements are not separated", () => {
+    it("raises an error when statements are not separated", () => {
       expect(() => parse("1+2 3+4")).toThrow();
     });
   });

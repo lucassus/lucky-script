@@ -25,34 +25,33 @@ export class Parser {
   }
 
   private program(): Program {
+    if (this.currentToken.type === TokenType.End) {
+      return new Program([]);
+    }
+
     const statements = this.statements(TokenType.End);
     this.match(TokenType.End);
-
     return new Program(statements);
   }
 
   private statements(end: TokenType): AstNode[] {
-    const statements: AstNode[] = [];
+    const statements: AstNode[] = [this.statement()];
 
     while (this.currentToken.type !== end) {
-      const statement = this.statement();
+      this.match(TokenType.NewLine);
 
-      if (statement) {
-        statements.push(statement);
+      if (this.currentToken.type !== end) {
+        statements.push(this.statement());
       }
     }
 
     return statements;
   }
 
-  private statement(): undefined | AstNode {
+  private statement(): AstNode {
     if (this.currentToken.type === TokenType.NewLine) {
-      return this.emptyStatement();
-    }
-
-    if (this.currentToken.type === TokenType.Comment) {
-      this.comment();
-      return undefined;
+      this.match(TokenType.NewLine);
+      return this.statement();
     }
 
     if (this.currentToken.type === TokenType.Function) {
@@ -63,26 +62,7 @@ export class Parser {
       return this.block();
     }
 
-    return this.expressionStatement();
-  }
-
-  private emptyStatement() {
-    this.match(TokenType.NewLine);
-    return undefined;
-  }
-
-  private expressionStatement(): AstNode {
-    const expression = this.expression();
-
-    if (this.currentToken.type === TokenType.NewLine) {
-      this.match(TokenType.NewLine);
-    }
-
-    return expression;
-  }
-
-  private comment(): void {
-    this.match(TokenType.Comment);
+    return this.expression();
   }
 
   private expression(): AstNode {
@@ -109,6 +89,13 @@ export class Parser {
   }
 
   private block(): AstNode[] {
+    if (this.nextToken.type === TokenType.RightBrace) {
+      this.match(TokenType.LeftBrace);
+      this.match(TokenType.RightBrace);
+
+      return [];
+    }
+
     this.match(TokenType.LeftBrace);
     const statements = this.statements(TokenType.RightBrace);
     this.match(TokenType.RightBrace);
