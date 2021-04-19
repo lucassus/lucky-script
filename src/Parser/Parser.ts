@@ -35,10 +35,12 @@ export class Parser {
   }
 
   private statements(end: TokenType): AstNode[] {
-    const statements: (AstNode | undefined)[] = [this.statement()];
+    const statements: AstNode[] = [this.statement()];
 
     while (this.currentToken.type !== end) {
       this.match(TokenType.NewLine);
+
+      // TODO: Refactor to something nicer?
       if (this.currentToken.type === end) {
         break;
       }
@@ -46,17 +48,13 @@ export class Parser {
       statements.push(this.statement());
     }
 
-    return statements.filter(Boolean) as AstNode[];
+    return statements;
   }
 
-  private statement(): undefined | AstNode {
+  private statement(): AstNode {
     if (this.currentToken.type === TokenType.NewLine) {
       this.match(TokenType.NewLine);
       return this.statement();
-    }
-
-    if (this.currentToken.type === TokenType.Comment) {
-      return this.comment();
     }
 
     if (this.currentToken.type === TokenType.Function) {
@@ -68,11 +66,6 @@ export class Parser {
     }
 
     return this.expression();
-  }
-
-  private comment(): undefined {
-    this.match(TokenType.Comment);
-    return undefined;
   }
 
   private expression(): AstNode {
@@ -98,8 +91,14 @@ export class Parser {
     return new FunctionDeclaration(name, this.block());
   }
 
-  // TODO: Write a test for a function with empty body
   private block(): AstNode[] {
+    if (this.nextToken.type === TokenType.RightBrace) {
+      this.match(TokenType.LeftBrace);
+      this.match(TokenType.RightBrace);
+
+      return [];
+    }
+
     this.match(TokenType.LeftBrace);
     const statements = this.statements(TokenType.RightBrace);
     this.match(TokenType.RightBrace);

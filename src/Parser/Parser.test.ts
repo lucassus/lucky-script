@@ -198,21 +198,6 @@ describe("Parser", () => {
     );
   });
 
-  // TODO: Fix this case: ${"1 + 2 # This is a simple addition\n"}
-  // TODO: Comments as atom?
-  it.each`
-    input
-    ${"# This is a simple addition\n1 + 2\n"}
-  `("ignores line comments", ({ input }) => {
-    const ast = parse(input);
-
-    expect(ast).toEqual(
-      new Program([
-        new BinaryOperation(new Numeral("1"), "+", new Numeral("2")),
-      ])
-    );
-  });
-
   describe("function declaration", () => {
     it("parses a declaration without arguments", () => {
       const ast = parse("function add() {\n\t1 + 2\n}");
@@ -224,6 +209,12 @@ describe("Parser", () => {
           ]),
         ])
       );
+    });
+
+    it("parses a declaration with empty body", () => {
+      const ast = parse("function add() {}");
+
+      expect(ast).toEqual(new Program([new FunctionDeclaration("add", [])]));
     });
 
     it("can't parse declaration assigment to a variable", () => {
