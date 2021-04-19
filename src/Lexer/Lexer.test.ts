@@ -37,8 +37,14 @@ describe("Lexer", () => {
     });
   });
 
-  it("ignores whitespaces", () => {
-    const lexer = new Lexer("  1 +\t2  ");
+  it.each`
+    input
+    ${"1+2"}
+    ${" 1 + 2 "}
+    ${"\t1\t+\t2\t"}
+    ${"1 + \t \t 2"}
+  `("ignores whitespaces", ({ input }) => {
+    const lexer = new Lexer(input);
     const tokens = [...lexer.tokenize()];
 
     expect(tokens.length).toBe(4);
