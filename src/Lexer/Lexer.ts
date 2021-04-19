@@ -52,6 +52,7 @@ export class Lexer {
       return this.createToken(Delimiter.End);
     }
 
+<<<<<<< HEAD
     switch (this.currentSymbol) {
       // Delimiters
 
@@ -65,6 +66,14 @@ export class Lexer {
         return this.createToken(Delimiter.RightBrace);
       case ",":
         return this.createToken(Delimiter.Comma);
+=======
+    if (Newlines.includes(this.currentSymbol)) {
+      return new Token(TokenType.NewLine, this.currentSymbol, {
+        start: this.getPosition(),
+        end: this.getPosition(),
+      });
+    }
+>>>>>>> Some post rebase fixes
 
       case "\n":
       case ";":

@@ -48,9 +48,7 @@ export interface Location {
 }
 
 export interface Position {
-  // TODO: Rename it to index?
   readonly position: number;
-
   readonly line: number;
   readonly column: number;
 }
