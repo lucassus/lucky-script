@@ -199,8 +199,12 @@ describe("Parser", () => {
   });
 
   describe("function declaration", () => {
-    it("parses a declaration without arguments", () => {
-      const ast = parse("function add() {\n\t1 + 2\n}");
+    it.each`
+      input
+      ${"function add() { 1 + 2 }"}
+      ${"function add() {\n\t1 + 2\n}"}
+    `("parses a declaration without arguments", ({ input }) => {
+      const ast = parse(input);
 
       expect(ast).toEqual(
         new Program([
