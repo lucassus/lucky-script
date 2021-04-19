@@ -59,8 +59,8 @@ describe("Lexer", () => {
   it.each`
     input
     ${"\nfirst\nsecond\n"}
-    ${"# A comment that takes the whole line \nfirst\nsecond\n"}
-    ${"\nfirst # A comment in the same like \nsecond\n # The last comment"}
+    ${"# A comment that takes the whole line\nfirst\nsecond\n"}
+    ${"\nfirst # A comment in the same like\nsecond\n # The last comment"}
   `("ignores comments", ({ input }) => {
     const lexer = new Lexer(input);
     const tokens = [...lexer.tokenize()];
