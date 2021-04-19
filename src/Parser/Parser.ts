@@ -35,45 +35,32 @@ export class Parser {
   }
 
   private statements(end: TokenType): AstNode[] {
-    while (this.currentToken.type === TokenType.NewLine) {
-      this.match(TokenType.NewLine);
-    }
-
     const statements: AstNode[] = [this.statement()];
 
     while (this.currentToken.type !== end) {
       // TODO: A workaround for comments
-      // TODO: Drop comments in Lexer
+      // TODO: Drop comments in Lexer?
       if (this.currentToken.type === TokenType.Comment) {
         this.match(TokenType.Comment);
         continue;
       }
 
-      // 1+ NewLines
       this.match(TokenType.NewLine);
-      // @ts-ignore
-      while (this.currentToken.type === TokenType.NewLine) {
-        this.match(TokenType.NewLine);
-      }
-
       if (this.currentToken.type === end) {
         break;
       }
 
-      const statement = this.statement();
-
-      if (statement) {
-        statements.push(statement);
-      }
+      statements.push(this.statement());
     }
 
     return statements;
   }
 
   private statement(): AstNode {
-    // if (this.currentToken.type === TokenType.NewLine) {
-    //   return this.emptyStatement();
-    // }
+    if (this.currentToken.type === TokenType.NewLine) {
+      this.match(TokenType.NewLine);
+      return this.statement();
+    }
 
     // if (this.currentToken.type === TokenType.Comment) {
     //   return this.comment();
