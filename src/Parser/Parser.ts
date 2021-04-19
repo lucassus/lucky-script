@@ -40,12 +40,9 @@ export class Parser {
     while (this.currentToken.type !== end) {
       this.match(TokenType.NewLine);
 
-      // TODO: Refactor to something nicer?
-      if (this.currentToken.type === end) {
-        break;
+      if (this.currentToken.type !== end) {
+        statements.push(this.statement());
       }
-
-      statements.push(this.statement());
     }
 
     return statements;
