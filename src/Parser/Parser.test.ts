@@ -182,7 +182,8 @@ describe("Parser", () => {
     x = 1
     y = 2
     
-    x + y * 3`);
+    x + y * 3
+    `);
 
     expect(ast).toEqual(
       new Program([
@@ -197,11 +198,13 @@ describe("Parser", () => {
     );
   });
 
-  // TODO: Add a case for a comment in the same line and for a comment in the separated one
-  it("ignores line comments", () => {
-    const ast = parse(`
-    1 + 2 # This is a simple addition
-    `);
+  // TODO: Fix this case: ${"1 + 2 # This is a simple addition\n"}
+  // TODO: Comments as atom?
+  it.each`
+    input
+    ${"# This is a simple addition\n1 + 2\n"}
+  `("ignores line comments", ({ input }) => {
+    const ast = parse(input);
 
     expect(ast).toEqual(
       new Program([
@@ -268,8 +271,7 @@ describe("Parser", () => {
   });
 
   describe("several statements in a single line", () => {
-    // TODO: This is no longer valid!
-    it.skip("parses when statements are separated", () => {
+    it("parses when statements are separated", () => {
       const ast = parse("1+2;3+4");
 
       expect(ast).toEqual(

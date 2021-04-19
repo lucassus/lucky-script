@@ -11,7 +11,7 @@
   | <expression>
   | <block>
 
-TODO: Add <function-expression> without <identifier>
+TODO: Add <function-expression> without <identifier> (anonymous)
 <function-declaration> = "function" <identifier> "(" ")" <block>
 
 <block> =

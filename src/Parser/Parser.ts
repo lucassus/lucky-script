@@ -35,16 +35,9 @@ export class Parser {
   }
 
   private statements(end: TokenType): AstNode[] {
-    const statements: AstNode[] = [this.statement()];
+    const statements: (AstNode | undefined)[] = [this.statement()];
 
     while (this.currentToken.type !== end) {
-      // TODO: A workaround for comments
-      // TODO: Drop comments in Lexer?
-      if (this.currentToken.type === TokenType.Comment) {
-        this.match(TokenType.Comment);
-        continue;
-      }
-
       this.match(TokenType.NewLine);
       if (this.currentToken.type === end) {
         break;
@@ -53,18 +46,18 @@ export class Parser {
       statements.push(this.statement());
     }
 
-    return statements;
+    return statements.filter(Boolean) as AstNode[];
   }
 
-  private statement(): AstNode {
+  private statement(): undefined | AstNode {
     if (this.currentToken.type === TokenType.NewLine) {
       this.match(TokenType.NewLine);
       return this.statement();
     }
 
-    // if (this.currentToken.type === TokenType.Comment) {
-    //   return this.comment();
-    // }
+    if (this.currentToken.type === TokenType.Comment) {
+      return this.comment();
+    }
 
     if (this.currentToken.type === TokenType.Function) {
       return this.functionDeclaration();
@@ -76,21 +69,6 @@ export class Parser {
 
     return this.expression();
   }
-
-  private emptyStatement(): undefined {
-    this.match(TokenType.NewLine);
-    return undefined;
-  }
-
-  // private expressionStatement(): AstNode {
-  //   const expression = this.expression();
-  //
-  //   if (this.currentToken.type === TokenType.NewLine) {
-  //     this.match(TokenType.NewLine);
-  //   }
-  //
-  //   return expression;
-  // }
 
   private comment(): undefined {
     this.match(TokenType.Comment);
