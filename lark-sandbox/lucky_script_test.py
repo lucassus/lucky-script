@@ -29,8 +29,20 @@ if __name__ == "__main__":
     x = function(x,y) { return x+y }
     
     function curry(x, y = 1) {
+      if (x < 0) {
+        return 0 
+      }
+      
+      if (x > 10) {
+        return 10
+      } else {
+        x = 2
+      }
+    
+      z = 2
+      
       return function(x) {
-        return x + y
+        return x + y * z
       }
     }
     

@@ -5,7 +5,12 @@ statements  : statement* _NEWLINE*
 statement   : _NEWLINE+ expression
             | function_declaration
             | "return" expression -> return
+            | if_statement
             | expression
+
+if_statement : "if" conditions block ("else" block)?
+
+conditions   : "(" comparison ")"
 
 function_argument : assigment
                   | IDENTIFIER
@@ -17,6 +22,8 @@ function_declaration: "function" IDENTIFIER "(" function_arguments ")" block
 expression  : assigment
             | anonymous_function_declaration
             | term (("+" | "-") term)*
+
+comparison  : expression ("<=" | "<" | "==" | ">" | ">=") expression
 
 anonymous_function_declaration : "function" "(" function_arguments ")" block
 
