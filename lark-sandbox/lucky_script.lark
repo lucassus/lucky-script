@@ -1,3 +1,8 @@
+program     : statement* _NEWLINE*
+
+statement   : _NEWLINE+ expression
+            | expression
+
 expression  : assigment
             | term (("+" | "-") term)*
 
@@ -13,7 +18,9 @@ power       : atom ("**" factor)*
 atom        : NUMBER
             | "(" expression ")"
 
-%import common.NUMBER
-%import common.CNAME -> IDENTIFIER
 %import common.WS
+%import common.NEWLINE -> _NEWLINE
+%import common.CNAME -> IDENTIFIER
+%import common.NUMBER
+
 %ignore WS
