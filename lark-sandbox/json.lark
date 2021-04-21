@@ -1,0 +1,17 @@
+value:
+  | object
+  | list
+  | STRING
+  | NUMBER
+  | "true" | "false" | "null"
+
+list : "[" [value ("," value)*] "]"
+
+object: "{" [pair ("," pair)*] "}"
+
+pair: STRING ":" value
+
+%import common.ESCAPED_STRING -> STRING
+%import common.SIGNED_NUMBER -> NUMBER
+%import common.WS
+%ignore WS
