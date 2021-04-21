@@ -5,7 +5,9 @@ statement   : _NEWLINE+ expression
             | "return" expression -> return
             | expression
 
-function_declaration: "function" IDENTIFIER "(" ")" "{" block "}"
+function_arguments : [IDENTIFIER ("," IDENTIFIER)*]
+
+function_declaration: "function" IDENTIFIER "(" function_arguments ")" "{" block "}"
 
 expression  : assigment
             | term (("+" | "-") term)*
@@ -24,7 +26,9 @@ atom        : NUMBER
             | IDENTIFIER
             | "(" expression ")"
 
-function_call: IDENTIFIER "(" ")"
+function_call_arguments : [expression ("," expression)*]
+
+function_call: IDENTIFIER "("  function_call_arguments ")"
 
 %import common.WS
 %import common.NEWLINE -> _NEWLINE
