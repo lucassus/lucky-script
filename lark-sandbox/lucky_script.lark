@@ -1,0 +1,19 @@
+expression  : assigment
+            | term (("+" | "-") term)*
+
+assigment   : IDENTIFIER "=" expression
+
+term        : factor (("*" | "/") factor)*
+
+factor      : ("+" | "-") factor
+            | power
+
+power       : atom ("**" factor)*
+
+atom        : NUMBER
+            | "(" expression ")"
+
+%import common.NUMBER
+%import common.CNAME -> IDENTIFIER
+%import common.WS
+%ignore WS
