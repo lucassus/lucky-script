@@ -1,22 +1,26 @@
-block       : statement* _NEWLINE*
+program     : statements
+
+statements  : statement* _NEWLINE*
 
 statement   : _NEWLINE+ expression
             | function_declaration
             | "return" expression -> return
             | expression
 
-function_argument : IDENTIFIER
-                  | IDENTIFIER "=" expression
+function_argument : assigment
+                  | IDENTIFIER
 
 function_arguments : [function_argument ("," function_argument)*]
 
-function_declaration: "function" IDENTIFIER "(" function_arguments ")" "{" block "}"
+function_declaration: "function" IDENTIFIER "(" function_arguments ")" block
 
 expression  : assigment
             | anonymous_function_declaration
             | term (("+" | "-") term)*
 
-anonymous_function_declaration : "function" "(" function_arguments ")" "{" block "}"
+anonymous_function_declaration : "function" "(" function_arguments ")" block
+
+block       : "{" statements "}"
 
 assigment   : IDENTIFIER "=" expression
 
