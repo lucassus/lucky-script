@@ -5,7 +5,10 @@ statement   : _NEWLINE+ expression
             | "return" expression -> return
             | expression
 
-function_arguments : [IDENTIFIER ("," IDENTIFIER)*]
+function_argument : IDENTIFIER
+                  | IDENTIFIER "=" expression
+
+function_arguments : [function_argument ("," function_argument)*]
 
 function_declaration: "function" IDENTIFIER "(" function_arguments ")" "{" block "}"
 

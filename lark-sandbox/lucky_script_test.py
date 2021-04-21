@@ -26,13 +26,15 @@ if __name__ == "__main__":
     
     add()
     
-    x = function(x,y){return x+y}
+    x = function(x,y) { return x+y }
     
-    function curry(x,y) {
+    function curry(x, y = 1) {
       return function(x) {
         return x + y
       }
     }
+    
+    curry(2)
     """
 
     ast = parser.parse(script)
