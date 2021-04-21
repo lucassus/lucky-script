@@ -10,7 +10,10 @@ function_arguments : [IDENTIFIER ("," IDENTIFIER)*]
 function_declaration: "function" IDENTIFIER "(" function_arguments ")" "{" block "}"
 
 expression  : assigment
+            | anonymous_function_declaration
             | term (("+" | "-") term)*
+
+anonymous_function_declaration : "function" "(" function_arguments ")" "{" block "}"
 
 assigment   : IDENTIFIER "=" expression
 

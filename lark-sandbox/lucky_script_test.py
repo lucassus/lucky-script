@@ -25,6 +25,14 @@ if __name__ == "__main__":
     function bar() {}
     
     add()
+    
+    x = function(x,y){return x+y}
+    
+    function curry(x,y) {
+      return function(x) {
+        return x + y
+      }
+    }
     """
 
     ast = parser.parse(script)
