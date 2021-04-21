@@ -1,7 +1,10 @@
-program     : statement* _NEWLINE*
+block       : statement* _NEWLINE*
 
 statement   : _NEWLINE+ expression
+            | function_declaration
             | expression
+
+function_declaration: "function" IDENTIFIER "(" ")" "{" block "}"
 
 expression  : assigment
             | term (("+" | "-") term)*
@@ -16,7 +19,11 @@ factor      : ("+" | "-") factor
 power       : atom ("**" factor)*
 
 atom        : NUMBER
+            | function_call
+            | IDENTIFIER
             | "(" expression ")"
+
+function_call: IDENTIFIER "(" ")"
 
 %import common.WS
 %import common.NEWLINE -> _NEWLINE
