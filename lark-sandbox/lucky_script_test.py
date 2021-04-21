@@ -12,12 +12,12 @@ if __name__ == "__main__":
 
     y = -1 + 0.9999 * (3.5 + --+-4) ** 2 + x
     
-    function add() { 1 + 2 }
+    function add() { return 1 + 2 }
     
     function foo() { 
       x = 1
       y = 2
-      1 + 2 * 3 + -y ** -x
+      return 1 + 2 * 3 + -y ** -x
     }
     
     function bar() {}

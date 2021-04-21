@@ -2,6 +2,7 @@ block       : statement* _NEWLINE*
 
 statement   : _NEWLINE+ expression
             | function_declaration
+            | "return" expression -> return
             | expression
 
 function_declaration: "function" IDENTIFIER "(" ")" "{" block "}"
