@@ -50,7 +50,7 @@ export class Lexer {
       this.skipComment();
     }
 
-    if (this.position > this.input.length - 1) {
+    if (this.currentSymbol === undefined) {
       return new Token(TokenType.End, "", this.position);
     }
 

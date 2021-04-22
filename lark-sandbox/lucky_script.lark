@@ -1,55 +1,57 @@
-program     : statements
+program               : statements
 
-statements  : statement* _NEWLINE*
+statements            : _discard_newlines statement
+                      | _discard_newlines (statement _NEWLINE _discard_newlines)*
 
-statement   : _NEWLINE+ expression
-            | function_declaration
-            | "return" expression -> return
-            | if_statement
-            | expression
+_discard_newlines     : _NEWLINE*
 
-if_statement : "if" conditions block ("else" block)?
+statement             : func_decr
+                      | "return" expression -> return
+                      | if_statement
+                      | expression
 
-conditions   : "(" comparison ")"
+if_statement          : "if" conditions block ("elseif" conditions block)* ("else" block)?
 
-function_argument : assigment
-                  | IDENTIFIER
+conditions            : "(" comparison ")"
 
-function_arguments : [function_argument ("," function_argument)*]
+func_arg              : assigment
+                      | IDENTIFIER
 
-function_declaration: "function" IDENTIFIER "(" function_arguments ")" block
+func_args             : [func_arg ("," func_arg)*]
 
-expression  : assigment
-            | anonymous_function_declaration
-            | term (("+" | "-") term)*
+func_decr             : "function" IDENTIFIER "(" func_args ")" block
 
-comparison  : expression ("<=" | "<" | "==" | ">" | ">=") expression
+expression            : assigment
+                      | anonymous_func_decr
+                      | term (("+" | "-") term)*
 
-anonymous_function_declaration : "function" "(" function_arguments ")" block
+comparison            : expression ("<=" | "<" | "==" | ">" | ">=") expression
 
-block       : "{" statements "}"
+anonymous_func_decr   : "function" "(" func_args ")" block
 
-assigment   : IDENTIFIER "=" expression
+block                 : "{" statements "}"
 
-term        : factor (("*" | "/") factor)*
+assigment             : IDENTIFIER "=" expression
 
-factor      : ("+" | "-") factor
-            | power
+term                  : factor (("*" | "/") factor)*
 
-power       : atom ("**" factor)*
+factor                : ("+" | "-") factor
+                      | power
 
-atom        : NUMBER
-            | function_call
-            | IDENTIFIER
-            | "(" expression ")"
+power                 : atom ("**" factor)*
 
-function_call_arguments : [expression ("," expression)*]
+atom                  : NUMBER
+                      | func_call
+                      | IDENTIFIER
+                      | "(" expression ")"
 
-function_call: IDENTIFIER "("  function_call_arguments ")"
+func_call_args        : [expression ("," expression)*]
 
-%import common.WS
+func_call             : IDENTIFIER "("  func_call_args ")"
+
+%import common.WS_INLINE
 %import common.NEWLINE -> _NEWLINE
 %import common.CNAME -> IDENTIFIER
 %import common.NUMBER
 
-%ignore WS
+%ignore WS_INLINE

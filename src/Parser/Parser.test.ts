@@ -219,14 +219,11 @@ describe("Parser", () => {
       input
       ${"function add() {}"}
       ${"function add() { }"}
+      ${"function add() {\n}"}
     `("parses a declaration with empty body", ({ input }) => {
       const ast = parse(input);
 
       expect(ast).toEqual(new Program([new FunctionDeclaration("add", [])]));
-    });
-
-    it("can't parse a declaration with empty body and new line", () => {
-      expect(() => parse("function add() {\n}")).toThrow();
     });
 
     it("can't parse declaration assigment to a variable", () => {

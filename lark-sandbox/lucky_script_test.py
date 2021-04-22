@@ -1,9 +1,10 @@
 import os
 from lark import Lark
 
+# TODO: Migrate to pytest
 if __name__ == "__main__":
     grammar = open(os.path.join(os.path.dirname(__file__), "lucky_script.lark"), "r").read()
-    parser = Lark(grammar, start="program", parser="lalr")
+    parser = Lark(grammar, start="program")
 
     script = """
     x = 1
@@ -26,7 +27,9 @@ if __name__ == "__main__":
     
     add()
     
-    x = function(x,y) { return x+y }
+    x = function(x,y) { 
+      return x+y 
+    }
     
     function curry(x, y = 1) {
       if (x < 0) {
@@ -35,6 +38,8 @@ if __name__ == "__main__":
       
       if (x > 10) {
         return 10
+      } elseif (x == 1000) {
+      } elseif (x == 1001) {
       } else {
         x = 2
       }

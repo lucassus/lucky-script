@@ -21,39 +21,35 @@ export class Parser {
   }
 
   parse(): AstNode {
-    return this.program();
-  }
-
-  private program(): Program {
-    if (this.currentToken.type === TokenType.End) {
-      return new Program([]);
-    }
-
-    const statements = this.statements(TokenType.End);
-    this.match(TokenType.End);
-    return new Program(statements);
+    return new Program(this.statements(TokenType.End));
   }
 
   private statements(end: TokenType): AstNode[] {
-    const statements: AstNode[] = [this.statement()];
+    this.discardNewLines();
+
+    const statements: AstNode[] = [];
 
     while (this.currentToken.type !== end) {
-      this.match(TokenType.NewLine);
+      statements.push(this.statement());
 
-      if (this.currentToken.type !== end) {
-        statements.push(this.statement());
+      if (this.currentToken.type === end) {
+        break;
       }
+
+      this.match(TokenType.NewLine);
+      this.discardNewLines();
     }
 
     return statements;
   }
 
-  private statement(): AstNode {
-    if (this.currentToken.type === TokenType.NewLine) {
+  private discardNewLines(): void {
+    while (this.currentToken.type === TokenType.NewLine) {
       this.match(TokenType.NewLine);
-      return this.statement();
     }
+  }
 
+  private statement(): AstNode {
     if (this.currentToken.type === TokenType.Function) {
       return this.functionDeclaration();
     }
