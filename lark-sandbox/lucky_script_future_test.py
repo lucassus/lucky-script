@@ -1,9 +1,7 @@
 import pytest
 from lark import Lark, UnexpectedCharacters
 
-parser = Lark.open("lucky_script.lark", start="program", rel_to=__file__)
-
-# TODO: Add it to the CI
+parser = Lark.open("lucky_script_future.lark", start="program", rel_to=__file__)
 
 
 @pytest.mark.parametrize(

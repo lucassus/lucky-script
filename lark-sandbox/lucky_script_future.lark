@@ -1,6 +1,5 @@
 program               : statements
 
-
 statements            : _NEWLINE* (statement (_NEWLINE+ statement?)*)?
 
 statement             : func_decr
