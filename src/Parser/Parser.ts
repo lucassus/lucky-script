@@ -21,6 +21,10 @@ export class Parser {
   }
 
   parse(): AstNode {
+    return this.program();
+  }
+
+  private program(): Program {
     return new Program(this.statements(TokenType.End));
   }
 
