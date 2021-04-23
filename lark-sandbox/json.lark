@@ -5,9 +5,9 @@ value:
   | NUMBER
   | "true" | "false" | "null"
 
-list : "[" [value ("," value)*] "]"
+list : "[" (value ("," value)*)? "]"
 
-object: "{" [pair ("," pair)*] "}"
+object: "{" (pair ("," pair)*)? "}"
 
 pair: STRING ":" value
 
