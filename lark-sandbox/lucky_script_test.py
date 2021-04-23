@@ -1,10 +1,9 @@
-import os
 from lark import Lark
 
-# TODO: Migrate to pytest
-if __name__ == "__main__":
-    grammar = open(os.path.join(os.path.dirname(__file__), "lucky_script.lark"), "r").read()
-    parser = Lark(grammar, start="program")
+parser = Lark.open("lucky_script.lark", start="program",  rel_to=__file__)
+
+
+def test_lucky_script_grammar():
 
     script = """
     x = 1
@@ -55,5 +54,4 @@ if __name__ == "__main__":
     """
 
     ast = parser.parse(script)
-
-    print(ast.pretty())
+    assert ast
