@@ -1,4 +1,5 @@
 import os
+
 from lark import Lark
 
 grammar = open(os.path.join(os.path.dirname(__file__), "json.lark"), "r").read()

@@ -1,10 +1,51 @@
-from lark import Lark
+import pytest
+from lark import Lark, UnexpectedCharacters
 
-parser = Lark.open("lucky_script.lark", start="program",  rel_to=__file__)
+parser = Lark.open("lucky_script.lark", start="program", rel_to=__file__)
+
+# TODO: Add it to the CI
 
 
-def test_lucky_script_grammar():
+@pytest.mark.parametrize(
+    "script",
+    (
+        "",
+        "\n\n",
+        "\n1\n",
+        "123",
+        "-123",
+        "----+++123",
+        "(1 + 2) * 3",
+        "function foo() {}",
+        "function foo(x) {}",
+        "function foo(x, y = 1) {}",
+        "x = 123",
+        "y = function() { return 123 }",
+        "y = function() {\n\treturn 123\n}",
+        "foo(1, 2, 3 + 4)",
+        "if (x > 2) {}"
+    ),
+)
+def test_lucky_script_valid_syntax(script):
+    ast = parser.parse(script)
+    assert ast
 
+
+@pytest.mark.parametrize(
+    "script",
+    (
+        "1 2 3",
+        "function foo(1+2) {}",
+        "x = function bar() {}",
+        "function foo(function(bar) {}) {}"
+    ),
+)
+def test_lucky_script_invalid_syntax(script):
+    with pytest.raises(UnexpectedCharacters):
+        parser.parse(script)
+
+
+def test_lucky_script_example():
     script = """
     x = 1
 

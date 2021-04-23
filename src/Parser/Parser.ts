@@ -29,15 +29,17 @@ export class Parser {
 
     const statements: AstNode[] = [];
 
-    while (this.currentToken.type !== end) {
+    if (this.currentToken.type !== end) {
       statements.push(this.statement());
 
-      if (this.currentToken.type === end) {
-        break;
-      }
+      while (this.currentToken.type != end) {
+        this.match(TokenType.NewLine);
+        this.discardNewLines();
 
-      this.match(TokenType.NewLine);
-      this.discardNewLines();
+        if (this.currentToken.type !== end) {
+          statements.push(this.statement());
+        }
+      }
     }
 
     return statements;
