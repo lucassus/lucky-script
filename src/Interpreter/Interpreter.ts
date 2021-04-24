@@ -7,7 +7,7 @@ import {
   VariableAccess,
   VariableAssigment,
 } from "../Parser/AstNode";
-import { LuckyFunction, LuckyObject } from "./LuckyObject";
+import { LuckyFunction, LuckyNumber, LuckyObject } from "./LuckyObject";
 
 type SymbolTable = Map<string, LuckyObject>;
 
@@ -17,8 +17,12 @@ export class Interpreter {
     private readonly symbolTable: SymbolTable = new Map()
   ) {}
 
-  run() {
-    return this.visit(this.node);
+  run(): undefined | number {
+    const luckyObject = this.visit(this.node);
+
+    if (luckyObject instanceof LuckyNumber) {
+      return luckyObject.value;
+    }
   }
 
   private visit(node: AstNode): LuckyObject {
@@ -58,7 +62,7 @@ export class Interpreter {
   }
 
   private visitProgram(program: Program): LuckyObject {
-    let result: LuckyObject = 0;
+    let result: LuckyObject = new LuckyNumber(0);
 
     program.statements.forEach((instruction) => {
       result = this.visit(instruction);
@@ -98,28 +102,25 @@ export class Interpreter {
       this.visit(statement);
     }
 
-    return 0;
+    return new LuckyNumber(0);
   }
 
-  private visitBinaryOperation(node: BinaryOperation): number {
-    const leftValue = this.visit(node.left);
-    const rightValue = this.visit(node.right);
+  private visitBinaryOperation(node: BinaryOperation): LuckyObject {
+    const left = this.visit(node.left);
+    const right = this.visit(node.right);
 
-    if (typeof leftValue !== "number" || typeof rightValue !== "number") {
-      throw new Error("Illegal operation");
-    }
-
+    // TODO: Think about better typings for operators
     switch (node.operator) {
       case "+":
-        return leftValue + rightValue;
+        return left.add(right);
       case "-":
-        return leftValue - rightValue;
+        return left.sub(right);
       case "*":
-        return leftValue * rightValue;
+        return left.mul(right);
       case "/":
-        return leftValue / rightValue;
+        return left.div(right);
       case "**":
-        return leftValue ** rightValue;
+        return left.pow(right);
       default:
         throw new Error(`Unsupported operation ${node.operator}`);
     }
@@ -128,23 +129,21 @@ export class Interpreter {
   private visitUnaryOperation(node: UnaryOperation) {
     const value = this.visit(node.child);
 
-    if (typeof value !== "number") {
-      throw new Error("Illegal operation");
-    }
-
     switch (node.operator) {
       case "+":
         return value;
       case "-":
-        return value * -1;
+        return value.mul(new LuckyNumber(-1));
       default:
         throw new Error(`Unsupported unary operation ${node.operator}`);
     }
   }
 
-  private visitNumeral(node: Numeral): number {
+  private visitNumeral(node: Numeral): LuckyNumber {
     const raw = node.value.replace(/_/g, "");
-    return parseFloat(raw);
+    const value = parseFloat(raw);
+
+    return new LuckyNumber(value);
   }
 
   private visitVariableAssigment(node: VariableAssigment): LuckyObject {

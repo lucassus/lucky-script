@@ -1,8 +1,11 @@
 import { parse } from "../testingUtils";
 import { Interpreter } from "./Interpreter";
-import { LuckyObject } from "./LuckyObject";
+import { LuckyNumber, LuckyObject } from "./LuckyObject";
 
-function run(script: string, symbolTable?: Map<string, number>): LuckyObject {
+function run(
+  script: string,
+  symbolTable?: Map<string, LuckyObject>
+): undefined | number {
   const ast = parse(script);
   const interpreter = new Interpreter(ast, symbolTable);
 
@@ -38,34 +41,36 @@ describe("Interpreter", () => {
 
   describe("variables handling", () => {
     it("sets variables", () => {
-      const symbolTable = new Map<string, number>();
+      const symbolTable = new Map<string, LuckyObject>();
 
       expect(run("pi = 3.14", symbolTable)).toBe(3.14);
-      expect(symbolTable.get("pi")).toBe(3.14);
+      expect(symbolTable.get("pi")).toEqual(new LuckyNumber(3.14));
     });
 
     it("sets a chain of variables", () => {
-      const symbolTable = new Map<string, number>();
+      const symbolTable = new Map<string, LuckyObject>();
 
       expect(run("x = y = 1", symbolTable)).toBe(1);
-      expect(symbolTable.get("x")).toBe(1);
-      expect(symbolTable.get("y")).toBe(1);
+      expect(symbolTable.get("x")).toEqual(new LuckyNumber(1));
+      expect(symbolTable.get("y")).toEqual(new LuckyNumber(1));
     });
 
     it("reads variables", () => {
-      const symbolTable = new Map<string, number>([
-        ["x", 1],
-        ["y", 2],
+      const symbolTable = new Map<string, LuckyObject>([
+        ["x", new LuckyNumber(1)],
+        ["y", new LuckyNumber(2)],
       ]);
 
       expect(run("x + y + 3", symbolTable)).toBe(6);
     });
 
     it("increments the given variable", () => {
-      const symbolTable = new Map<string, number>([["x", 1]]);
+      const symbolTable = new Map<string, LuckyObject>([
+        ["x", new LuckyNumber(1)],
+      ]);
 
       expect(run("x = x + 1", symbolTable)).toBe(2);
-      expect(symbolTable.get("x")).toBe(2);
+      expect(symbolTable.get("x")).toEqual(new LuckyNumber(2));
     });
 
     it("raises an error on access to undefined variable", () => {
@@ -221,7 +226,7 @@ describe("Interpreter", () => {
     }
     `;
 
-    const symbolTable = new Map<string, number>();
+    const symbolTable = new Map<string, LuckyObject>();
     run(script, symbolTable);
 
     expect(symbolTable.has("a")).toBe(true);
