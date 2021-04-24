@@ -8,7 +8,7 @@ import {
   VariableAssigment,
 } from "../Parser/AstNode";
 
-type MyObject = number | FunctionDeclaration;
+export type MyObject = number | FunctionDeclaration;
 
 type SymbolTable = Map<string, MyObject>;
 
