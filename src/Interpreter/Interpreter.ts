@@ -35,23 +35,23 @@ export class Interpreter {
     }
 
     if (node instanceof BinaryOperation) {
-      return this.handleBinaryOperation(node);
+      return this.visitBinaryOperation(node);
     }
 
     if (node instanceof UnaryOperation) {
-      return this.handleUnaryOperation(node);
+      return this.visitUnaryOperation(node);
     }
 
     if (node instanceof Numeral) {
-      return this.handleNumeral(node);
+      return this.visitNumeral(node);
     }
 
     if (node instanceof VariableAssigment) {
-      return this.handleVariableAssigment(node);
+      return this.visitVariableAssigment(node);
     }
 
     if (node instanceof VariableAccess) {
-      return this.handleVariableAccess(node);
+      return this.visitVariableAccess(node);
     }
 
     throw new Error(`Unsupported AST node type ${node.constructor.name}`);
@@ -101,7 +101,7 @@ export class Interpreter {
     return 0;
   }
 
-  private handleBinaryOperation(node: BinaryOperation): number {
+  private visitBinaryOperation(node: BinaryOperation): number {
     const leftValue = this.visit(node.left);
     const rightValue = this.visit(node.right);
 
@@ -125,7 +125,7 @@ export class Interpreter {
     }
   }
 
-  private handleUnaryOperation(node: UnaryOperation) {
+  private visitUnaryOperation(node: UnaryOperation) {
     const value = this.visit(node.child);
 
     if (typeof value !== "number") {
@@ -142,19 +142,19 @@ export class Interpreter {
     }
   }
 
-  private handleNumeral(node: Numeral): number {
+  private visitNumeral(node: Numeral): number {
     const raw = node.value.replace(/_/g, "");
     return parseFloat(raw);
   }
 
-  private handleVariableAssigment(node: VariableAssigment): LuckyObject {
+  private visitVariableAssigment(node: VariableAssigment): LuckyObject {
     const value = this.visit(node.value);
     this.symbolTable.set(node.name, value);
 
     return value;
   }
 
-  private handleVariableAccess(node: VariableAccess) {
+  private visitVariableAccess(node: VariableAccess) {
     const value = this.symbolTable.get(node.name);
 
     if (value === undefined) {
