@@ -3,6 +3,7 @@ import {
   FunctionCall,
   FunctionDeclaration,
   Program,
+  ReturnStatement,
   VariableAccess,
   VariableAssigment,
 } from "../Parser/AstNode";
@@ -60,7 +61,7 @@ export class Interpreter {
   private visitProgram(program: Program): MyObject {
     let result: MyObject = 0;
 
-    program.instructions.forEach((instruction) => {
+    program.statements.forEach((instruction) => {
       result = this.visit(instruction);
     });
 
@@ -72,8 +73,7 @@ export class Interpreter {
     return 0;
   }
 
-  // TODO: A function call should create a new variable scope
-  public visitFunctionCall(node: FunctionCall): MyObject {
+  private visitFunctionCall(node: FunctionCall): MyObject {
     const { name } = node;
 
     if (!this.symbolTable.has(name)) {
@@ -86,13 +86,15 @@ export class Interpreter {
       throw new Error(`The given identifier '${name}' is not callable`);
     }
 
-    let result: MyObject = 0;
+    for (const statement of functionDeclaration.statements) {
+      if (statement instanceof ReturnStatement) {
+        return this.visit(statement.expression);
+      }
 
-    functionDeclaration.instructions.forEach((instruction) => {
-      result = this.visit(instruction);
-    });
+      this.visit(statement);
+    }
 
-    return result;
+    return 0;
   }
 
   private handleBinaryOperation(node: BinaryOperation): number {

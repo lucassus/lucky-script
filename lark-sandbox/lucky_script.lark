@@ -3,9 +3,12 @@ program       : statements
 statements    : _NEWLINE* (statement (_NEWLINE+ statement?)*)?
 
 statement     : func_decr
+              | return_stmt
               | expression
 
 func_decr     : "function" IDENTIFIER "(" ")" block
+
+return_stmt   : "return" expression
 
 expression    : assigment
               | term (("+" | "-") term)*

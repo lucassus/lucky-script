@@ -5,6 +5,7 @@ import {
   FunctionDeclaration,
   Numeral,
   Program,
+  ReturnStatement,
   UnaryOperation,
   VariableAccess,
   VariableAssigment,
@@ -199,17 +200,20 @@ describe("Parser", () => {
   });
 
   describe("function declaration", () => {
-    it.each`
-      input
-      ${"function add() { 1 + 2 }"}
-      ${"function add() {\n\t1 + 2\n}"}
-    `("parses a declaration without arguments", ({ input }) => {
-      const ast = parse(input);
+    it("parses a declaration without arguments", () => {
+      const ast = parse("function add() { x = 1\nreturn x + 2 }");
 
       expect(ast).toEqual(
         new Program([
           new FunctionDeclaration("add", [
-            new BinaryOperation(new Numeral("1"), "+", new Numeral("2")),
+            new VariableAssigment("x", new Numeral("1")),
+            new ReturnStatement(
+              new BinaryOperation(
+                new VariableAccess("x"),
+                "+",
+                new Numeral("2")
+              )
+            ),
           ]),
         ])
       );
