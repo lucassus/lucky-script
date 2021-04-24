@@ -108,9 +108,51 @@ describe("Interpreter", () => {
     it("interprets function calls", () => {
       const ast = parse(`
         function foo() {
-          function bar() { 3 }
+          return 1 + 2
+        }
         
-          1 + 2 + bar()
+        foo()
+    `);
+
+      const interpreter = new Interpreter(ast);
+      expect(interpreter.run()).toBe(3);
+    });
+
+    it("obeys return statement", () => {
+      const ast = parse(`
+        function foo() {
+          return 1 + 2
+          
+          # These lines should be skipped
+          
+          3
+          4
+          return 5
+        }
+        
+        foo()
+    `);
+
+      const interpreter = new Interpreter(ast);
+      expect(interpreter.run()).toBe(3);
+    });
+
+    it("returns 0 when return statement is not present", () => {
+      const ast = parse(`
+        function foo() { 123 }
+        foo()
+    `);
+
+      const interpreter = new Interpreter(ast);
+      expect(interpreter.run()).toBe(0);
+    });
+
+    it("interprets nested function declaration", () => {
+      const ast = parse(`
+        function foo() {
+          function bar() { return 3 }
+        
+          return 1 + 2 + bar()
         }
         
         foo()
@@ -122,7 +164,7 @@ describe("Interpreter", () => {
 
     it("raises an error on illegal binary operation", () => {
       const ast = parse(`
-        function foo() { 1 }
+        function foo() { return 1 }
         
         1 + foo
     `);
@@ -131,9 +173,18 @@ describe("Interpreter", () => {
       expect(() => interpreter.run()).toThrow("Illegal operation");
     });
 
+    it("raises an error when return is given outside a function body", () => {
+      const ast = parse("return 123");
+
+      const interpreter = new Interpreter(ast);
+      expect(() => interpreter.run()).toThrow(
+        "Unsupported AST node type ReturnStatement"
+      );
+    });
+
     it("raises an error on illegal unary operation", () => {
       const ast = parse(`
-        function foo() { 1 }
+        function foo() { return 1 }
         
         -foo
     `);
@@ -154,9 +205,9 @@ describe("Interpreter", () => {
       );
     });
 
-    it("allows to re-assign the function to new identifier", () => {
+    it("allows to re-assign the function to a new identifier", () => {
       const ast = parse(`
-        function foo() { 41 }
+        function foo() { return 41 }
         bar = foo
         bar()
     `);
