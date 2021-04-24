@@ -80,6 +80,10 @@ export class Parser {
       return this.assigment();
     }
 
+    if (this.currentToken.type === TokenType.Function) {
+      return this.anonymousFunctionDeclaration();
+    }
+
     return this.binaryOperation(this.term, [TokenType.Plus, TokenType.Minus]);
   }
 
@@ -93,6 +97,15 @@ export class Parser {
     this.match(TokenType.RightBracket);
 
     return new FunctionDeclaration(name, this.block());
+  }
+
+  private anonymousFunctionDeclaration(): FunctionDeclaration {
+    this.match(TokenType.Function);
+
+    this.match(TokenType.LeftBracket);
+    this.match(TokenType.RightBracket);
+
+    return new FunctionDeclaration(undefined, this.block());
   }
 
   private returnStatement(): ReturnStatement {

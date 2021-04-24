@@ -162,6 +162,25 @@ describe("Interpreter", () => {
       expect(interpreter.run()).toBe(6);
     });
 
+    it("interprets anonymous functions", () => {
+      const ast = parse(`
+        foo = function () { 
+          x = 1
+          
+          # Yes! It's a function that returns another function ;)
+          return function () {
+            return x + 2
+          }
+        }
+        
+        bar = foo()
+        bar()
+      `);
+
+      const interpreter = new Interpreter(ast);
+      expect(interpreter.run()).toBe(3);
+    });
+
     it("raises an error on illegal binary operation", () => {
       const ast = parse(`
         function foo() { return 1 }

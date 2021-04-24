@@ -68,9 +68,12 @@ export class Interpreter {
     return result;
   }
 
-  private visitFunctionDeclaration(node: FunctionDeclaration): number {
-    this.symbolTable.set(node.name, node);
-    return 0;
+  private visitFunctionDeclaration(node: FunctionDeclaration) {
+    if (node.name) {
+      this.symbolTable.set(node.name, node);
+    }
+
+    return node;
   }
 
   private visitFunctionCall(node: FunctionCall): MyObject {

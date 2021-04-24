@@ -45,7 +45,7 @@ export class VariableAccess extends AstNode {
 
 export class FunctionDeclaration extends AstNode {
   constructor(
-    public readonly name: string,
+    public readonly name: undefined | string,
     public readonly statements: AstNode[]
   ) {
     super();

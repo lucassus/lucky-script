@@ -2,11 +2,9 @@ program        : statements
 
 statements     : _NEWLINE* (statement (_NEWLINE+ statement?)*)?
 
-statement      : func_decr
+statement      : func
                | return_stmt
                | expression
-
-func_decr      : "function" IDENTIFIER "(" ")" block
 
 return_stmt    : "return" expression
 
@@ -14,11 +12,13 @@ expression     : assigment
                | anonymous_func
                | term (("+" | "-") term)*
 
-block          : "{" statements "}"
-
 assigment      : IDENTIFIER "=" expression
 
+func           : "function" IDENTIFIER "(" ")" block
+
 anonymous_func : "function" "(" ")" block
+
+block          : "{" statements "}"
 
 term           : factor (("*" | "/") factor)*
 

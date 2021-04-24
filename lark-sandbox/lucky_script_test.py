@@ -21,6 +21,7 @@ parser = Lark.open("lucky_script.lark", rel_to=__file__, start="program")
         "function () {}",
         "x = function () { return 123 }",
         "x = 123",
+        "return 1234",
     ),
 )
 def test_lucky_script_valid_syntax(script):
