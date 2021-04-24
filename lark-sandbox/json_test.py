@@ -6,7 +6,7 @@ grammar = open(os.path.join(os.path.dirname(__file__), "json.lark"), "r").read()
 parser = Lark(grammar, start="value")
 
 
-def test_json():
+def test_example_json():
     json = """
     {
       "key": ["item0", "item1", 3.14,
