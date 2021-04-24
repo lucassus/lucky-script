@@ -1,64 +1,68 @@
-export abstract class AstNode {}
+export class AstNode {}
 
 export class Program extends AstNode {
-  constructor(public readonly statements: AstNode[]) {
+  constructor(public readonly statements: Statement[]) {
     super();
   }
 }
 
-export class Numeral extends AstNode {
+export abstract class Statement extends AstNode {}
+
+export abstract class Expression extends AstNode {}
+
+export class Numeral extends Expression {
   constructor(public readonly value: string) {
     super();
   }
 }
 
-export class BinaryOperation extends AstNode {
+export class BinaryOperation extends Expression {
   constructor(
-    public readonly left: AstNode,
+    public readonly left: Expression,
     public readonly operator: string,
-    public readonly right: AstNode
+    public readonly right: Expression
   ) {
     super();
   }
 }
 
-export class UnaryOperation extends AstNode {
+export class UnaryOperation extends Expression {
   constructor(
     public readonly operator: string,
-    public readonly child: AstNode
+    public readonly child: Expression
   ) {
     super();
   }
 }
 
-export class VariableAssigment extends AstNode {
-  constructor(public readonly name: string, public readonly value: AstNode) {
+export class VariableAssigment extends Expression {
+  constructor(public readonly name: string, public readonly value: Expression) {
     super();
   }
 }
 
-export class VariableAccess extends AstNode {
+export class VariableAccess extends Expression {
   constructor(public readonly name: string) {
     super();
   }
 }
 
-export class FunctionDeclaration extends AstNode {
+export class FunctionDeclaration extends Statement {
   constructor(
     public readonly name: undefined | string,
-    public readonly statements: AstNode[]
+    public readonly statements: Statement[]
   ) {
     super();
   }
 }
 
-export class ReturnStatement extends AstNode {
-  constructor(public readonly expression: AstNode) {
+export class ReturnStatement extends Statement {
+  constructor(public readonly expression: Expression) {
     super();
   }
 }
 
-export class FunctionCall extends AstNode {
+export class FunctionCall extends Expression {
   constructor(public readonly name: string) {
     super();
   }
