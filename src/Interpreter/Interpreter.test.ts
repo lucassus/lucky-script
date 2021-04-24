@@ -1,4 +1,5 @@
 import { parse } from "../testingUtils";
+import { NameError, ZeroDivisionError } from "./errors";
 import { Interpreter } from "./Interpreter";
 import { LuckyNumber, LuckyObject } from "./LuckyObject";
 
@@ -39,6 +40,10 @@ describe("Interpreter", () => {
     }
   );
 
+  it("raises an error on division by zero", () => {
+    expect(() => run("2 / 0")).toThrow(ZeroDivisionError);
+  });
+
   describe("variables handling", () => {
     it("sets variables", () => {
       const symbolTable = new Map<string, LuckyObject>();
@@ -75,7 +80,7 @@ describe("Interpreter", () => {
 
     it("raises an error on access to undefined variable", () => {
       expect(() => run("undefinedVariable + 1")).toThrow(
-        "Undefined variable undefinedVariable"
+        new NameError("undefinedVariable")
       );
     });
   });

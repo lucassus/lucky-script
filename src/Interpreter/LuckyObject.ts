@@ -1,6 +1,6 @@
 import { Statement } from "../Parser/AstNode";
+import { RuntimeError, ZeroDivisionError } from "./errors";
 
-// TODO: Improve this idea
 export abstract class LuckyObject {
   add(value: LuckyObject): LuckyObject {
     this.throwIllegalOperationError();
@@ -22,9 +22,8 @@ export abstract class LuckyObject {
     this.throwIllegalOperationError();
   }
 
-  // TODO: Is there a better way to do UnimplementedError in JavaScript?
   protected throwIllegalOperationError(): never {
-    throw Error("Illegal operation");
+    throw new RuntimeError("Illegal operation");
   }
 }
 
@@ -51,11 +50,16 @@ export class LuckyNumber extends LuckyObject {
     return new LuckyNumber(this.value * object.value);
   }
 
-  // TODO: Throw RuntimeError DivisionByZero
   div(object: LuckyObject): LuckyObject {
     this.ensureLuckyNumber(object);
 
-    return new LuckyNumber(this.value / object.value);
+    const otherValue = object.value;
+
+    if (otherValue === 0) {
+      throw new ZeroDivisionError();
+    }
+
+    return new LuckyNumber(this.value / otherValue);
   }
 
   pow(object: LuckyObject): LuckyObject {

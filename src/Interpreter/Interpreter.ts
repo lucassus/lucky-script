@@ -7,6 +7,7 @@ import {
   VariableAccess,
   VariableAssigment,
 } from "../Parser/AstNode";
+import { NameError, RuntimeError } from "./errors";
 import { LuckyFunction, LuckyNumber, LuckyObject } from "./LuckyObject";
 
 type SymbolTable = Map<string, LuckyObject>;
@@ -58,7 +59,9 @@ export class Interpreter {
       return this.visitVariableAccess(node);
     }
 
-    throw new Error(`Unsupported AST node type ${node.constructor.name}`);
+    throw new RuntimeError(
+      `Unsupported AST node type ${node.constructor.name}`
+    );
   }
 
   private visitProgram(program: Program): LuckyObject {
@@ -85,13 +88,13 @@ export class Interpreter {
     const { name } = node;
 
     if (!this.symbolTable.has(name)) {
-      throw new Error(`Undefined function ${name}`);
+      throw new RuntimeError(`Undefined function ${name}`);
     }
 
     const luckyFunction = this.symbolTable.get(name);
 
     if (!(luckyFunction instanceof LuckyFunction)) {
-      throw new Error(`The given identifier '${name}' is not callable`);
+      throw new RuntimeError(`The given identifier '${name}' is not callable`);
     }
 
     for (const statement of luckyFunction.statements) {
@@ -122,7 +125,7 @@ export class Interpreter {
       case "**":
         return left.pow(right);
       default:
-        throw new Error(`Unsupported operation ${node.operator}`);
+        throw new RuntimeError(`Unsupported operation ${node.operator}`);
     }
   }
 
@@ -135,7 +138,7 @@ export class Interpreter {
       case "-":
         return value.mul(new LuckyNumber(-1));
       default:
-        throw new Error(`Unsupported unary operation ${node.operator}`);
+        throw new RuntimeError(`Unsupported unary operation ${node.operator}`);
     }
   }
 
@@ -157,7 +160,7 @@ export class Interpreter {
     const value = this.symbolTable.get(node.name);
 
     if (value === undefined) {
-      throw new Error(`Undefined variable ${node.name}`);
+      throw new NameError(node.name);
     }
 
     return value;
