@@ -1,7 +1,7 @@
 export abstract class AstNode {}
 
 export class Program extends AstNode {
-  constructor(public readonly instructions: AstNode[]) {
+  constructor(public readonly statements: AstNode[]) {
     super();
   }
 }
@@ -46,8 +46,14 @@ export class VariableAccess extends AstNode {
 export class FunctionDeclaration extends AstNode {
   constructor(
     public readonly name: string,
-    public readonly instructions: AstNode[]
+    public readonly statements: AstNode[]
   ) {
+    super();
+  }
+}
+
+export class ReturnStatement extends AstNode {
+  constructor(public readonly expression: AstNode) {
     super();
   }
 }

@@ -62,9 +62,7 @@ export function printAst(root: AstNode) {
   }
 
   if (root instanceof Program) {
-    return root.instructions
-      .map((instruction) => print(instruction))
-      .join("\n");
+    return root.statements.map((instruction) => print(instruction)).join("\n");
   }
 
   return print(root);

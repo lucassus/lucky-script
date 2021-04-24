@@ -7,6 +7,7 @@ import {
   FunctionDeclaration,
   Numeral,
   Program,
+  ReturnStatement,
   UnaryOperation,
   VariableAccess,
   VariableAssigment,
@@ -60,6 +61,10 @@ export class Parser {
       return this.functionDeclaration();
     }
 
+    if (this.currentToken.type === TokenType.Return) {
+      return this.returnStatement();
+    }
+
     if (this.currentToken.type === TokenType.LeftBrace) {
       return this.block();
     }
@@ -78,7 +83,7 @@ export class Parser {
     return this.binaryOperation(this.term, [TokenType.Plus, TokenType.Minus]);
   }
 
-  private functionDeclaration(): AstNode {
+  private functionDeclaration(): FunctionDeclaration {
     this.match(TokenType.Function);
 
     const name = this.currentToken.value;
@@ -88,6 +93,11 @@ export class Parser {
     this.match(TokenType.RightBracket);
 
     return new FunctionDeclaration(name, this.block());
+  }
+
+  private returnStatement(): ReturnStatement {
+    this.match(TokenType.Return);
+    return new ReturnStatement(this.expression());
   }
 
   private block(): AstNode[] {

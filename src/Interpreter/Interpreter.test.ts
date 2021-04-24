@@ -97,7 +97,7 @@ describe("Interpreter", () => {
     expect(interpreter.run()).toBe(5);
   });
 
-  it("interprets empty set of instructions", () => {
+  it("interprets empty set of statements", () => {
     const ast = parse("");
     const interpreter = new Interpreter(ast);
 

@@ -60,7 +60,7 @@ export class Interpreter {
   private visitProgram(program: Program): MyObject {
     let result: MyObject = 0;
 
-    program.instructions.forEach((instruction) => {
+    program.statements.forEach((instruction) => {
       result = this.visit(instruction);
     });
 
@@ -88,7 +88,7 @@ export class Interpreter {
 
     let result: MyObject = 0;
 
-    functionDeclaration.instructions.forEach((instruction) => {
+    functionDeclaration.statements.forEach((instruction) => {
       result = this.visit(instruction);
     });
 
