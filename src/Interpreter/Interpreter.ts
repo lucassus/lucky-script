@@ -7,10 +7,9 @@ import {
   VariableAccess,
   VariableAssigment,
 } from "../Parser/AstNode";
+import { LuckyFunction, LuckyObject } from "./LuckyObject";
 
-export type MyObject = number | FunctionDeclaration;
-
-type SymbolTable = Map<string, MyObject>;
+type SymbolTable = Map<string, LuckyObject>;
 
 export class Interpreter {
   constructor(
@@ -22,7 +21,7 @@ export class Interpreter {
     return this.visit(this.node);
   }
 
-  private visit(node: AstNode): MyObject {
+  private visit(node: AstNode): LuckyObject {
     if (node instanceof Program) {
       return this.visitProgram(node);
     }
@@ -44,7 +43,7 @@ export class Interpreter {
     }
 
     if (node instanceof Numeral) {
-      return this.handleNumber(node);
+      return this.handleNumeral(node);
     }
 
     if (node instanceof VariableAssigment) {
@@ -58,8 +57,8 @@ export class Interpreter {
     throw new Error(`Unsupported AST node type ${node.constructor.name}`);
   }
 
-  private visitProgram(program: Program): MyObject {
-    let result: MyObject = 0;
+  private visitProgram(program: Program): LuckyObject {
+    let result: LuckyObject = 0;
 
     program.statements.forEach((instruction) => {
       result = this.visit(instruction);
@@ -69,27 +68,29 @@ export class Interpreter {
   }
 
   private visitFunctionDeclaration(node: FunctionDeclaration) {
+    const luckyFunction = new LuckyFunction(node.statements);
+
     if (node.name) {
-      this.symbolTable.set(node.name, node);
+      this.symbolTable.set(node.name, luckyFunction);
     }
 
-    return node;
+    return luckyFunction;
   }
 
-  private visitFunctionCall(node: FunctionCall): MyObject {
+  private visitFunctionCall(node: FunctionCall): LuckyObject {
     const { name } = node;
 
     if (!this.symbolTable.has(name)) {
       throw new Error(`Undefined function ${name}`);
     }
 
-    const functionDeclaration = this.symbolTable.get(name);
+    const luckyFunction = this.symbolTable.get(name);
 
-    if (!(functionDeclaration instanceof FunctionDeclaration)) {
+    if (!(luckyFunction instanceof LuckyFunction)) {
       throw new Error(`The given identifier '${name}' is not callable`);
     }
 
-    for (const statement of functionDeclaration.statements) {
+    for (const statement of luckyFunction.statements) {
       if (statement instanceof ReturnStatement) {
         return this.visit(statement.expression);
       }
@@ -141,12 +142,12 @@ export class Interpreter {
     }
   }
 
-  private handleNumber(node: Numeral): number {
+  private handleNumeral(node: Numeral): number {
     const raw = node.value.replace(/_/g, "");
     return parseFloat(raw);
   }
 
-  private handleVariableAssigment(node: VariableAssigment): MyObject {
+  private handleVariableAssigment(node: VariableAssigment): LuckyObject {
     const value = this.visit(node.value);
     this.symbolTable.set(node.name, value);
 

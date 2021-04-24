@@ -1,7 +1,8 @@
 import { parse } from "../testingUtils";
-import { Interpreter, MyObject } from "./Interpreter";
+import { Interpreter } from "./Interpreter";
+import { LuckyObject } from "./LuckyObject";
 
-function run(script: string, symbolTable?: Map<string, number>): MyObject {
+function run(script: string, symbolTable?: Map<string, number>): LuckyObject {
   const ast = parse(script);
   const interpreter = new Interpreter(ast, symbolTable);
 
