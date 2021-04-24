@@ -73,7 +73,6 @@ export class Interpreter {
     return 0;
   }
 
-  // TODO: A function call should create a new variable scope
   private visitFunctionCall(node: FunctionCall): MyObject {
     const { name } = node;
 

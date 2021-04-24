@@ -118,7 +118,7 @@ describe("Interpreter", () => {
       expect(interpreter.run()).toBe(3);
     });
 
-    it("obeys return statement", () => {
+    it("obeys the return statement", () => {
       const ast = parse(`
         function foo() {
           return 1 + 2
