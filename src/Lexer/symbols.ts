@@ -9,6 +9,7 @@ export const NonZeroDigits = charRange("1", "9");
 export const Digits = [ZeroDigit, ...NonZeroDigits];
 export const Separator = "_";
 export const Dot = ".";
+export const Comma = ",";
 
 export const Plus = "+";
 export const Minus = "-";

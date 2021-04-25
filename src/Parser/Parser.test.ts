@@ -205,16 +205,42 @@ describe("Parser", () => {
 
       expect(ast).toEqual(
         new Program([
-          new FunctionDeclaration("add", [
-            new VariableAssigment("x", new Numeral("1")),
-            new ReturnStatement(
-              new BinaryOperation(
-                new VariableAccess("x"),
-                "+",
-                new Numeral("2")
-              )
-            ),
-          ]),
+          new FunctionDeclaration(
+            "add",
+            [],
+            [
+              new VariableAssigment("x", new Numeral("1")),
+              new ReturnStatement(
+                new BinaryOperation(
+                  new VariableAccess("x"),
+                  "+",
+                  new Numeral("2")
+                )
+              ),
+            ]
+          ),
+        ])
+      );
+    });
+
+    it("parses a declaration with arguments", () => {
+      const ast = parse("function add(x, y) { return x + y }");
+
+      expect(ast).toEqual(
+        new Program([
+          new FunctionDeclaration(
+            "add",
+            ["x", "y"],
+            [
+              new ReturnStatement(
+                new BinaryOperation(
+                  new VariableAccess("x"),
+                  "+",
+                  new VariableAccess("y")
+                )
+              ),
+            ]
+          ),
         ])
       );
     });
@@ -227,7 +253,9 @@ describe("Parser", () => {
     `("parses a declaration with empty body", ({ input }) => {
       const ast = parse(input);
 
-      expect(ast).toEqual(new Program([new FunctionDeclaration("add", [])]));
+      expect(ast).toEqual(
+        new Program([new FunctionDeclaration("add", [], [])])
+      );
     });
 
     it("parses anonymous function declaration", () => {
@@ -237,9 +265,11 @@ describe("Parser", () => {
         new Program([
           new VariableAssigment(
             "foo",
-            new FunctionDeclaration(undefined, [
-              new ReturnStatement(new Numeral("123")),
-            ])
+            new FunctionDeclaration(
+              undefined,
+              [],
+              [new ReturnStatement(new Numeral("123"))]
+            )
           ),
         ])
       );
@@ -248,6 +278,20 @@ describe("Parser", () => {
     it("can't parse declaration assigment to a variable", () => {
       expect(() => parse("x = function abc() {}")).toThrow(
         "Expecting ( but got IDENTIFIER"
+      );
+    });
+
+    it("can't parse declaration with invalid arguments", () => {
+      expect(() => parse("function abc(,x,y) {}")).toThrow(
+        "Expecting ) but got ,"
+      );
+
+      expect(() => parse("function abc(x,) {}")).toThrow(
+        "Expecting IDENTIFIER but got )"
+      );
+
+      expect(() => parse("function abc(x,,) {}")).toThrow(
+        "Expecting IDENTIFIER but got ,"
       );
     });
   });

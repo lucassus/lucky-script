@@ -95,9 +95,10 @@ export class Parser {
     this.match(TokenType.Identifier);
 
     this.match(TokenType.LeftBracket);
+    const args = this.functionArguments();
     this.match(TokenType.RightBracket);
 
-    return new FunctionDeclaration(name, this.block());
+    return new FunctionDeclaration(name, args, this.block());
   }
 
   private anonymousFunctionDeclaration(): Expression {
@@ -106,7 +107,26 @@ export class Parser {
     this.match(TokenType.LeftBracket);
     this.match(TokenType.RightBracket);
 
-    return new FunctionDeclaration(undefined, this.block());
+    return new FunctionDeclaration(undefined, [], this.block());
+  }
+
+  private functionArguments(): string[] {
+    if (this.currentToken.type !== TokenType.Identifier) {
+      return [];
+    }
+
+    const args: string[] = [this.currentToken.value];
+    this.match(TokenType.Identifier);
+
+    // @ts-ignore
+    while (this.currentToken.type === TokenType.Comma) {
+      this.match(TokenType.Comma);
+
+      args.push(this.currentToken.value);
+      this.match(TokenType.Identifier);
+    }
+
+    return args;
   }
 
   private returnStatement(): ReturnStatement {

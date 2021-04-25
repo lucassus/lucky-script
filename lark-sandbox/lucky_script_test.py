@@ -19,7 +19,11 @@ parser = Lark.open("lucky_script.lark", rel_to=__file__, start="program")
         "function foo() { return 123 }",
         "function () { return 123 }",
         "function () {}",
-        "x = function () { return 123 }",
+        "function (x, y) {}",
+        "x = function (x) { return 123 }",
+        "foo()",
+        "foo(123)",
+        "foo(1, 2, 1+2+3+4)",
         "x = 123",
         "return 1234",
     ),
@@ -33,9 +37,11 @@ def test_lucky_script_valid_syntax(script):
     "script",
     (
         "1 2 3",
-        "function foo(x, y) {}",
         "function foo(1+2) {}",
         "x = function bar() {}",
+        "function bar(,y) {}",
+        "x = function(, x, y) {}",
+        "x = function bar(, x, y) {}",
         "function foo(function(bar) {}) {}",
     ),
 )
@@ -71,15 +77,15 @@ def test_lucky_script():
     
     add()
     
-    function curry() {
+    function curry(x) {
       z = 2
       
-      return function () {
+      return function (y) {
         return x + y * z
       }
     }
     
-    curry()
+    curry(123)
     """
 
     ast = parser.parse(script)

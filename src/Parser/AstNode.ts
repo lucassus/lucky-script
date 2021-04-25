@@ -50,6 +50,7 @@ export class VariableAccess extends Expression {
 export class FunctionDeclaration extends Statement {
   constructor(
     public readonly name: undefined | string,
+    public readonly args: string[],
     public readonly statements: Statement[]
   ) {
     super();
