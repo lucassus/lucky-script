@@ -7,10 +7,10 @@ import {
   VariableAccess,
   VariableAssigment,
 } from "../Parser/AstNode";
+import { NameError, RuntimeError } from "./errors";
+import { LuckyFunction, LuckyNumber, LuckyObject } from "./LuckyObject";
 
-type MyObject = number | FunctionDeclaration;
-
-type SymbolTable = Map<string, MyObject>;
+type SymbolTable = Map<string, LuckyObject>;
 
 export class Interpreter {
   constructor(
@@ -18,11 +18,15 @@ export class Interpreter {
     private readonly symbolTable: SymbolTable = new Map()
   ) {}
 
-  run() {
-    return this.visit(this.node);
+  run(): undefined | number {
+    const luckyObject = this.visit(this.node);
+
+    if (luckyObject instanceof LuckyNumber) {
+      return luckyObject.value;
+    }
   }
 
-  private visit(node: AstNode): MyObject {
+  private visit(node: AstNode): LuckyObject {
     if (node instanceof Program) {
       return this.visitProgram(node);
     }
@@ -36,30 +40,32 @@ export class Interpreter {
     }
 
     if (node instanceof BinaryOperation) {
-      return this.handleBinaryOperation(node);
+      return this.visitBinaryOperation(node);
     }
 
     if (node instanceof UnaryOperation) {
-      return this.handleUnaryOperation(node);
+      return this.visitUnaryOperation(node);
     }
 
     if (node instanceof Numeral) {
-      return this.handleNumber(node);
+      return this.visitNumeral(node);
     }
 
     if (node instanceof VariableAssigment) {
-      return this.handleVariableAssigment(node);
+      return this.visitVariableAssigment(node);
     }
 
     if (node instanceof VariableAccess) {
-      return this.handleVariableAccess(node);
+      return this.visitVariableAccess(node);
     }
 
-    throw new Error(`Unsupported AST node type ${node.constructor.name}`);
+    throw new RuntimeError(
+      `Unsupported AST node type ${node.constructor.name}`
+    );
   }
 
-  private visitProgram(program: Program): MyObject {
-    let result: MyObject = 0;
+  private visitProgram(program: Program): LuckyObject {
+    let result: LuckyObject = new LuckyNumber(0);
 
     program.statements.forEach((instruction) => {
       result = this.visit(instruction);
@@ -68,25 +74,30 @@ export class Interpreter {
     return result;
   }
 
-  private visitFunctionDeclaration(node: FunctionDeclaration): number {
-    this.symbolTable.set(node.name, node);
-    return 0;
+  private visitFunctionDeclaration(node: FunctionDeclaration) {
+    const luckyFunction = new LuckyFunction(node.statements);
+
+    if (node.name) {
+      this.symbolTable.set(node.name, luckyFunction);
+    }
+
+    return luckyFunction;
   }
 
-  private visitFunctionCall(node: FunctionCall): MyObject {
+  private visitFunctionCall(node: FunctionCall): LuckyObject {
     const { name } = node;
 
     if (!this.symbolTable.has(name)) {
-      throw new Error(`Undefined function ${name}`);
+      throw new RuntimeError(`Undefined function ${name}`);
     }
 
-    const functionDeclaration = this.symbolTable.get(name);
+    const luckyFunction = this.symbolTable.get(name);
 
-    if (!(functionDeclaration instanceof FunctionDeclaration)) {
-      throw new Error(`The given identifier '${name}' is not callable`);
+    if (!(luckyFunction instanceof LuckyFunction)) {
+      throw new RuntimeError(`The given identifier '${name}' is not callable`);
     }
 
-    for (const statement of functionDeclaration.statements) {
+    for (const statement of luckyFunction.statements) {
       if (statement instanceof ReturnStatement) {
         return this.visit(statement.expression);
       }
@@ -94,67 +105,62 @@ export class Interpreter {
       this.visit(statement);
     }
 
-    return 0;
+    return new LuckyNumber(0);
   }
 
-  private handleBinaryOperation(node: BinaryOperation): number {
-    const leftValue = this.visit(node.left);
-    const rightValue = this.visit(node.right);
+  private visitBinaryOperation(node: BinaryOperation): LuckyObject {
+    const left = this.visit(node.left);
+    const right = this.visit(node.right);
 
-    if (typeof leftValue !== "number" || typeof rightValue !== "number") {
-      throw new Error("Illegal operation");
-    }
-
+    // TODO: Think about better typings for operators
     switch (node.operator) {
       case "+":
-        return leftValue + rightValue;
+        return left.add(right);
       case "-":
-        return leftValue - rightValue;
+        return left.sub(right);
       case "*":
-        return leftValue * rightValue;
+        return left.mul(right);
       case "/":
-        return leftValue / rightValue;
+        return left.div(right);
       case "**":
-        return leftValue ** rightValue;
+        return left.pow(right);
       default:
-        throw new Error(`Unsupported operation ${node.operator}`);
+        throw new RuntimeError(`Unsupported operation ${node.operator}`);
     }
   }
 
-  private handleUnaryOperation(node: UnaryOperation) {
+  private visitUnaryOperation(node: UnaryOperation) {
     const value = this.visit(node.child);
-
-    if (typeof value !== "number") {
-      throw new Error("Illegal operation");
-    }
 
     switch (node.operator) {
       case "+":
         return value;
       case "-":
-        return value * -1;
+        return value.mul(new LuckyNumber(-1));
       default:
-        throw new Error(`Unsupported unary operation ${node.operator}`);
+        throw new RuntimeError(`Unsupported unary operation ${node.operator}`);
     }
   }
 
-  private handleNumber(node: Numeral): number {
+  private visitNumeral(node: Numeral): LuckyNumber {
     const raw = node.value.replace(/_/g, "");
-    return parseFloat(raw);
+    const value = parseFloat(raw);
+
+    return new LuckyNumber(value);
   }
 
-  private handleVariableAssigment(node: VariableAssigment): MyObject {
+  private visitVariableAssigment(node: VariableAssigment): LuckyObject {
     const value = this.visit(node.value);
     this.symbolTable.set(node.name, value);
 
     return value;
   }
 
-  private handleVariableAccess(node: VariableAccess) {
+  private visitVariableAccess(node: VariableAccess) {
     const value = this.symbolTable.get(node.name);
 
     if (value === undefined) {
-      throw new Error(`Undefined variable ${node.name}`);
+      throw new NameError(node.name);
     }
 
     return value;

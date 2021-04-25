@@ -1,35 +1,38 @@
-program       : statements
+program            : statements
 
-statements    : _NEWLINE* (statement (_NEWLINE+ statement?)*)?
+statements         : _NEWLINE* (statement (_NEWLINE+ statement?)*)?
 
-statement     : func_decr
-              | return_stmt
-              | expression
+statement          : func
+                   | return_statement
+                   | expression
 
-func_decr     : "function" IDENTIFIER "(" ")" block
+return_statement   : "return" expression
 
-return_stmt   : "return" expression
+expression         : variable_assigment
+                   | anonymous_func
+                   | term (("+" | "-") term)*
 
-expression    : assigment
-              | term (("+" | "-") term)*
+variable_assigment : IDENTIFIER "=" expression
 
-block         : "{" statements "}"
+func               : "function" IDENTIFIER "(" ")" block
 
-assigment     : IDENTIFIER "=" expression
+anonymous_func     : "function" "(" ")" block
 
-term          : factor (("*" | "/") factor)*
+block              : "{" statements "}"
 
-factor        : ("+" | "-") factor
-              | power
+term               : factor (("*" | "/") factor)*
 
-power         : atom ("**" factor)*
+factor             : ("+" | "-") factor
+                   | power
 
-atom          : NUMBER
-              | func_call
-              | IDENTIFIER
-              | "(" expression ")"
+power              : atom ("**" factor)*
 
-func_call     : IDENTIFIER "(" ")"
+atom               : NUMBER
+                   | func_call
+                   | IDENTIFIER
+                   | "(" expression ")"
+
+func_call          : IDENTIFIER "(" ")"
 
 %import common.WS_INLINE
 %import common.NEWLINE -> _NEWLINE

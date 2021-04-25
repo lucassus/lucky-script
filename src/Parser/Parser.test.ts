@@ -230,9 +230,24 @@ describe("Parser", () => {
       expect(ast).toEqual(new Program([new FunctionDeclaration("add", [])]));
     });
 
+    it("parses anonymous function declaration", () => {
+      const ast = parse("foo = function () { return 123 }");
+
+      expect(ast).toEqual(
+        new Program([
+          new VariableAssigment(
+            "foo",
+            new FunctionDeclaration(undefined, [
+              new ReturnStatement(new Numeral("123")),
+            ])
+          ),
+        ])
+      );
+    });
+
     it("can't parse declaration assigment to a variable", () => {
       expect(() => parse("x = function abc() {}")).toThrow(
-        "Unexpected token function"
+        "Expecting ( but got IDENTIFIER"
       );
     });
   });

@@ -1,6 +1,7 @@
 import * as readline from "readline";
 
 import { Interpreter } from "./Interpreter";
+import { LuckyObject } from "./Interpreter/LuckyObject";
 import { Lexer, SyntaxError } from "./Lexer";
 import { Parser, printAst } from "./Parser";
 
@@ -14,7 +15,7 @@ const scanner = readline.createInterface({
 
 scanner.prompt();
 
-const variables = new Map<string, number>();
+const symbolTable = new Map<string, LuckyObject>();
 
 scanner.on("line", (line) => {
   const input = line.trim();
@@ -26,10 +27,9 @@ scanner.on("line", (line) => {
     console.log("\nAbstract Syntax Tree:");
     console.log(printAst(ast));
 
-    const result = new Interpreter(ast, variables).run();
+    const result = new Interpreter(ast, symbolTable).run();
     console.log(result);
   } catch (error) {
-    // TODO: It does not catch UnrecognizedNumberLiteralError
     if (error instanceof SyntaxError) {
       console.log(`${" ".repeat(PROMPT.length + error.position)}^`);
     }

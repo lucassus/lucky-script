@@ -1,13 +1,14 @@
 import { Token } from "../Lexer";
 import { TokenType } from "../Lexer/Token";
 import {
-  AstNode,
   BinaryOperation,
+  Expression,
   FunctionCall,
   FunctionDeclaration,
   Numeral,
   Program,
   ReturnStatement,
+  Statement,
   UnaryOperation,
   VariableAccess,
   VariableAssigment,
@@ -21,7 +22,7 @@ export class Parser {
     this.lexer = new Lookahead<Token>(iterator);
   }
 
-  parse(): AstNode {
+  parse(): Program {
     return this.program();
   }
 
@@ -29,10 +30,10 @@ export class Parser {
     return new Program(this.statements(TokenType.End));
   }
 
-  private statements(end: TokenType): AstNode[] {
+  private statements(end: TokenType): Statement[] {
     this.discardNewLines();
 
-    const statements: AstNode[] = [];
+    const statements: Statement[] = [];
 
     if (this.currentToken.type !== end) {
       statements.push(this.statement());
@@ -56,7 +57,7 @@ export class Parser {
     }
   }
 
-  private statement(): AstNode {
+  private statement(): Statement {
     if (this.currentToken.type === TokenType.Function) {
       return this.functionDeclaration();
     }
@@ -72,12 +73,16 @@ export class Parser {
     return this.expression();
   }
 
-  private expression(): AstNode {
+  private expression(): Expression {
     if (
       this.currentToken.type === TokenType.Identifier &&
       this.nextToken.type === TokenType.Assigment
     ) {
-      return this.assigment();
+      return this.variableAssigment();
+    }
+
+    if (this.currentToken.type === TokenType.Function) {
+      return this.anonymousFunctionDeclaration();
     }
 
     return this.binaryOperation(this.term, [TokenType.Plus, TokenType.Minus]);
@@ -95,12 +100,21 @@ export class Parser {
     return new FunctionDeclaration(name, this.block());
   }
 
+  private anonymousFunctionDeclaration(): Expression {
+    this.match(TokenType.Function);
+
+    this.match(TokenType.LeftBracket);
+    this.match(TokenType.RightBracket);
+
+    return new FunctionDeclaration(undefined, this.block());
+  }
+
   private returnStatement(): ReturnStatement {
     this.match(TokenType.Return);
     return new ReturnStatement(this.expression());
   }
 
-  private block(): AstNode[] {
+  private block(): Statement[] {
     if (this.nextToken.type === TokenType.RightBrace) {
       this.match(TokenType.LeftBrace);
       this.match(TokenType.RightBrace);
@@ -115,7 +129,7 @@ export class Parser {
     return statements;
   }
 
-  private functionCall(): AstNode {
+  private functionCall(): Expression {
     const name = this.currentToken.value;
     this.match(TokenType.Identifier);
 
@@ -125,7 +139,7 @@ export class Parser {
     return new FunctionCall(name);
   }
 
-  private assigment(): AstNode {
+  private variableAssigment(): Expression {
     const variableName = this.currentToken.value;
 
     this.match(TokenType.Identifier);
@@ -134,14 +148,14 @@ export class Parser {
     return new VariableAssigment(variableName, this.expression());
   }
 
-  private term(): AstNode {
+  private term(): Expression {
     return this.binaryOperation(this.factor, [
       TokenType.Multiply,
       TokenType.Divide,
     ]);
   }
 
-  private factor(): AstNode {
+  private factor(): Expression {
     const { currentToken } = this;
 
     if ([TokenType.Plus, TokenType.Minus].includes(currentToken.type)) {
@@ -152,11 +166,11 @@ export class Parser {
     return this.power();
   }
 
-  private power(): AstNode {
+  private power(): Expression {
     return this.binaryOperation(this.atom, [TokenType.Power], this.factor);
   }
 
-  private atom(): AstNode {
+  private atom(): Expression {
     const { currentToken } = this;
 
     if (currentToken.type === TokenType.NumberLiteral) {
@@ -183,7 +197,7 @@ export class Parser {
     throw new Error(`Unexpected token ${currentToken.type}`);
   }
 
-  private group(): AstNode {
+  private group(): Expression {
     this.match(TokenType.LeftBracket);
     const expression = this.expression();
     this.match(TokenType.RightBracket);
@@ -192,10 +206,10 @@ export class Parser {
   }
 
   private binaryOperation(
-    leftBranch: () => AstNode,
+    leftBranch: () => Expression,
     operations: TokenType[],
-    rightBranch?: () => AstNode
-  ): AstNode {
+    rightBranch?: () => Expression
+  ): Expression {
     let left = leftBranch.apply(this);
 
     while (operations.includes(this.currentToken.type)) {
