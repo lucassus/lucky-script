@@ -30,6 +30,7 @@ export class Parser {
     return new Program(this.statements(TokenType.End));
   }
 
+  // _NEWLINE* statement? (_NEWLINE+ statement?)*
   private statements(end: TokenType): Statement[] {
     this.discardNewLines();
 

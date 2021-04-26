@@ -14,7 +14,7 @@ expression         : variable_assigment
 
 variable_assigment : IDENTIFIER "=" expression
 
-func               : "function" IDENTIFIER "(" func_args ")" block
+func               : "function" IDENTIFIER "(" func_parameters ")" block
 
 anonymous_func     : "function" "(" func_parameters ")" block
 
