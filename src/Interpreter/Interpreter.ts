@@ -75,7 +75,7 @@ export class Interpreter {
   }
 
   private visitFunctionDeclaration(node: FunctionDeclaration) {
-    const luckyFunction = new LuckyFunction(node.statements);
+    const luckyFunction = new LuckyFunction(node.parameters, node.statements);
 
     if (node.name) {
       this.symbolTable.set(node.name, luckyFunction);
@@ -97,6 +97,17 @@ export class Interpreter {
       throw new RuntimeError(`The given identifier '${name}' is not callable`);
     }
 
+    if (luckyFunction.parameters.length !== node.args.length) {
+      throw new RuntimeError(
+        `Function ${name} takes exactly ${luckyFunction.parameters.length} parameters`
+      );
+    }
+
+    for (const [index, parameter] of luckyFunction.parameters.entries()) {
+      const argument = node.args[index];
+      this.symbolTable.set(parameter, this.visit(argument));
+    }
+
     for (const statement of luckyFunction.statements) {
       if (statement instanceof ReturnStatement) {
         return this.visit(statement.expression);
@@ -112,7 +123,7 @@ export class Interpreter {
     const left = this.visit(node.left);
     const right = this.visit(node.right);
 
-    // TODO: Think about better typings for operators
+    // TODO: Think about better typings for the operators
     switch (node.operator) {
       case "+":
         return left.add(right);

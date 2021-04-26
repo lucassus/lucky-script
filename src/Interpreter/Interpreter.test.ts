@@ -112,6 +112,56 @@ describe("Interpreter", () => {
       expect(run(script)).toBe(3);
     });
 
+    it("interprets function calls with arguments", () => {
+      const script = `
+        function add(x, y) {
+          return x + y
+        }
+        
+        add(1, 2)
+      `;
+
+      expect(run(script)).toBe(3);
+    });
+
+    it("interprets function calls with complex arguments", () => {
+      const script = `
+        function giveMeOne() { return 1 }
+      
+        function add(x, fn) {
+          # Yes! It can take another function as parameter.
+          return x + fn()
+        }
+        
+        # A function call could take anonymous function
+        add(giveMeOne(), function () { return 2 })
+      `;
+
+      expect(run(script)).toBe(3);
+    });
+
+    it.each`
+      args
+      ${""}
+      ${"1"}
+      ${"1,2,3"}
+    `(
+      "raises an error when invalid number of arguments is given",
+      ({ args }) => {
+        const script = `
+          function add(x, y) {
+            return x + y
+          }
+          
+          add(${args})
+        `;
+
+        expect(() => run(script)).toThrow(
+          new SyntaxError("Function add takes exactly 2 parameters")
+        );
+      }
+    );
+
     it("obeys the return statement", () => {
       const script = `
         function foo() {
@@ -130,7 +180,7 @@ describe("Interpreter", () => {
       expect(run(script)).toBe(3);
     });
 
-    it("returns 0 when return statement is not present", () => {
+    it("returns 0 when the return statement is not present", () => {
       const script = `
         function foo() { 123 }
         foo()
