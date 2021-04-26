@@ -277,29 +277,7 @@ describe("Interpreter", () => {
     });
   });
 
-  // TODO: Nice to have someday
-  it.skip("interprets blocks of script", () => {
-    const script = `
-    a = 1
-    c = 0
-    
-    {
-      b = 2
-      c = a + b
-    }
-    `;
-
-    const symbolTable = new SymbolTable();
-    run(script, symbolTable);
-
-    expect(symbolTable.has("a")).toBe(true);
-
-    // TODO: It should create a new scope for block variable
-    expect(symbolTable.has("b")).toBe(true);
-
-    expect(symbolTable.has("c")).toBe(true);
-    expect(symbolTable.get("c")).toBe(3);
-  });
+  // TODO: Use `run` helper for all tests below this comment...
 
   it("obeys variable scopes", () => {
     const symbolTable = new SymbolTable();
@@ -312,10 +290,10 @@ describe("Interpreter", () => {
       
       function bar() {
         c = 3
-        a + b + c
+        return a + b + c
       }
       
-      bar()
+      return bar()
     }
     
     d = foo()
@@ -324,10 +302,10 @@ describe("Interpreter", () => {
     const interpreter = new Interpreter(ast, symbolTable);
     interpreter.run();
 
-    expect(symbolTable.get("d")).toBe(6);
+    expect(symbolTable.get("d")).toEqual(new LuckyNumber(6));
 
     expect(symbolTable.has("a")).toBe(true);
-    expect(symbolTable.get("a")).toBe(2);
+    expect(symbolTable.get("a")).toEqual(new LuckyNumber(2));
 
     expect(symbolTable.has("b")).toBe(false);
     expect(symbolTable.has("bar")).toBe(false);
@@ -338,75 +316,90 @@ describe("Interpreter", () => {
   it("obeys variable scopes 2", () => {
     const symbolTable = new SymbolTable();
     const ast = parse(`
-    a = 1
-    
-    function add() {
-     a + 1
-    }
-    
-    first = add()
-    
-    a = 2
-    second = add()
+      a = 1
+      
+      function add() {
+        return a + 1
+      }
+      
+      first = add()
+      
+      a = 2
+      second = add()
     `);
 
     const interpreter = new Interpreter(ast, symbolTable);
     interpreter.run();
 
-    expect(symbolTable.get("first")).toBe(2);
-    expect(symbolTable.get("second")).toBe(3);
+    expect(symbolTable.get("first")).toEqual(new LuckyNumber(2));
+    expect(symbolTable.get("second")).toEqual(new LuckyNumber(3));
   });
 
   // TODO: Function that returns a function
   it("obeys variable scopes 3", () => {
     const symbolTable = new SymbolTable();
     const ast = parse(`
-    a = 1
-    
-    function foo() {
-      b = 2
-     
-      function bar() {
-        a + b
+      a = 1
+      
+      function foo() {
+        b = 2
+       
+        return function () {
+          return a + b
+        }
       }
       
-      bar # Return the function
-    }
-    
-    bar = foo()
-    c = bar()
+      bar = foo()
+      c = bar()
     `);
 
     const interpreter = new Interpreter(ast, symbolTable);
     interpreter.run();
 
-    expect(symbolTable.get("c")).toBe(3);
+    expect(symbolTable.get("c")).toEqual(new LuckyNumber(3));
   });
 
-  it("xxx", () => {
+  it("scopes 4", () => {
     const symbolTable = new SymbolTable();
     const ast = parse(`
-    a = 1
-    
-    function foo() {
-      b = 2
-      a + b
-    }
-
-    # TODO: Add a support for comments    
-    function bar() {
-      b = 3
-      a + b
-    }
-    
-    x = foo()
-    y = bar()
+      a = 1
+      
+      function foo() {
+        b = 2
+        return a + b
+      }
+  
+      function bar() {
+        b = 3
+        return a + b
+      }
+      
+      x = foo()
+      y = bar()
     `);
 
     const interpreter = new Interpreter(ast, symbolTable);
     interpreter.run();
 
-    expect(symbolTable.get("x")).toBe(3);
-    expect(symbolTable.get("y")).toBe(4);
+    expect(symbolTable.get("x")).toEqual(new LuckyNumber(3));
+    expect(symbolTable.get("y")).toEqual(new LuckyNumber(4));
+  });
+
+  it("scopes 5", () => {
+    const symbolTable = new SymbolTable();
+    const script = `
+      x = 1
+
+      function foo(x) {
+        return x + 1
+      }
+
+      y = foo(2)
+    `;
+
+    run(script, symbolTable);
+
+    expect(symbolTable.get("x")).toEqual(new LuckyNumber(1));
+    expect(symbolTable.get("y")).toEqual(new LuckyNumber(3));
   });
 });

@@ -1,8 +1,10 @@
 import { AstNode, BinaryOperation, Numeral, UnaryOperation } from "../Parser";
 import {
+  Expression,
   FunctionCall,
   FunctionDeclaration,
   Program,
+  ReturnStatement,
   VariableAccess,
   VariableAssigment,
 } from "../Parser/AstNode";
@@ -75,6 +77,7 @@ export class Interpreter {
   private visitFunctionDeclaration(node: FunctionDeclaration) {
     const luckyFunction = new LuckyFunction(
       this.scope,
+      node.name,
       node.parameters,
       node.statements
     );
@@ -95,43 +98,56 @@ export class Interpreter {
 
     const luckyFunction = this.scope.get(name);
 
+    // TODO: Probably will throw this error even if function is undefined
+    //  write a test and fix it!
     if (!(luckyFunction instanceof LuckyFunction)) {
       throw new RuntimeError(`The given identifier '${name}' is not callable`);
     }
 
-    if (luckyFunction.arity !== node.args.length) {
+    const fnScope = this.createFunctionScope(luckyFunction, node.args);
+
+    return this.withScope(fnScope, () => {
+      for (const statement of luckyFunction.statements) {
+        if (statement instanceof ReturnStatement) {
+          return this.visit(statement.expression);
+        }
+
+        this.visit(statement);
+      }
+
+      return new LuckyNumber(0);
+    });
+  }
+
+  private createFunctionScope(
+    luckyFunction: LuckyFunction,
+    args: Expression[]
+  ): SymbolTable {
+    if (luckyFunction.parameters.length !== args.length) {
+      // TODO: Improve this error message for anonymous functions
       throw new RuntimeError(
-        `Function ${name} takes exactly ${luckyFunction.arity} parameters`
+        `Function ${luckyFunction.name} takes exactly ${luckyFunction.parameters.length} parameters`
       );
     }
 
+    const scope = luckyFunction.scope.createChild();
+
     for (const [index, parameter] of luckyFunction.parameters.entries()) {
-      const argument = node.args[index];
-      this.scope.set(parameter, this.visit(argument));
+      const argument = args[index];
+      scope.setLocal(parameter, this.visit(argument));
     }
 
-    let result: LuckyObject = new LuckyNumber(0);
-
-    // TODO: Actually it's not that bad idea. It just need some polish
-    this.switchScope(luckyFunction.scope, () => {
-      luckyFunction.statements.forEach((statement) => {
-        // TODO: Bring back return (use reduce or something?)
-        result = this.visit(statement);
-      });
-    });
-
-    return result;
+    return scope;
   }
 
-  private switchScope(scope: SymbolTable, fn: () => void) {
+  private withScope(scope: SymbolTable, fn: () => LuckyObject) {
     const prevScope = this.scope;
     this.scope = scope;
 
-    this.enterScope();
-    fn();
-    this.exitScope();
+    const result = fn();
 
     this.scope = prevScope;
+    return result;
   }
 
   private visitBinaryOperation(node: BinaryOperation): LuckyObject {
@@ -182,26 +198,13 @@ export class Interpreter {
     return value;
   }
 
-  private visitVariableAccess(node: VariableAccess) {
+  private visitVariableAccess(node: VariableAccess): LuckyObject {
     const value = this.scope.get(node.name);
 
-    // TODO: Maybe `get` should throw an error?
     if (value === undefined) {
       throw new NameError(node.name);
     }
 
     return value;
-  }
-
-  private enterScope(): void {
-    this.scope = new SymbolTable(this.scope);
-  }
-
-  private exitScope(): void {
-    const parent = this.scope.parent;
-
-    if (parent) {
-      this.scope = parent;
-    }
   }
 }
