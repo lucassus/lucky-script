@@ -1,10 +1,11 @@
+import { LuckyNumber } from "./LuckyObject";
 import { SymbolTable } from "./SymbolTable";
 
 describe("SymbolTable", () => {
   it("acts as a map", () => {
     const symbolTable = new SymbolTable();
 
-    symbolTable.set("x", 1);
+    symbolTable.set("x", new LuckyNumber(1));
     expect(symbolTable.has("x")).toBe(true);
     expect(symbolTable.get("x")).toBe(1);
 
@@ -14,7 +15,7 @@ describe("SymbolTable", () => {
   describe("when the given variable is defined on the parent scope", () => {
     it("can access it", () => {
       const parent = new SymbolTable();
-      parent.set("a", 1);
+      parent.set("a", new LuckyNumber(1));
 
       const child = new SymbolTable(parent);
 
@@ -25,14 +26,14 @@ describe("SymbolTable", () => {
     it("can update it", () => {
       const grandFather = new SymbolTable();
       const father = new SymbolTable();
-      father.set("a", 1);
+      father.set("a", new LuckyNumber(1));
       const child = new SymbolTable(father);
 
-      child.set("a", 2);
+      child.set("a", new LuckyNumber(2));
 
       expect(child.has("a")).toBe(true);
       expect(father.has("a")).toBe(true);
-      expect(father.get("a")).toBe(2);
+      expect(father.get("a")).toEqual(new LuckyNumber(2));
       expect(grandFather.has("a")).toBe(false);
     });
   });
@@ -42,10 +43,11 @@ describe("SymbolTable", () => {
       const parent = new SymbolTable();
       const child = new SymbolTable(parent);
 
-      child.set("a", 1);
+      child.set("a", new LuckyNumber(1));
 
       expect(child.has("a")).toBe(true);
-      expect(child.get("a")).toBe(1);
+      // TODO: Fix this expectation and other, and `toBe` matcher
+      expect(child.get("a")).toEqual(new LuckyNumber(1));
       expect(parent.has("a")).toBe(false);
     });
   });

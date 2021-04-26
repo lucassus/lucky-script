@@ -3,12 +3,11 @@ import {
   FunctionCall,
   FunctionDeclaration,
   Program,
-  ReturnStatement,
   VariableAccess,
   VariableAssigment,
 } from "../Parser/AstNode";
 import { NameError, RuntimeError } from "./errors";
-import { LuckyObject, LuckyNumber, LuckyFunction } from "./LuckyFunction";
+import { LuckyFunction, LuckyNumber, LuckyObject } from "./LuckyObject";
 import { SymbolTable } from "./SymbolTable";
 
 export class Interpreter {
@@ -74,7 +73,11 @@ export class Interpreter {
   }
 
   private visitFunctionDeclaration(node: FunctionDeclaration) {
-    const luckyFunction = new LuckyFunction(this.scope, node.parameters, node.instructions);
+    const luckyFunction = new LuckyFunction(
+      this.scope,
+      node.parameters,
+      node.statements
+    );
 
     if (node.name) {
       this.scope.set(node.name, luckyFunction);
@@ -90,7 +93,7 @@ export class Interpreter {
       throw new RuntimeError(`Undefined function ${name}`);
     }
 
-    const luckyFunction = this.symbolTable.get(name);
+    const luckyFunction = this.scope.get(name);
 
     if (!(luckyFunction instanceof LuckyFunction)) {
       throw new RuntimeError(`The given identifier '${name}' is not callable`);
@@ -107,13 +110,13 @@ export class Interpreter {
       this.scope.set(parameter, this.visit(argument));
     }
 
-    let result = new LuckyNumber(0);
+    let result: LuckyObject = new LuckyNumber(0);
 
     // TODO: Actually it's not that bad idea. It just need some polish
     this.switchScope(luckyFunction.scope, () => {
-      luckyFunction.instructions.forEach((instruction) => {
+      luckyFunction.statements.forEach((statement) => {
         // TODO: Bring back return (use reduce or something?)
-        result = this.visit(instruction);
+        result = this.visit(statement);
       });
     });
 

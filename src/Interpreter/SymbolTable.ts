@@ -1,6 +1,4 @@
-import { LuckyFunction } from "./LuckyFunction";
-
-export type LuckyObject = number | LuckyFunction;
+import { LuckyObject } from "./LuckyObject";
 
 export class SymbolTable {
   private map: Map<string, LuckyObject> = new Map();

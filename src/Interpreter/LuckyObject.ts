@@ -1,5 +1,6 @@
 import { Statement } from "../Parser/AstNode";
 import { RuntimeError, ZeroDivisionError } from "./errors";
+import { SymbolTable } from "./SymbolTable";
 
 export abstract class LuckyObject {
   add(value: LuckyObject): LuckyObject {
@@ -79,6 +80,7 @@ export class LuckyNumber extends LuckyObject {
 
 export class LuckyFunction extends LuckyObject {
   constructor(
+    public readonly scope: SymbolTable,
     public readonly parameters: string[],
     public readonly statements: Statement[]
   ) {
