@@ -37,3 +37,11 @@ check-flake8:
 format: format-isort format-black
 
 lint: check-flake8 check-isort check-black
+
+# Testing
+
+test:
+	pytest .
+
+test-watch:
+	ptw .
