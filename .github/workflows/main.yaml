@@ -5,6 +5,9 @@ on: [push]
 jobs:
   test-lark-sandbox:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./lark-sandbox
 
     steps:
       - uses: actions/checkout@v2
