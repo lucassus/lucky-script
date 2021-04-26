@@ -55,36 +55,36 @@ def test_lucky_script():
     x = 1
 
     1 + 2 * 3
-    
+
     2 ** -(3 / 2) + 1
 
     y = -1 + 0.9999 * (3.5 + --+-4) ** 2 + x
-    
+
     function add() { x+y }
-    
-    function foo() { 
+
+    function foo() {
       x = 1
       y = 2
-      
+
       return 1 + 2 * 3 + -y ** -x
     }
-    
+
     function bar() {}
-    
+
     function(){}
-    
+
     bar = function () {}
-    
+
     add()
-    
+
     function curry(x) {
       z = 2
-      
+
       return function (y) {
         return x + y * z
       }
     }
-    
+
     curry(123)
     """
 
