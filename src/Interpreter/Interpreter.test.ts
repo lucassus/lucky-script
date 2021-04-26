@@ -1,7 +1,7 @@
 import { parse } from "../testingUtils";
 import { NameError, RuntimeError, ZeroDivisionError } from "./errors";
 import { Interpreter } from "./Interpreter";
-import { LuckyNumber } from "./LuckyObject";
+import { LuckyNumber } from "./objects";
 import { SymbolTable } from "./SymbolTable";
 
 function run(script: string, symbolTable?: SymbolTable): undefined | number {

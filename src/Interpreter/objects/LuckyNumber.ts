@@ -1,32 +1,5 @@
-import { Statement } from "../Parser/AstNode";
-import { RuntimeError, ZeroDivisionError } from "./errors";
-import { SymbolTable } from "./SymbolTable";
-
-export abstract class LuckyObject {
-  add(value: LuckyObject): LuckyObject {
-    this.throwIllegalOperationError();
-  }
-
-  sub(value: LuckyObject): LuckyObject {
-    this.throwIllegalOperationError();
-  }
-
-  mul(value: LuckyObject): LuckyObject {
-    this.throwIllegalOperationError();
-  }
-
-  div(value: LuckyObject): LuckyObject {
-    this.throwIllegalOperationError();
-  }
-
-  pow(value: LuckyObject): LuckyObject {
-    this.throwIllegalOperationError();
-  }
-
-  protected throwIllegalOperationError(): never {
-    throw new RuntimeError("Illegal operation");
-  }
-}
+import { ZeroDivisionError } from "../errors";
+import { LuckyObject } from "./LuckyObject";
 
 export class LuckyNumber extends LuckyObject {
   constructor(public readonly value: number) {
@@ -75,19 +48,5 @@ export class LuckyNumber extends LuckyObject {
     if (!(object instanceof LuckyNumber)) {
       this.throwIllegalOperationError();
     }
-  }
-}
-
-export class LuckyFunction extends LuckyObject {
-  constructor(
-    public readonly scope: SymbolTable,
-    public readonly parameters: string[],
-    public readonly statements: Statement[]
-  ) {
-    super();
-  }
-
-  get arity(): number {
-    return this.parameters.length;
   }
 }

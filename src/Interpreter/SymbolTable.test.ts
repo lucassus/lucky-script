@@ -1,4 +1,4 @@
-import { LuckyNumber } from "./LuckyObject";
+import { LuckyNumber } from "./objects";
 import { SymbolTable } from "./SymbolTable";
 
 describe("SymbolTable", () => {

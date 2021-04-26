@@ -1,4 +1,4 @@
-import { LuckyObject } from "./LuckyObject";
+import { LuckyObject } from "./objects";
 
 export class SymbolTable {
   private map: Map<string, LuckyObject> = new Map();
