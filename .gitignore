@@ -1,5 +1,6 @@
 .idea
 coverage
 dist
+lark-sandbox/.coverage
 lark-sandbox/venv
 node_modules
