@@ -1,4 +1,4 @@
-name: CI
+name: Lucky Script
 
 on: [push]
 
