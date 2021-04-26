@@ -30,6 +30,7 @@ export class Parser {
     return new Program(this.statements(TokenType.End));
   }
 
+  // _NEWLINE* statement? (_NEWLINE+ statement?)*
   private statements(end: TokenType): Statement[] {
     this.discardNewLines();
 
@@ -88,6 +89,7 @@ export class Parser {
     return this.binaryOperation(this.term, [TokenType.Plus, TokenType.Minus]);
   }
 
+  // "function" IDENTIFIER "(" func_args ")" block
   private functionDeclaration(): FunctionDeclaration {
     this.match(TokenType.Function);
 
@@ -95,18 +97,40 @@ export class Parser {
     this.match(TokenType.Identifier);
 
     this.match(TokenType.LeftBracket);
+    const parameters = this.functionParameters();
     this.match(TokenType.RightBracket);
 
-    return new FunctionDeclaration(name, this.block());
+    return new FunctionDeclaration(name, parameters, this.block());
   }
 
+  // "function" "(" func_parameters ")" block
   private anonymousFunctionDeclaration(): Expression {
     this.match(TokenType.Function);
 
     this.match(TokenType.LeftBracket);
+    const parameters = this.functionParameters();
     this.match(TokenType.RightBracket);
 
-    return new FunctionDeclaration(undefined, this.block());
+    return new FunctionDeclaration(undefined, parameters, this.block());
+  }
+
+  // (IDENTIFIER ("," IDENTIFIER)*)?
+  private functionParameters(): string[] {
+    if (this.currentToken.type === TokenType.RightBracket) {
+      return [];
+    }
+
+    const args: string[] = [this.currentToken.value];
+    this.match(TokenType.Identifier);
+
+    while (this.currentToken.type === TokenType.Comma) {
+      this.match(TokenType.Comma);
+
+      args.push(this.currentToken.value);
+      this.match(TokenType.Identifier);
+    }
+
+    return args;
   }
 
   private returnStatement(): ReturnStatement {
@@ -129,14 +153,32 @@ export class Parser {
     return statements;
   }
 
+  // IDENTIFIER "(" func_call_args ")"
   private functionCall(): Expression {
     const name = this.currentToken.value;
     this.match(TokenType.Identifier);
 
     this.match(TokenType.LeftBracket);
+    const args = this.functionCallArguments();
     this.match(TokenType.RightBracket);
 
-    return new FunctionCall(name);
+    return new FunctionCall(name, args);
+  }
+
+  // (expression ("," expression)*)?
+  private functionCallArguments(): Expression[] {
+    if (this.currentToken.value === TokenType.RightBracket) {
+      return [];
+    }
+
+    const args = [this.expression()];
+
+    while (this.currentToken.type === TokenType.Comma) {
+      this.match(TokenType.Comma);
+      args.push(this.expression());
+    }
+
+    return args;
   }
 
   private variableAssigment(): Expression {

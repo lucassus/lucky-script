@@ -205,16 +205,42 @@ describe("Parser", () => {
 
       expect(ast).toEqual(
         new Program([
-          new FunctionDeclaration("add", [
-            new VariableAssigment("x", new Numeral("1")),
-            new ReturnStatement(
-              new BinaryOperation(
-                new VariableAccess("x"),
-                "+",
-                new Numeral("2")
-              )
-            ),
-          ]),
+          new FunctionDeclaration(
+            "add",
+            [],
+            [
+              new VariableAssigment("x", new Numeral("1")),
+              new ReturnStatement(
+                new BinaryOperation(
+                  new VariableAccess("x"),
+                  "+",
+                  new Numeral("2")
+                )
+              ),
+            ]
+          ),
+        ])
+      );
+    });
+
+    it("parses a declaration with arguments", () => {
+      const ast = parse("function add(x, y) { return x + y }");
+
+      expect(ast).toEqual(
+        new Program([
+          new FunctionDeclaration(
+            "add",
+            ["x", "y"],
+            [
+              new ReturnStatement(
+                new BinaryOperation(
+                  new VariableAccess("x"),
+                  "+",
+                  new VariableAccess("y")
+                )
+              ),
+            ]
+          ),
         ])
       );
     });
@@ -227,19 +253,31 @@ describe("Parser", () => {
     `("parses a declaration with empty body", ({ input }) => {
       const ast = parse(input);
 
-      expect(ast).toEqual(new Program([new FunctionDeclaration("add", [])]));
+      expect(ast).toEqual(
+        new Program([new FunctionDeclaration("add", [], [])])
+      );
     });
 
     it("parses anonymous function declaration", () => {
-      const ast = parse("foo = function () { return 123 }");
+      const ast = parse("add = function (a, b) { return a + b }");
 
       expect(ast).toEqual(
         new Program([
           new VariableAssigment(
-            "foo",
-            new FunctionDeclaration(undefined, [
-              new ReturnStatement(new Numeral("123")),
-            ])
+            "add",
+            new FunctionDeclaration(
+              undefined,
+              ["a", "b"],
+              [
+                new ReturnStatement(
+                  new BinaryOperation(
+                    new VariableAccess("a"),
+                    "+",
+                    new VariableAccess("b")
+                  )
+                ),
+              ]
+            )
           ),
         ])
       );
@@ -250,20 +288,57 @@ describe("Parser", () => {
         "Expecting ( but got IDENTIFIER"
       );
     });
+
+    it("can't parse declaration with invalid arguments", () => {
+      expect(() => parse("function abc(,x,y) {}")).toThrow(
+        "Expecting IDENTIFIER but got ,"
+      );
+
+      expect(() => parse("function abc(x,) {}")).toThrow(
+        "Expecting IDENTIFIER but got )"
+      );
+
+      expect(() => parse("function abc(x,,) {}")).toThrow(
+        "Expecting IDENTIFIER but got ,"
+      );
+    });
   });
 
   describe("function call", () => {
     it("parses a call without arguments", () => {
       const ast = parse("doSomething()");
 
-      expect(ast).toEqual(new Program([new FunctionCall("doSomething")]));
+      expect(ast).toEqual(new Program([new FunctionCall("doSomething", [])]));
+    });
+
+    it("parses a call with argument", () => {
+      const ast = parse("doSomething(123)");
+
+      expect(ast).toEqual(
+        new Program([new FunctionCall("doSomething", [new Numeral("123")])])
+      );
+    });
+
+    it("parses a call with multiple arguments", () => {
+      const ast = parse("doSomething(1, 2, 1 + 2, bar(123))");
+
+      expect(ast).toEqual(
+        new Program([
+          new FunctionCall("doSomething", [
+            new Numeral("1"),
+            new Numeral("2"),
+            new BinaryOperation(new Numeral("1"), "+", new Numeral("2")),
+            new FunctionCall("bar", [new Numeral("123")]),
+          ]),
+        ])
+      );
     });
 
     it("parses assigment of a call result to a variable", () => {
       const ast = parse("x = abc()");
 
       expect(ast).toEqual(
-        new Program([new VariableAssigment("x", new FunctionCall("abc"))])
+        new Program([new VariableAssigment("x", new FunctionCall("abc", []))])
       );
     });
 
@@ -273,14 +348,14 @@ describe("Parser", () => {
       expect(ast).toEqual(
         new Program([
           new BinaryOperation(
-            new FunctionCall("foo"),
+            new FunctionCall("foo", []),
             "+",
             new UnaryOperation(
               "-",
               new BinaryOperation(
-                new FunctionCall("bar"),
+                new FunctionCall("bar", []),
                 "**",
-                new FunctionCall("baz")
+                new FunctionCall("baz", [])
               )
             )
           ),

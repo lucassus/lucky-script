@@ -21,6 +21,7 @@ export enum TokenType {
   LeftBrace = "{",
   RightBrace = "}",
   NewLine = "\n",
+  Comma = ",",
 
   End = "EndOfInput",
 }

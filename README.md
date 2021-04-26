@@ -1,14 +1,11 @@
 # My Own Simple Programming Language
 
 ```
-a = 1
-b = 2
-
-function add() {
-  a + b
+function add(a, b) {
+  return a + b
 }
 
-add() * 2 - 1  # Evaluates to 5
+add(1, 2) * 2 - 1  # Evaluates to 5
 ```
 
 ## Resources

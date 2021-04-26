@@ -78,7 +78,10 @@ export class LuckyNumber extends LuckyObject {
 }
 
 export class LuckyFunction extends LuckyObject {
-  constructor(public readonly statements: Statement[]) {
+  constructor(
+    public readonly parameters: string[],
+    public readonly statements: Statement[]
+  ) {
     super();
   }
 }

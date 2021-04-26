@@ -1,6 +1,6 @@
 program            : statements
 
-statements         : _NEWLINE* (statement (_NEWLINE+ statement?)*)?
+statements         : _NEWLINE* statement? (_NEWLINE+ statement?)*
 
 statement          : func
                    | return_statement
@@ -14,9 +14,11 @@ expression         : variable_assigment
 
 variable_assigment : IDENTIFIER "=" expression
 
-func               : "function" IDENTIFIER "(" ")" block
+func               : "function" IDENTIFIER "(" func_parameters ")" block
 
-anonymous_func     : "function" "(" ")" block
+anonymous_func     : "function" "(" func_parameters ")" block
+
+func_parameters    : (IDENTIFIER ("," IDENTIFIER)*)?
 
 block              : "{" statements "}"
 
@@ -32,7 +34,9 @@ atom               : NUMBER
                    | IDENTIFIER
                    | "(" expression ")"
 
-func_call          : IDENTIFIER "(" ")"
+func_call          : IDENTIFIER "(" func_call_args ")"
+
+func_call_args     : (expression ("," expression)*)?
 
 %import common.WS_INLINE
 %import common.NEWLINE -> _NEWLINE

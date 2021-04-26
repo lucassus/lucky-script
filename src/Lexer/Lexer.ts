@@ -7,9 +7,12 @@ import {
 } from "./Recognizer";
 import {
   Assigment,
+  BeginComment,
   Brackets,
+  Comma,
   Digits,
   Dot,
+  keywordToTokenType,
   LeftBrace,
   Letters,
   Multiply,
@@ -17,10 +20,8 @@ import {
   Operators,
   Power,
   RightBrace,
-  Whitespaces,
   symbolToTokenType,
-  keywordToTokenType,
-  BeginComment,
+  Whitespaces,
 } from "./symbols";
 import { Token, TokenType } from "./Token";
 
@@ -56,6 +57,10 @@ export class Lexer {
 
     if (Newlines.includes(this.currentSymbol)) {
       return new Token(TokenType.NewLine, this.currentSymbol, this.position);
+    }
+
+    if (this.currentSymbol === Comma) {
+      return new Token(TokenType.Comma, this.currentSymbol, this.position);
     }
 
     // TODO: Dry it, see `this.recognizeBrackets` or something similar
