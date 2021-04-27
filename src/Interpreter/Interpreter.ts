@@ -1,6 +1,5 @@
 import { AstNode, BinaryOperation, Numeral, UnaryOperation } from "../Parser";
 import {
-  Expression,
   FunctionCall,
   FunctionDeclaration,
   Program,
@@ -8,7 +7,7 @@ import {
   VariableAccess,
   VariableAssigment,
 } from "../Parser/AstNode";
-import { NameError, RuntimeError } from "./errors";
+import { RuntimeError } from "./errors";
 import { LuckyFunction, LuckyNumber, LuckyObject } from "./objects";
 import { SymbolTable } from "./SymbolTable";
 
@@ -89,22 +88,28 @@ export class Interpreter {
     return luckyFunction;
   }
 
-  private visitFunctionCall(node: FunctionCall): LuckyObject {
-    const { name } = node;
-
-    if (!this.scope.has(name)) {
-      throw new RuntimeError(`Undefined function ${name}`);
-    }
+  private visitFunctionCall(functionCall: FunctionCall): LuckyObject {
+    const { name } = functionCall;
 
     const luckyFunction = this.scope.get(name);
 
-    // TODO: Probably will throw this error even if function is undefined
-    //  write a test and fix it!
     if (!(luckyFunction instanceof LuckyFunction)) {
       throw new RuntimeError(`The given identifier '${name}' is not callable`);
     }
 
-    const fnScope = this.createFunctionScope(luckyFunction, node.args);
+    if (luckyFunction.parameters.length !== functionCall.args.length) {
+      // TODO: Improve this error message for anonymous functions
+      throw new RuntimeError(
+        `Function ${luckyFunction.name} takes exactly ${luckyFunction.parameters.length} parameters`
+      );
+    }
+
+    const fnScope = luckyFunction.scope.createChild();
+
+    for (const [index, parameter] of luckyFunction.parameters.entries()) {
+      const argument = functionCall.args[index];
+      fnScope.setLocal(parameter, this.visit(argument));
+    }
 
     return this.withScope(fnScope, () => {
       for (const statement of luckyFunction.statements) {
@@ -117,27 +122,6 @@ export class Interpreter {
 
       return new LuckyNumber(0);
     });
-  }
-
-  private createFunctionScope(
-    luckyFunction: LuckyFunction,
-    args: Expression[]
-  ): SymbolTable {
-    if (luckyFunction.parameters.length !== args.length) {
-      // TODO: Improve this error message for anonymous functions
-      throw new RuntimeError(
-        `Function ${luckyFunction.name} takes exactly ${luckyFunction.parameters.length} parameters`
-      );
-    }
-
-    const scope = luckyFunction.scope.createChild();
-
-    for (const [index, parameter] of luckyFunction.parameters.entries()) {
-      const argument = args[index];
-      scope.setLocal(parameter, this.visit(argument));
-    }
-
-    return scope;
   }
 
   private withScope(scope: SymbolTable, fn: () => LuckyObject) {
@@ -199,12 +183,6 @@ export class Interpreter {
   }
 
   private visitVariableAccess(node: VariableAccess): LuckyObject {
-    const value = this.scope.get(node.name);
-
-    if (value === undefined) {
-      throw new NameError(node.name);
-    }
-
-    return value;
+    return this.scope.get(node.name);
   }
 }

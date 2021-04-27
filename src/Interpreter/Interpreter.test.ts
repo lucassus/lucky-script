@@ -252,11 +252,15 @@ describe("Interpreter", () => {
       expect(runScript).toThrow("Illegal operation");
     });
 
+    it("raises an error when the given identifier is not defined", () => {
+      expect(() => run("foo()")).toThrow(new NameError("foo"));
+    });
+
     it("raises an error when the given identifier is not callable", () => {
       const script = `
         notAFunction = 123
         notAFunction()
-    `;
+      `;
 
       const runScript = () => run(script);
 
