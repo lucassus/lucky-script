@@ -137,28 +137,42 @@ describe("Interpreter", () => {
       expect(run(script)).toBe(3);
     });
 
-    it.each`
-      args
-      ${""}
-      ${"1"}
-      ${"1,2,3"}
-    `(
-      "raises an error when invalid number of arguments is given",
-      ({ args }) => {
-        const script = `
-          function add(x, y) {
-            return x + y
-          }
+    describe("calling functions with invalid number of arguments", () => {
+      it.each`
+        args
+        ${""}
+        ${"1"}
+        ${"1,2,3"}
+      `(
+        "raises an error when invalid number of arguments is given",
+        ({ args }) => {
+          const script = `
+            function add(x, y) {
+              return x + y
+            }
+            
+            add(${args})
+          `;
+
+          const runScript = () => run(script);
+
+          expect(runScript).toThrow(RuntimeError);
+          expect(runScript).toThrow("Function add takes exactly 2 parameters");
+        }
+      );
+
+      it("raises an error when anonymous function is called with invalid number of arguments", () => {
+        const script = `;
+          foo = function (x, y) { return x + y }
           
-          add(${args})
+          foo(1, 2, 3)
         `;
 
-        const runScript = () => run(script);
-
-        expect(runScript).toThrow(RuntimeError);
-        expect(runScript).toThrow("Function add takes exactly 2 parameters");
-      }
-    );
+        expect(() => run(script)).toThrow(
+          new RuntimeError("Function foo takes exactly 2 parameters")
+        );
+      });
+    });
 
     it("obeys the return statement", () => {
       const script = `

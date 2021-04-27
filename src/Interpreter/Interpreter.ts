@@ -98,9 +98,8 @@ export class Interpreter {
     }
 
     if (luckyFunction.parameters.length !== functionCall.args.length) {
-      // TODO: Improve this error message for anonymous functions
       throw new RuntimeError(
-        `Function ${luckyFunction.name} takes exactly ${luckyFunction.parameters.length} parameters`
+        `Function ${name} takes exactly ${luckyFunction.parameters.length} parameters`
       );
     }
 

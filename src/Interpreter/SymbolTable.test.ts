@@ -1,4 +1,4 @@
-import { NameError } from "./errors";
+import { NameError, RuntimeError } from "./errors";
 import { LuckyNumber } from "./objects";
 import { SymbolTable } from "./SymbolTable";
 
@@ -71,6 +71,9 @@ describe("SymbolTable", () => {
     describe("when the variable is not defined", () => {
       it("throws NameError", () => {
         const scope = new SymbolTable();
+
+        expect(() => scope.get("x")).toThrow(RuntimeError);
+        expect(() => scope.get("x")).toThrow(NameError);
         expect(() => scope.get("x")).toThrow(new NameError("x"));
       });
     });
