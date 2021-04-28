@@ -1,109 +1,95 @@
-import { NameError, RuntimeError } from "./errors";
+import { NameError } from "./errors";
 import { LuckyNumber } from "./objects";
 import { SymbolTable } from "./SymbolTable";
 
 describe("SymbolTable", () => {
-  it("acts as a map", () => {
-    const symbolTable = new SymbolTable();
-
-    symbolTable.set("x", new LuckyNumber(1));
-    expect(symbolTable.has("x")).toBe(true);
-    // TODO: Fix this expectation and other, and `toBe` matcher
-    expect(symbolTable.get("x")).toEqual(new LuckyNumber(1));
-
-    expect(symbolTable.has("y")).toBe(false);
-  });
-
-  describe("when the given variable is defined on the parent scope", () => {
-    it("can access it", () => {
-      const number = new LuckyNumber(1);
-
+  describe(".setLocal", () => {
+    it("sets the given variable at the current scope", () => {
       const parent = new SymbolTable();
-      parent.set("a", number);
-
+      parent.set("x", new LuckyNumber(1));
       const child = parent.createChild();
 
-      expect(child.has("a")).toBe(true);
-      expect(child.get("a")).toBe(number);
-    });
+      const value = new LuckyNumber(2);
 
-    it("can update it", () => {
-      const grandFather = new SymbolTable();
-      const parent = new SymbolTable();
-      parent.set("a", new LuckyNumber(1));
-      const child = parent.createChild();
-
-      child.set("a", new LuckyNumber(2));
-
-      expect(child.has("a")).toBe(true);
-      expect(parent.has("a")).toBe(true);
-      expect(parent.get("a")).toEqual(new LuckyNumber(2));
-      expect(grandFather.has("a")).toBe(false);
+      child.setLocal("x", value);
+      expect(parent.lookup("x")).not.toBe(value);
+      expect(child.lookup("x")).toBe(value);
     });
   });
 
-  describe("when the given variable is not defined on the parent scope", () => {
-    it("sets a new variable on the current scope", () => {
-      const parent = new SymbolTable();
-      const child = parent.createChild();
+  describe(".set", () => {
+    describe("when the given variable is not defined", () => {
+      it("sets a value at the current scope", () => {
+        const parent = new SymbolTable();
+        const child = parent.createChild();
 
-      child.set("a", new LuckyNumber(1));
+        const value = new LuckyNumber(1);
+        child.set("x", value);
 
-      expect(child.has("a")).toBe(true);
-      expect(child.get("a")).toEqual(new LuckyNumber(1));
-      expect(parent.has("a")).toBe(false);
+        expect(() => parent.lookup("x")).toThrow(NameError);
+        expect(child.lookup("x")).toBe(value);
+      });
+    });
+
+    describe("when the variable is already defined somewhere in the parent scopes", () => {
+      it("overrides it in the parent scope", () => {
+        const grandParent = new SymbolTable();
+        grandParent.set("x", new LuckyNumber(1));
+        const parent = grandParent.createChild();
+        const child = parent.createChild();
+
+        const value = new LuckyNumber(2);
+        child.set("x", value);
+
+        expect(grandParent.lookup("x")).toBe(value);
+        expect(parent.lookup("x")).toBe(value);
+        expect(child.lookup("x")).toBe(value);
+      });
     });
   });
 
-  // TODO: BDD vs more like unit tests
+  describe(".lookup", () => {
+    describe("when the variable is already defined in the current scope", () => {
+      it("returns the value", () => {
+        const scope = new SymbolTable();
+        const value = new LuckyNumber(1);
+        scope.set("x", value);
 
-  describe(".get", () => {
-    describe("when the variable is defined", () => {
-      const scope = new SymbolTable();
-      const number = new LuckyNumber(123);
-      scope.set("x", number);
+        expect(scope.lookup("x")).toBe(value);
+      });
+    });
 
-      const child = scope.createChild();
+    describe("when the variable is already defined in the parent scope", () => {
+      it("returns the value", () => {
+        const parent = new SymbolTable();
+        const value = new LuckyNumber(1);
+        parent.set("x", value);
+        const child = parent.createChild();
 
-      expect(child.get("x")).toBe(number);
+        expect(child.lookup("x")).toBe(value);
+      });
+    });
+
+    describe("when the variable is already defined somewhere in the parent scopes", () => {
+      it("returns the value", () => {
+        const grandParent = new SymbolTable();
+        const value = new LuckyNumber(1);
+        grandParent.set("x", value);
+        const parent = grandParent.createChild();
+        const child = parent.createChild();
+
+        expect(child.lookup("x")).toBe(value);
+      });
     });
 
     describe("when the variable is not defined", () => {
-      it("throws NameError", () => {
-        const scope = new SymbolTable();
+      it("raises NameError", () => {
+        const parent = new SymbolTable();
+        const child = parent.createChild();
 
-        expect(() => scope.get("x")).toThrow(RuntimeError);
-        expect(() => scope.get("x")).toThrow(NameError);
-        expect(() => scope.get("x")).toThrow(new NameError("x"));
+        expect(() => child.lookup("x")).toThrow(NameError);
+        expect(() => child.lookup("x")).toThrow("Identifier x is not defined");
       });
-    });
-  });
-
-  describe(".setLocal", () => {
-    describe("on root scope", () => {
-      it("sets a new variable", () => {
-        const scope = new SymbolTable();
-
-        const number = new LuckyNumber(1);
-        scope.setLocal("a", number);
-
-        expect(scope.has("a")).toBe(true);
-        expect(scope.get("a")).toBe(number);
-      });
-    });
-  });
-
-  describe("on child scope", () => {
-    it("sets a new variable locally", () => {
-      const parent = new SymbolTable();
-      const child = parent.createChild();
-
-      const number = new LuckyNumber(1);
-      child.setLocal("a", number);
-
-      expect(parent.has("a")).toBe(false);
-      expect(child.has("a")).toBe(true);
-      expect(child.get("a")).toBe(number);
     });
   });
 });

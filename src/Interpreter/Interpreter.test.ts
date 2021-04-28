@@ -47,15 +47,15 @@ describe("Interpreter", () => {
       const symbolTable = new SymbolTable();
 
       expect(run("pi = 3.14", symbolTable)).toBe(3.14);
-      expect(symbolTable.get("pi")).toEqual(new LuckyNumber(3.14));
+      expect(symbolTable.lookup("pi")).toEqual(new LuckyNumber(3.14));
     });
 
     it("sets a chain of variables", () => {
       const symbolTable = new SymbolTable();
 
       expect(run("x = y = 1", symbolTable)).toBe(1);
-      expect(symbolTable.get("x")).toEqual(new LuckyNumber(1));
-      expect(symbolTable.get("y")).toEqual(new LuckyNumber(1));
+      expect(symbolTable.lookup("x")).toEqual(new LuckyNumber(1));
+      expect(symbolTable.lookup("y")).toEqual(new LuckyNumber(1));
     });
 
     it("reads variables", () => {
@@ -71,7 +71,7 @@ describe("Interpreter", () => {
       symbolTable.set("x", new LuckyNumber(1));
 
       expect(run("x = x + 1", symbolTable)).toBe(2);
-      expect(symbolTable.get("x")).toEqual(new LuckyNumber(2));
+      expect(symbolTable.lookup("x")).toEqual(new LuckyNumber(2));
     });
 
     it("raises an error on access to undefined variable", () => {
@@ -300,37 +300,35 @@ describe("Interpreter", () => {
   it("obeys variable scopes", () => {
     const symbolTable = new SymbolTable();
     const ast = parse(`
-    a = 1
-    
-    function foo() {
-      a = 2 # Should replace value of on the parent scope
-      b = 1 # Should not be accessible in the parent scopes
+      a = 1
       
-      function bar() {
-        c = 3
-        return a + b + c
+      function foo() {
+        a = 2 # Should replace value of on the parent scope
+        b = 1 # Should not be accessible in the parent scopes
+        
+        function bar() {
+          c = 3
+          return a + b + c
+        }
+        
+        return bar()
       }
       
-      return bar()
-    }
-    
-    d = foo()
+      d = foo()
     `);
 
     const interpreter = new Interpreter(ast, symbolTable);
     interpreter.run();
 
-    expect(symbolTable.get("d")).toEqual(new LuckyNumber(6));
+    expect(symbolTable.lookup("d")).toEqual(new LuckyNumber(6));
+    expect(symbolTable.lookup("a")).toEqual(new LuckyNumber(2));
 
-    expect(symbolTable.has("a")).toBe(true);
-    expect(symbolTable.get("a")).toEqual(new LuckyNumber(2));
-
-    expect(symbolTable.has("b")).toBe(false);
-    expect(symbolTable.has("bar")).toBe(false);
-    expect(symbolTable.has("c")).toBe(false);
+    expect(() => symbolTable.lookup("b")).toThrow(NameError);
+    expect(() => symbolTable.lookup("bar")).toThrow(NameError);
+    expect(() => symbolTable.lookup("c")).toThrow(NameError);
   });
 
-  // TODO: Dynamic scoping like JavaScript
+  // TODO: Dynamic scoping like in JavaScript
   it("obeys variable scopes 2", () => {
     const symbolTable = new SymbolTable();
     const ast = parse(`
@@ -349,8 +347,8 @@ describe("Interpreter", () => {
     const interpreter = new Interpreter(ast, symbolTable);
     interpreter.run();
 
-    expect(symbolTable.get("first")).toEqual(new LuckyNumber(2));
-    expect(symbolTable.get("second")).toEqual(new LuckyNumber(3));
+    expect(symbolTable.lookup("first")).toEqual(new LuckyNumber(2));
+    expect(symbolTable.lookup("second")).toEqual(new LuckyNumber(3));
   });
 
   // TODO: Function that returns a function
@@ -374,7 +372,7 @@ describe("Interpreter", () => {
     const interpreter = new Interpreter(ast, symbolTable);
     interpreter.run();
 
-    expect(symbolTable.get("c")).toEqual(new LuckyNumber(3));
+    expect(symbolTable.lookup("c")).toEqual(new LuckyNumber(3));
   });
 
   it("scopes 4", () => {
@@ -399,8 +397,8 @@ describe("Interpreter", () => {
     const interpreter = new Interpreter(ast, symbolTable);
     interpreter.run();
 
-    expect(symbolTable.get("x")).toEqual(new LuckyNumber(3));
-    expect(symbolTable.get("y")).toEqual(new LuckyNumber(4));
+    expect(symbolTable.lookup("x")).toEqual(new LuckyNumber(3));
+    expect(symbolTable.lookup("y")).toEqual(new LuckyNumber(4));
   });
 
   it("scopes 5", () => {
@@ -417,7 +415,7 @@ describe("Interpreter", () => {
 
     run(script, symbolTable);
 
-    expect(symbolTable.get("x")).toEqual(new LuckyNumber(1));
-    expect(symbolTable.get("y")).toEqual(new LuckyNumber(3));
+    expect(symbolTable.lookup("x")).toEqual(new LuckyNumber(1));
+    expect(symbolTable.lookup("y")).toEqual(new LuckyNumber(3));
   });
 });

@@ -91,7 +91,7 @@ export class Interpreter {
   private visitFunctionCall(functionCall: FunctionCall): LuckyObject {
     const { name } = functionCall;
 
-    const luckyFunction = this.scope.get(name);
+    const luckyFunction = this.scope.lookup(name);
 
     if (!(luckyFunction instanceof LuckyFunction)) {
       throw new RuntimeError(`The given identifier '${name}' is not callable`);
@@ -182,6 +182,6 @@ export class Interpreter {
   }
 
   private visitVariableAccess(node: VariableAccess): LuckyObject {
-    return this.scope.get(node.name);
+    return this.scope.lookup(node.name);
   }
 }

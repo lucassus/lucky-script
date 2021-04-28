@@ -13,14 +13,14 @@ export class SymbolTable {
   set(key: string, value: LuckyObject): void {
     let parent = this.parent;
 
-    while (parent !== undefined && !parent.has(key)) {
+    while (parent !== undefined && !parent.locals.has(key)) {
       parent = parent.parent;
     }
 
     (parent || this).setLocal(key, value);
   }
 
-  get(key: string): LuckyObject {
+  lookup(key: string): LuckyObject {
     const value = this.locals.get(key);
 
     if (value !== undefined) {
@@ -28,18 +28,10 @@ export class SymbolTable {
     }
 
     if (this.parent) {
-      return this.parent.get(key);
+      return this.parent.lookup(key);
     }
 
     throw new NameError(key);
-  }
-
-  has(key: string): boolean {
-    if (this.locals.has(key)) {
-      return true;
-    }
-
-    return this.parent ? this.parent.has(key) : false;
   }
 
   createChild(): SymbolTable {
