@@ -295,121 +295,78 @@ describe("Interpreter", () => {
     });
   });
 
-  it("obeys variable scopes", () => {
-    const symbolTable = new SymbolTable();
-    const script = `
-      a = 1
-      
-      function foo() {
-        a = 2 # Should replace value of on the parent scope
-        b = 1 # Should not be accessible in the parent scopes
+  describe("variable scopes", () => {
+    it("creates valid scopes for function calls", () => {
+      const symbolTable = new SymbolTable();
+      const script = `
+        a = 1
         
-        function bar() {
-          c = 3
-          return a + b + c
+        function foo() {
+          a = 2 # Should replace value of on the parent scope
+          b = 1 # Should be accessible only in the current scope
+          
+          function bar() {
+            c = 3 # Should be accessible only in the current scope
+            return a + b + c
+          }
+          
+          return bar()
         }
         
-        return bar()
-      }
-      
-      d = foo()
-    `;
+        d = foo()
+      `;
 
-    run(script, symbolTable);
+      run(script, symbolTable);
 
-    expect(symbolTable.lookup("d")).toEqual(new LuckyNumber(6));
-    expect(symbolTable.lookup("a")).toEqual(new LuckyNumber(2));
+      expect(symbolTable.lookup("d")).toEqual(new LuckyNumber(6));
+      expect(symbolTable.lookup("a")).toEqual(new LuckyNumber(2));
 
-    expect(() => symbolTable.lookup("b")).toThrow(NameError);
-    expect(() => symbolTable.lookup("bar")).toThrow(NameError);
-    expect(() => symbolTable.lookup("c")).toThrow(NameError);
-  });
+      expect(() => symbolTable.lookup("b")).toThrow(NameError);
+      expect(() => symbolTable.lookup("c")).toThrow(NameError);
+    });
 
-  // TODO: Dynamic scoping like in JavaScript
-  it("obeys variable scopes 2", () => {
-    const symbolTable = new SymbolTable();
-    const script = `
-      a = 1
-      
-      function add() {
-        return a + 1
-      }
-      
-      first = add()
-      
-      a = 2
-      second = add()
-    `;
-
-    run(script, symbolTable);
-
-    expect(symbolTable.lookup("first")).toEqual(new LuckyNumber(2));
-    expect(symbolTable.lookup("second")).toEqual(new LuckyNumber(3));
-  });
-
-  // TODO: Function that returns a function
-  it("obeys variable scopes 3", () => {
-    const symbolTable = new SymbolTable();
-    const script = `
-      a = 1
-      
-      function foo() {
-        b = 2
-       
-        return function () {
-          return a + b
+    it("allows to use dynamic scopes", () => {
+      const symbolTable = new SymbolTable();
+      const script = `
+        a = 1
+        
+        function add() {
+          # Currently a is 1, but later its value will be changed
+          
+          return a + 1
         }
-      }
-      
-      bar = foo()
-      c = bar()
-    `;
+        
+        firstResult = add()
+        
+        a = 2
+        secondResult = add()
+      `;
 
-    run(script, symbolTable);
+      run(script, symbolTable);
 
-    expect(symbolTable.lookup("c")).toEqual(new LuckyNumber(3));
-  });
+      expect(symbolTable.lookup("firstResult")).toEqual(new LuckyNumber(2));
+      expect(symbolTable.lookup("secondResult")).toEqual(new LuckyNumber(3));
+    });
 
-  it("scopes 4", () => {
-    const symbolTable = new SymbolTable();
-    const script = `
-      a = 1
-      
-      function foo() {
-        b = 2
-        return a + b
-      }
+    it("creates local variables for arguments passed to function call", () => {
+      const symbolTable = new SymbolTable();
+      const script = `
+        x = 1
   
-      function bar() {
-        b = 3
-        return a + b
-      }
-      
-      x = foo()
-      y = bar()
-    `;
+        function foo(x) {
+          # Function argument x should shadow x from the parent scope
+          x = x + 1
+          
+          return x + 1
+        }
+  
+        y = foo(2)
+      `;
 
-    run(script, symbolTable);
+      run(script, symbolTable);
 
-    expect(symbolTable.lookup("x")).toEqual(new LuckyNumber(3));
-    expect(symbolTable.lookup("y")).toEqual(new LuckyNumber(4));
-  });
-
-  it("scopes 5", () => {
-    const symbolTable = new SymbolTable();
-    const script = `
-      x = 1
-
-      function foo(x) {
-        return x + 1
-      }
-
-      y = foo(2)
-    `;
-
-    run(script, symbolTable);
-
-    expect(symbolTable.lookup("x")).toEqual(new LuckyNumber(1));
-    expect(symbolTable.lookup("y")).toEqual(new LuckyNumber(3));
+      expect(symbolTable.lookup("x")).toEqual(new LuckyNumber(1));
+      expect(symbolTable.lookup("y")).toEqual(new LuckyNumber(4));
+    });
   });
 });

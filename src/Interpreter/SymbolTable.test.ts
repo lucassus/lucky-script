@@ -46,6 +46,24 @@ describe("SymbolTable", () => {
         expect(child.lookup("x")).toBe(value);
       });
     });
+
+    describe("when the variable is already defined in two (or more) scopes", () => {
+      it("overrides it in the first scope", () => {
+        // Given
+        const parent = new SymbolTable();
+        parent.setLocal("x", new LuckyNumber(1));
+
+        const child = parent.createChild();
+        child.setLocal("x", new LuckyNumber(2));
+
+        // When
+        child.set("x", new LuckyNumber(3));
+
+        // Then
+        expect(parent.lookup("x")).toEqual(new LuckyNumber(1));
+        expect(child.lookup("x")).toEqual(new LuckyNumber(3));
+      });
+    });
   });
 
   describe(".lookup", () => {

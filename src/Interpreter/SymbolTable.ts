@@ -11,30 +11,40 @@ export class SymbolTable {
   }
 
   set(key: string, value: LuckyObject): void {
-    let parent = this.parent;
-
-    while (parent !== undefined && !parent.locals.has(key)) {
-      parent = parent.parent;
-    }
-
-    (parent || this).setLocal(key, value);
+    const scope = this.findTheClosestScopeThatDefines(key) || this;
+    return scope.setLocal(key, value);
   }
 
   lookup(key: string): LuckyObject {
+    const scope = this.findTheClosestScopeThatDefines(key) || this;
+    return scope.getLocal(key);
+  }
+
+  private getLocal(key: string): LuckyObject {
     const value = this.locals.get(key);
 
-    if (value !== undefined) {
-      return value;
+    if (value === undefined) {
+      throw new NameError(key);
     }
 
-    if (this.parent) {
-      return this.parent.lookup(key);
-    }
-
-    throw new NameError(key);
+    return value;
   }
 
   createChild(): SymbolTable {
     return new SymbolTable(this);
+  }
+
+  private findTheClosestScopeThatDefines(key: string): undefined | SymbolTable {
+    let scope: undefined | SymbolTable = this;
+
+    while (scope) {
+      if (scope.locals.has(key)) {
+        return scope;
+      }
+
+      scope = scope.parent;
+    }
+
+    return undefined;
   }
 }
