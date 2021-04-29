@@ -97,9 +97,9 @@ export class Interpreter {
       throw new RuntimeError(`The given identifier '${name}' is not callable`);
     }
 
-    if (luckyFunction.parameters.length !== node.args.length) {
+    if (luckyFunction.arity !== node.args.length) {
       throw new RuntimeError(
-        `Function ${name} takes exactly ${luckyFunction.parameters.length} parameters`
+        `Function ${name} takes exactly ${luckyFunction.arity} parameters`
       );
     }
 
