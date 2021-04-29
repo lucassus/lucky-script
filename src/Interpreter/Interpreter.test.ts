@@ -295,11 +295,9 @@ describe("Interpreter", () => {
     });
   });
 
-  // TODO: Use `run` helper for all tests below this comment...
-
   it("obeys variable scopes", () => {
     const symbolTable = new SymbolTable();
-    const ast = parse(`
+    const script = `
       a = 1
       
       function foo() {
@@ -315,10 +313,9 @@ describe("Interpreter", () => {
       }
       
       d = foo()
-    `);
+    `;
 
-    const interpreter = new Interpreter(ast, symbolTable);
-    interpreter.run();
+    run(script, symbolTable);
 
     expect(symbolTable.lookup("d")).toEqual(new LuckyNumber(6));
     expect(symbolTable.lookup("a")).toEqual(new LuckyNumber(2));
@@ -331,7 +328,7 @@ describe("Interpreter", () => {
   // TODO: Dynamic scoping like in JavaScript
   it("obeys variable scopes 2", () => {
     const symbolTable = new SymbolTable();
-    const ast = parse(`
+    const script = `
       a = 1
       
       function add() {
@@ -342,10 +339,9 @@ describe("Interpreter", () => {
       
       a = 2
       second = add()
-    `);
+    `;
 
-    const interpreter = new Interpreter(ast, symbolTable);
-    interpreter.run();
+    run(script, symbolTable);
 
     expect(symbolTable.lookup("first")).toEqual(new LuckyNumber(2));
     expect(symbolTable.lookup("second")).toEqual(new LuckyNumber(3));
@@ -354,7 +350,7 @@ describe("Interpreter", () => {
   // TODO: Function that returns a function
   it("obeys variable scopes 3", () => {
     const symbolTable = new SymbolTable();
-    const ast = parse(`
+    const script = `
       a = 1
       
       function foo() {
@@ -367,17 +363,16 @@ describe("Interpreter", () => {
       
       bar = foo()
       c = bar()
-    `);
+    `;
 
-    const interpreter = new Interpreter(ast, symbolTable);
-    interpreter.run();
+    run(script, symbolTable);
 
     expect(symbolTable.lookup("c")).toEqual(new LuckyNumber(3));
   });
 
   it("scopes 4", () => {
     const symbolTable = new SymbolTable();
-    const ast = parse(`
+    const script = `
       a = 1
       
       function foo() {
@@ -392,10 +387,9 @@ describe("Interpreter", () => {
       
       x = foo()
       y = bar()
-    `);
+    `;
 
-    const interpreter = new Interpreter(ast, symbolTable);
-    interpreter.run();
+    run(script, symbolTable);
 
     expect(symbolTable.lookup("x")).toEqual(new LuckyNumber(3));
     expect(symbolTable.lookup("y")).toEqual(new LuckyNumber(4));
