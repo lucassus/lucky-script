@@ -1,5 +1,5 @@
 import { parse } from "../testingUtils";
-import { NameError, ZeroDivisionError } from "./errors";
+import { NameError, RuntimeError, ZeroDivisionError } from "./errors";
 import { Interpreter } from "./Interpreter";
 import { LuckyNumber, LuckyObject } from "./LuckyObject";
 
@@ -79,9 +79,10 @@ describe("Interpreter", () => {
     });
 
     it("raises an error on access to undefined variable", () => {
-      expect(() => run("undefinedVariable + 1")).toThrow(
-        new NameError("undefinedVariable")
-      );
+      const runScript = () => run("undefinedVariable + 1");
+
+      expect(runScript).toThrow(NameError);
+      expect(runScript).toThrow("Identifier undefinedVariable is not defined");
     });
   });
 
@@ -156,9 +157,10 @@ describe("Interpreter", () => {
           add(${args})
         `;
 
-        expect(() => run(script)).toThrow(
-          new SyntaxError("Function add takes exactly 2 parameters")
-        );
+        const runScript = () => run(script);
+
+        expect(runScript).toThrow(RuntimeError);
+        expect(runScript).toThrow("Function add takes exactly 2 parameters");
       }
     );
 
@@ -228,13 +230,17 @@ describe("Interpreter", () => {
         1 + foo
     `;
 
-      expect(() => run(script)).toThrow("Illegal operation");
+      const runScript = () => run(script);
+
+      expect(runScript).toThrow(RuntimeError);
+      expect(runScript).toThrow("Illegal operation");
     });
 
     it("raises an error when return is given outside a function body", () => {
-      expect(() => run("return 123")).toThrow(
-        "Unsupported AST node type ReturnStatement"
-      );
+      const runScript = () => run("return 123");
+
+      expect(runScript).toThrow(RuntimeError);
+      expect(runScript).toThrow("Unsupported AST node type ReturnStatement");
     });
 
     it("raises an error on illegal unary operation", () => {
@@ -244,7 +250,10 @@ describe("Interpreter", () => {
         -foo
     `;
 
-      expect(() => run(script)).toThrow("Illegal operation");
+      const runScript = () => run(script);
+
+      expect(runScript).toThrow(RuntimeError);
+      expect(runScript).toThrow("Illegal operation");
     });
 
     it("raises an error when the given identifier is not callable", () => {
@@ -253,7 +262,10 @@ describe("Interpreter", () => {
         notAFunction()
     `;
 
-      expect(() => run(script)).toThrow(
+      const runScript = () => run(script);
+
+      expect(runScript).toThrow(RuntimeError);
+      expect(runScript).toThrow(
         "The given identifier 'notAFunction' is not callable"
       );
     });

@@ -13,6 +13,7 @@ import {
   VariableAccess,
   VariableAssigment,
 } from "./AstNode";
+import { SyntaxError } from "./errors";
 import { Lookahead } from "./Lookahead";
 
 export class Parser {
@@ -236,7 +237,7 @@ export class Parser {
       return this.group();
     }
 
-    throw new Error(`Unexpected token ${currentToken.type}`);
+    throw new SyntaxError(`Unexpected token ${currentToken.type}`);
   }
 
   private group(): Expression {

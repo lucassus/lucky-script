@@ -1,4 +1,4 @@
-import { SyntaxError } from "./errors";
+import { IllegalSymbolError } from "./errors";
 import { Lexer } from "./Lexer";
 import { Token, TokenType } from "./Token";
 
@@ -111,9 +111,9 @@ describe("Lexer", () => {
       ${"1."}
       ${"1..2"}
       ${"1.2.3"}
-    `("throws SyntaxError for invalid numerals", ({ input }) => {
+    `("throws IllegalSymbolError for invalid numerals", ({ input }) => {
       const lexer = new Lexer(input);
-      expect(() => lexer.nextToken()).toThrow(SyntaxError);
+      expect(() => lexer.nextToken()).toThrow(IllegalSymbolError);
     });
   });
 
@@ -219,8 +219,8 @@ describe("Lexer", () => {
     ]);
   });
 
-  it("throws SyntaxError when unexpected symbol is given", () => {
+  it("throws IllegalSymbolError when unexpected symbol is given", () => {
     const lexer = new Lexer("1 @");
-    expect(() => [...lexer.tokenize()]).toThrow(new SyntaxError("@", 2));
+    expect(() => [...lexer.tokenize()]).toThrow(new IllegalSymbolError("@", 2));
   });
 });
