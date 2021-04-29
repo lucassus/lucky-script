@@ -1,4 +1,4 @@
-import { SyntaxError } from "./errors";
+import { IllegalSymbolError } from "./errors";
 import {
   CommentRecognizer,
   IdentifierRecognizer,
@@ -92,7 +92,7 @@ export class Lexer {
       return this.recognizeBrackets();
     }
 
-    throw new SyntaxError(this.currentSymbol, this.position);
+    throw new IllegalSymbolError(this.currentSymbol, this.position);
   }
 
   private advance() {
@@ -147,7 +147,7 @@ export class Lexer {
     const { recognized, value } = recognizer.result;
 
     if (!recognized) {
-      throw new SyntaxError(this.currentSymbol, this.position);
+      throw new IllegalSymbolError(this.currentSymbol, this.position);
     }
 
     return value;
@@ -164,7 +164,7 @@ export class Lexer {
     const tokenType = symbolToTokenType.get(this.currentSymbol);
 
     if (!tokenType) {
-      throw new SyntaxError(this.currentSymbol, this.position);
+      throw new IllegalSymbolError(this.currentSymbol, this.position);
     }
 
     return new Token(tokenType, this.currentSymbol, this.position);
@@ -174,7 +174,7 @@ export class Lexer {
     const tokenType = symbolToTokenType.get(this.currentSymbol);
 
     if (!tokenType) {
-      throw new SyntaxError(this.currentSymbol, this.position);
+      throw new IllegalSymbolError(this.currentSymbol, this.position);
     }
 
     return new Token(tokenType, this.currentSymbol, this.position);

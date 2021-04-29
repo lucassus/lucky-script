@@ -1,3 +1,4 @@
+import { IllegalSymbolError } from "../Lexer";
 import { parse } from "../testingUtils";
 import {
   BinaryOperation,
@@ -10,6 +11,7 @@ import {
   VariableAccess,
   VariableAssigment,
 } from "./AstNode";
+import { SyntaxError } from "./errors";
 
 describe("Parser", () => {
   it("parses empty input", () => {
@@ -87,11 +89,17 @@ describe("Parser", () => {
     );
   });
 
-  it("raises an error when the matching bracket is not found", () => {
-    expect(() => parse("(1 + 2")).toThrow("Expecting ) but got EndOfInput");
-
-    expect(() => parse(")")).toThrow("Unexpected token )");
-  });
+  it.each`
+    script      | message
+    ${"(1 + 2"} | ${"Expecting ) but got EndOfInput"}
+    ${")"}      | ${"Unexpected token )"}
+  `(
+    "raises an error when the matching bracket is not found",
+    ({ script, message }) => {
+      expect(() => parse(script)).toThrow(SyntaxError);
+      expect(() => parse(script)).toThrow(message);
+    }
+  );
 
   it.each`
     input       | operator
@@ -166,14 +174,13 @@ describe("Parser", () => {
       );
     });
 
-    it("raises errors for invalid assignments", () => {
-      expect(() => parse("x_")).toThrow(
-        new SyntaxError("Unrecognized symbol '_' at position 1")
-      );
-
-      expect(() => parse("x = ")).toThrow(
-        new SyntaxError("Unexpected token EndOfInput")
-      );
+    it.each`
+      script                     | message
+      ${"x = function foo() {}"} | ${"Expecting ( but got IDENTIFIER"}
+      ${"x = "}                  | ${"Unexpected token EndOfInput"}
+    `("raises errors for invalid assignments", ({ script, message }) => {
+      expect(() => parse(script)).toThrow(SyntaxError);
+      expect(() => parse(script)).toThrow(message);
     });
   });
 
@@ -284,24 +291,26 @@ describe("Parser", () => {
     });
 
     it("can't parse declaration assigment to a variable", () => {
-      expect(() => parse("x = function abc() {}")).toThrow(
-        "Expecting ( but got IDENTIFIER"
-      );
+      const parseScript = () => parse("x = function abc() {}");
+
+      expect(parseScript).toThrow(SyntaxError);
+      expect(parseScript).toThrow("Expecting ( but got IDENTIFIER");
     });
 
-    it("can't parse declaration with invalid arguments", () => {
-      expect(() => parse("function abc(,x,y) {}")).toThrow(
-        "Expecting IDENTIFIER but got ,"
-      );
+    it.each`
+      script                     | message
+      ${"function abc(,x,y) {}"} | ${"Expecting IDENTIFIER but got ,"}
+      ${"function abc(x,) {}"}   | ${"Expecting IDENTIFIER but got )"}
+      ${"function abc(x,,) {}"}  | ${"Expecting IDENTIFIER but got ,"}
+    `(
+      "can't parse declaration with invalid arguments",
+      ({ script, message }) => {
+        const parseScript = () => parse(script);
 
-      expect(() => parse("function abc(x,) {}")).toThrow(
-        "Expecting IDENTIFIER but got )"
-      );
-
-      expect(() => parse("function abc(x,,) {}")).toThrow(
-        "Expecting IDENTIFIER but got ,"
-      );
-    });
+        expect(parseScript).toThrow(SyntaxError);
+        expect(parseScript).toThrow(message);
+      }
+    );
   });
 
   describe("function call", () => {
@@ -377,7 +386,7 @@ describe("Parser", () => {
     });
 
     it("raises an error when statements are not separated", () => {
-      expect(() => parse("1+2 3+4")).toThrow();
+      expect(() => parse("1+2 3+4")).toThrow(SyntaxError);
     });
   });
 });

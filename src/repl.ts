@@ -2,7 +2,7 @@ import * as readline from "readline";
 
 import { Interpreter } from "./Interpreter";
 import { LuckyObject } from "./Interpreter/LuckyObject";
-import { Lexer, SyntaxError } from "./Lexer";
+import { Lexer, IllegalSymbolError } from "./Lexer";
 import { Parser, printAst } from "./Parser";
 
 const PROMPT = "> ";
@@ -30,7 +30,7 @@ scanner.on("line", (line) => {
     const result = new Interpreter(ast, symbolTable).run();
     console.log(result);
   } catch (error) {
-    if (error instanceof SyntaxError) {
+    if (error instanceof IllegalSymbolError) {
       console.log(`${" ".repeat(PROMPT.length + error.position)}^`);
     }
 
