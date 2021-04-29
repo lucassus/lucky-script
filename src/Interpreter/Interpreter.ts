@@ -73,16 +73,18 @@ export class Interpreter {
     return result;
   }
 
-  private visitFunctionDeclaration(node: FunctionDeclaration) {
+  private visitFunctionDeclaration(node: FunctionDeclaration): LuckyFunction {
+    const { name } = node;
+
     const luckyFunction = new LuckyFunction(
       this.scope,
-      node.name,
+      name,
       node.parameters,
       node.statements
     );
 
-    if (node.name) {
-      this.scope.set(node.name, luckyFunction);
+    if (name) {
+      this.scope.set(name, luckyFunction);
     }
 
     return luckyFunction;
@@ -97,9 +99,9 @@ export class Interpreter {
       throw new RuntimeError(`The given identifier '${name}' is not callable`);
     }
 
-    if (luckyFunction.parameters.length !== functionCall.args.length) {
+    if (luckyFunction.arity !== functionCall.args.length) {
       throw new RuntimeError(
-        `Function ${name} takes exactly ${luckyFunction.parameters.length} parameters`
+        `Function ${name} takes exactly ${luckyFunction.arity} parameters`
       );
     }
 
@@ -150,11 +152,11 @@ export class Interpreter {
       case "**":
         return left.pow(right);
       default:
-        throw new RuntimeError(`Unsupported operation ${node.operator}`);
+        throw new RuntimeError(`Unsupported operator ${node.operator}`);
     }
   }
 
-  private visitUnaryOperation(node: UnaryOperation) {
+  private visitUnaryOperation(node: UnaryOperation): LuckyObject {
     const value = this.visit(node.child);
 
     switch (node.operator) {
@@ -163,7 +165,7 @@ export class Interpreter {
       case "-":
         return value.mul(new LuckyNumber(-1));
       default:
-        throw new RuntimeError(`Unsupported unary operation ${node.operator}`);
+        throw new RuntimeError(`Unsupported unary operator ${node.operator}`);
     }
   }
 

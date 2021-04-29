@@ -11,4 +11,8 @@ export class LuckyFunction extends LuckyObject {
   ) {
     super();
   }
+
+  get arity(): number {
+    return this.parameters.length;
+  }
 }
