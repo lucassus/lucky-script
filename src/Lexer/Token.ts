@@ -19,6 +19,9 @@ export class Operator extends TokenType {
   static Divide = new Operator("/");
   static Power = new Operator("**");
   static Assigment = new Operator("=");
+
+  // TODO: Add more cmp operators
+  static Lt = new Operator("<");
 }
 
 export class Keyword extends TokenType {
@@ -30,6 +33,7 @@ export class Keyword extends TokenType {
   }
 
   static Function = new Keyword("function");
+  static If = new Keyword("if");
   static Return = new Keyword("return");
 
   static fromString(string: string): undefined | Keyword {

@@ -92,6 +92,9 @@ export class Lexer {
       case "=":
         return this.createToken(Operator.Assigment);
 
+      case "<":
+        return this.createToken(Operator.Lt);
+
       // Literals
 
       default: {

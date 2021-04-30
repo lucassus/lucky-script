@@ -233,6 +233,26 @@ describe("Lexer", () => {
     ]);
   });
 
+  it("recognizes if expressions", () => {
+    const lexer = new Lexer("if (x < 1) { return 123 }");
+    const tokens = [...lexer.tokenize()];
+
+    expect(tokens.length).toBe(11);
+    expect(tokens).toEqual([
+      new Token(Keyword.If, anyLocation),
+      new Token(Delimiter.LeftBracket, anyLocation),
+      new Token(Literal.Identifier, anyLocation, "x"),
+      new Token(Operator.Lt, anyLocation),
+      new Token(Literal.Number, anyLocation, "1"),
+      new Token(Delimiter.RightBracket, anyLocation),
+      new Token(Delimiter.LeftBrace, anyLocation),
+      new Token(Keyword.Return, anyLocation),
+      new Token(Literal.Number, anyLocation, "123"),
+      new Token(Delimiter.RightBrace, anyLocation),
+      new Token(Delimiter.End, anyLocation),
+    ]);
+  });
+
   it("throws IllegalSymbolError when unexpected symbol is given", () => {
     const lexer = new Lexer("1 @");
     expect(() => [...lexer.tokenize()]).toThrow(new IllegalSymbolError("@", 2));
