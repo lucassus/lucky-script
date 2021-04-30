@@ -7,15 +7,14 @@ import {
   VariableAccess,
   VariableAssigment,
 } from "../Parser/AstNode";
-import { NameError, RuntimeError } from "./errors";
-import { LuckyFunction, LuckyNumber, LuckyObject } from "./LuckyObject";
-
-type SymbolTable = Map<string, LuckyObject>;
+import { RuntimeError } from "./errors";
+import { LuckyFunction, LuckyNumber, LuckyObject } from "./objects";
+import { SymbolTable } from "./SymbolTable";
 
 export class Interpreter {
   constructor(
     public readonly node: AstNode,
-    private readonly symbolTable: SymbolTable = new Map()
+    private scope = new SymbolTable()
   ) {}
 
   run(): undefined | number {
@@ -67,56 +66,73 @@ export class Interpreter {
   private visitProgram(program: Program): LuckyObject {
     let result: LuckyObject = new LuckyNumber(0);
 
-    program.statements.forEach((instruction) => {
-      result = this.visit(instruction);
+    program.statements.forEach((statements) => {
+      result = this.visit(statements);
     });
 
     return result;
   }
 
-  private visitFunctionDeclaration(node: FunctionDeclaration) {
-    const luckyFunction = new LuckyFunction(node.parameters, node.statements);
+  private visitFunctionDeclaration(node: FunctionDeclaration): LuckyFunction {
+    const { name } = node;
 
-    if (node.name) {
-      this.symbolTable.set(node.name, luckyFunction);
+    const luckyFunction = new LuckyFunction(
+      this.scope,
+      name,
+      node.parameters,
+      node.statements
+    );
+
+    if (name) {
+      this.scope.set(name, luckyFunction);
     }
 
     return luckyFunction;
   }
 
-  private visitFunctionCall(node: FunctionCall): LuckyObject {
-    const { name } = node;
+  private visitFunctionCall(functionCall: FunctionCall): LuckyObject {
+    const { name } = functionCall;
 
-    if (!this.symbolTable.has(name)) {
-      throw new RuntimeError(`Undefined function ${name}`);
-    }
-
-    const luckyFunction = this.symbolTable.get(name);
+    const luckyFunction = this.scope.lookup(name);
 
     if (!(luckyFunction instanceof LuckyFunction)) {
       throw new RuntimeError(`The given identifier '${name}' is not callable`);
     }
 
-    if (luckyFunction.arity !== node.args.length) {
+    if (luckyFunction.arity !== functionCall.args.length) {
       throw new RuntimeError(
         `Function ${name} takes exactly ${luckyFunction.arity} parameters`
       );
     }
 
+    const fnScope = luckyFunction.scope.createChild();
+
     for (const [index, parameter] of luckyFunction.parameters.entries()) {
-      const argument = node.args[index];
-      this.symbolTable.set(parameter, this.visit(argument));
+      const argument = functionCall.args[index];
+      fnScope.setLocal(parameter, this.visit(argument));
     }
 
-    for (const statement of luckyFunction.statements) {
-      if (statement instanceof ReturnStatement) {
-        return this.visit(statement.expression);
+    return this.withScope(fnScope, () => {
+      for (const statement of luckyFunction.statements) {
+        if (statement instanceof ReturnStatement) {
+          return this.visit(statement.expression);
+        }
+
+        this.visit(statement);
       }
 
-      this.visit(statement);
-    }
+      return new LuckyNumber(0);
+    });
+  }
 
-    return new LuckyNumber(0);
+  private withScope(scope: SymbolTable, fn: () => LuckyObject) {
+    const prevScope = this.scope;
+    this.scope = scope;
+
+    const result = fn();
+
+    this.scope = prevScope;
+    return result;
   }
 
   private visitBinaryOperation(node: BinaryOperation): LuckyObject {
@@ -136,11 +152,11 @@ export class Interpreter {
       case "**":
         return left.pow(right);
       default:
-        throw new RuntimeError(`Unsupported operation ${node.operator}`);
+        throw new RuntimeError(`Unsupported operator ${node.operator}`);
     }
   }
 
-  private visitUnaryOperation(node: UnaryOperation) {
+  private visitUnaryOperation(node: UnaryOperation): LuckyObject {
     const value = this.visit(node.child);
 
     switch (node.operator) {
@@ -149,7 +165,7 @@ export class Interpreter {
       case "-":
         return value.mul(new LuckyNumber(-1));
       default:
-        throw new RuntimeError(`Unsupported unary operation ${node.operator}`);
+        throw new RuntimeError(`Unsupported unary operator ${node.operator}`);
     }
   }
 
@@ -161,19 +177,14 @@ export class Interpreter {
   }
 
   private visitVariableAssigment(node: VariableAssigment): LuckyObject {
+    // TODO: Consider adding `this.visitExpressions(code.value)`
     const value = this.visit(node.value);
-    this.symbolTable.set(node.name, value);
+    this.scope.set(node.name, value);
 
     return value;
   }
 
-  private visitVariableAccess(node: VariableAccess) {
-    const value = this.symbolTable.get(node.name);
-
-    if (value === undefined) {
-      throw new NameError(node.name);
-    }
-
-    return value;
+  private visitVariableAccess(node: VariableAccess): LuckyObject {
+    return this.scope.lookup(node.name);
   }
 }

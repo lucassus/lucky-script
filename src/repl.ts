@@ -1,7 +1,7 @@
 import * as readline from "readline";
 
 import { Interpreter } from "./Interpreter";
-import { LuckyObject } from "./Interpreter/LuckyObject";
+import { SymbolTable } from "./Interpreter/SymbolTable";
 import { Lexer, IllegalSymbolError } from "./Lexer";
 import { Parser, printAst } from "./Parser";
 
@@ -15,7 +15,7 @@ const scanner = readline.createInterface({
 
 scanner.prompt();
 
-const symbolTable = new Map<string, LuckyObject>();
+const symbolTable = new SymbolTable();
 
 scanner.on("line", (line) => {
   const input = line.trim();

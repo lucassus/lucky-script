@@ -1,12 +1,10 @@
 import { parse } from "../testingUtils";
 import { NameError, RuntimeError, ZeroDivisionError } from "./errors";
 import { Interpreter } from "./Interpreter";
-import { LuckyNumber, LuckyObject } from "./LuckyObject";
+import { LuckyNumber } from "./objects";
+import { SymbolTable } from "./SymbolTable";
 
-function run(
-  script: string,
-  symbolTable?: Map<string, LuckyObject>
-): undefined | number {
+function run(script: string, symbolTable?: SymbolTable): undefined | number {
   const ast = parse(script);
   const interpreter = new Interpreter(ast, symbolTable);
 
@@ -46,36 +44,34 @@ describe("Interpreter", () => {
 
   describe("variables handling", () => {
     it("sets variables", () => {
-      const symbolTable = new Map<string, LuckyObject>();
+      const symbolTable = new SymbolTable();
 
       expect(run("pi = 3.14", symbolTable)).toBe(3.14);
-      expect(symbolTable.get("pi")).toEqual(new LuckyNumber(3.14));
+      expect(symbolTable.lookup("pi")).toEqual(new LuckyNumber(3.14));
     });
 
     it("sets a chain of variables", () => {
-      const symbolTable = new Map<string, LuckyObject>();
+      const symbolTable = new SymbolTable();
 
       expect(run("x = y = 1", symbolTable)).toBe(1);
-      expect(symbolTable.get("x")).toEqual(new LuckyNumber(1));
-      expect(symbolTable.get("y")).toEqual(new LuckyNumber(1));
+      expect(symbolTable.lookup("x")).toEqual(new LuckyNumber(1));
+      expect(symbolTable.lookup("y")).toEqual(new LuckyNumber(1));
     });
 
     it("reads variables", () => {
-      const symbolTable = new Map<string, LuckyObject>([
-        ["x", new LuckyNumber(1)],
-        ["y", new LuckyNumber(2)],
-      ]);
+      const symbolTable = new SymbolTable();
+      symbolTable.set("x", new LuckyNumber(1));
+      symbolTable.set("y", new LuckyNumber(2));
 
       expect(run("x + y + 3", symbolTable)).toBe(6);
     });
 
     it("increments the given variable", () => {
-      const symbolTable = new Map<string, LuckyObject>([
-        ["x", new LuckyNumber(1)],
-      ]);
+      const symbolTable = new SymbolTable();
+      symbolTable.set("x", new LuckyNumber(1));
 
       expect(run("x = x + 1", symbolTable)).toBe(2);
-      expect(symbolTable.get("x")).toEqual(new LuckyNumber(2));
+      expect(symbolTable.lookup("x")).toEqual(new LuckyNumber(2));
     });
 
     it("raises an error on access to undefined variable", () => {
@@ -141,28 +137,42 @@ describe("Interpreter", () => {
       expect(run(script)).toBe(3);
     });
 
-    it.each`
-      args
-      ${""}
-      ${"1"}
-      ${"1,2,3"}
-    `(
-      "raises an error when invalid number of arguments is given",
-      ({ args }) => {
-        const script = `
-          function add(x, y) {
-            return x + y
-          }
+    describe("calling functions with invalid number of arguments", () => {
+      it.each`
+        args
+        ${""}
+        ${"1"}
+        ${"1,2,3"}
+      `(
+        "raises an error when invalid number of arguments is given",
+        ({ args }) => {
+          const script = `
+            function add(x, y) {
+              return x + y
+            }
+            
+            add(${args})
+          `;
+
+          const runScript = () => run(script);
+
+          expect(runScript).toThrow(RuntimeError);
+          expect(runScript).toThrow("Function add takes exactly 2 parameters");
+        }
+      );
+
+      it("raises an error when anonymous function is called with invalid number of arguments", () => {
+        const script = `;
+          foo = function (x, y) { return x + y }
           
-          add(${args})
+          foo(1, 2, 3)
         `;
 
-        const runScript = () => run(script);
-
-        expect(runScript).toThrow(RuntimeError);
-        expect(runScript).toThrow("Function add takes exactly 2 parameters");
-      }
-    );
+        expect(() => run(script)).toThrow(
+          new RuntimeError("Function foo takes exactly 2 parameters")
+        );
+      });
+    });
 
     it("obeys the return statement", () => {
       const script = `
@@ -256,11 +266,15 @@ describe("Interpreter", () => {
       expect(runScript).toThrow("Illegal operation");
     });
 
+    it("raises an error when the given identifier is not defined", () => {
+      expect(() => run("foo()")).toThrow(new NameError("foo"));
+    });
+
     it("raises an error when the given identifier is not callable", () => {
       const script = `
         notAFunction = 123
         notAFunction()
-    `;
+      `;
 
       const runScript = () => run(script);
 
@@ -281,27 +295,78 @@ describe("Interpreter", () => {
     });
   });
 
-  // TODO: Nice to have someday
-  it.skip("interprets blocks of script", () => {
-    const script = `
-    a = 1
-    c = 0
-    
-    {
-      b = 2
-      c = a + b
-    }
-    `;
+  describe("variable scopes", () => {
+    it("creates valid scopes for function calls", () => {
+      const symbolTable = new SymbolTable();
+      const script = `
+        a = 1
+        
+        function foo() {
+          a = 2 # Should replace value of on the parent scope
+          b = 1 # Should be accessible only in the current scope
+          
+          function bar() {
+            c = 3 # Should be accessible only in the current scope
+            return a + b + c
+          }
+          
+          return bar()
+        }
+        
+        d = foo()
+      `;
 
-    const symbolTable = new Map<string, LuckyObject>();
-    run(script, symbolTable);
+      run(script, symbolTable);
 
-    expect(symbolTable.has("a")).toBe(true);
+      expect(symbolTable.lookup("d")).toEqual(new LuckyNumber(6));
+      expect(symbolTable.lookup("a")).toEqual(new LuckyNumber(2));
 
-    // TODO: It should create a new scope for block variable
-    expect(symbolTable.has("b")).toBe(true);
+      expect(() => symbolTable.lookup("b")).toThrow(NameError);
+      expect(() => symbolTable.lookup("c")).toThrow(NameError);
+    });
 
-    expect(symbolTable.has("c")).toBe(true);
-    expect(symbolTable.get("c")).toBe(3);
+    it("allows to use dynamic scopes", () => {
+      const symbolTable = new SymbolTable();
+      const script = `
+        a = 1
+        
+        function add() {
+          # Currently a is 1, but later its value will be changed
+          
+          return a + 1
+        }
+        
+        firstResult = add()
+        
+        a = 2
+        secondResult = add()
+      `;
+
+      run(script, symbolTable);
+
+      expect(symbolTable.lookup("firstResult")).toEqual(new LuckyNumber(2));
+      expect(symbolTable.lookup("secondResult")).toEqual(new LuckyNumber(3));
+    });
+
+    it("creates local variables for arguments passed to function call", () => {
+      const symbolTable = new SymbolTable();
+      const script = `
+        x = 1
+  
+        function foo(x) {
+          # Function argument x should shadow x from the parent scope
+          x = x + 1
+          
+          return x + 1
+        }
+  
+        y = foo(2)
+      `;
+
+      run(script, symbolTable);
+
+      expect(symbolTable.lookup("x")).toEqual(new LuckyNumber(1));
+      expect(symbolTable.lookup("y")).toEqual(new LuckyNumber(4));
+    });
   });
 });
