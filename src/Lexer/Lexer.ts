@@ -6,24 +6,19 @@ import {
   Recognizer,
 } from "./Recognizer";
 import {
-  Assigment,
-  BeginComment,
-  Brackets,
-  Comma,
-  Digits,
-  Dot,
-  keywordToTokenType,
-  LeftBrace,
-  Letters,
-  Multiply,
-  Newlines,
-  Operators,
-  Power,
-  RightBrace,
-  symbolToTokenType,
-  Whitespaces,
+  isBeginningOfComment,
+  isBeginningOfIdentifier,
+  isBeginningOfNumber,
+  isWhitespace,
 } from "./symbols";
-import { Token, TokenType } from "./Token";
+import {
+  Delimiter,
+  Keywords,
+  Literal,
+  Operator,
+  Token,
+  TokenType,
+} from "./Token";
 
 export class Lexer {
   private position = -1;
@@ -36,7 +31,7 @@ export class Lexer {
 
       yield nextToken;
 
-      if (nextToken.type === TokenType.End) {
+      if (nextToken.type === Delimiter.End) {
         break;
       }
     }
@@ -47,52 +42,67 @@ export class Lexer {
 
     this.skipWhitespaces();
 
-    if (this.currentSymbol === BeginComment) {
+    if (isBeginningOfComment(this.currentSymbol)) {
       this.skipComment();
     }
 
     if (this.currentSymbol === undefined) {
-      return new Token(TokenType.End, "", this.position);
+      return this.createToken(Delimiter.End);
     }
 
-    if (Newlines.includes(this.currentSymbol)) {
-      return new Token(TokenType.NewLine, this.currentSymbol, this.position);
-    }
+    switch (this.currentSymbol) {
+      // Delimiters
 
-    if (this.currentSymbol === Comma) {
-      return new Token(TokenType.Comma, this.currentSymbol, this.position);
-    }
+      case "(":
+        return this.createToken(Delimiter.LeftBracket);
+      case ")":
+        return this.createToken(Delimiter.RightBracket);
+      case "{":
+        return this.createToken(Delimiter.LeftBrace);
+      case "}":
+        return this.createToken(Delimiter.RightBrace);
+      case ",":
+        return this.createToken(Delimiter.Comma);
 
-    // TODO: Dry it, see `this.recognizeBrackets` or something similar
-    if (this.currentSymbol === LeftBrace) {
-      return new Token(TokenType.LeftBrace, this.currentSymbol, this.position);
-    }
+      case "\n":
+      case ";":
+        return this.createToken(Delimiter.NewLine);
 
-    if (this.currentSymbol === RightBrace) {
-      return new Token(TokenType.RightBrace, this.currentSymbol, this.position);
-    }
+      // Operators
 
-    if (Letters.includes(this.currentSymbol)) {
-      return this.recognizeKeywordOrIdentifier();
-    }
+      case "+":
+        return this.createToken(Operator.Plus);
+      case "-":
+        return this.createToken(Operator.Minus);
+      case "*": {
+        if (this.nextSymbol === "*") {
+          const token = this.createToken(Operator.Power);
+          this.advance();
 
-    if ([...Digits, Dot].includes(this.currentSymbol)) {
-      return this.recognizeNumber();
-    }
+          return token;
+        }
 
-    if (this.currentSymbol === Assigment) {
-      return this.recognizeAssigment();
-    }
+        return this.createToken(Operator.Multiply);
+      }
+      case "/":
+        return this.createToken(Operator.Divide);
+      case "=":
+        return this.createToken(Operator.Assigment);
 
-    if (Operators.includes(this.currentSymbol)) {
-      return this.recognizeOperator();
-    }
+      // Literals
 
-    if (Brackets.includes(this.currentSymbol)) {
-      return this.recognizeBrackets();
-    }
+      default: {
+        if (isBeginningOfIdentifier(this.currentSymbol)) {
+          return this.recognizeKeywordOrIdentifier();
+        }
 
-    throw new IllegalSymbolError(this.currentSymbol, this.position);
+        if (isBeginningOfNumber(this.currentSymbol)) {
+          return this.recognizeNumber();
+        }
+
+        throw new IllegalSymbolError(this.currentSymbol, this.position);
+      }
+    }
   }
 
   private advance() {
@@ -108,7 +118,7 @@ export class Lexer {
   }
 
   private skipWhitespaces(): void {
-    while (Whitespaces.includes(this.currentSymbol)) {
+    while (isWhitespace(this.currentSymbol)) {
       this.advance();
     }
   }
@@ -122,19 +132,19 @@ export class Lexer {
     const startPosition = this.position;
     const value = this.recognizeWith(new NumeralRecognizer());
 
-    return new Token(TokenType.NumberLiteral, value, startPosition);
+    return this.createToken(Literal.Number, startPosition, value);
   }
 
   private recognizeKeywordOrIdentifier(): Token {
     const startPosition = this.position;
     const value = this.recognizeWith(new IdentifierRecognizer());
-    const tokenType = keywordToTokenType.get(value) || TokenType.Identifier;
+    const tokenType = Keywords.get(value) || Literal.Identifier;
 
-    return new Token(tokenType, value, startPosition);
-  }
-
-  private recognizeAssigment(): Token {
-    return new Token(TokenType.Assigment, this.currentSymbol, this.position);
+    return this.createToken(
+      tokenType,
+      startPosition,
+      tokenType === Literal.Identifier ? value : undefined
+    );
   }
 
   private recognizeWith(recognizer: Recognizer): string {
@@ -153,30 +163,11 @@ export class Lexer {
     return value;
   }
 
-  private recognizeOperator(): Token {
-    if (this.currentSymbol === Multiply && this.nextSymbol === Multiply) {
-      const { position } = this;
-      this.advance();
-
-      return new Token(TokenType.Power, Power, position);
-    }
-
-    const tokenType = symbolToTokenType.get(this.currentSymbol);
-
-    if (!tokenType) {
-      throw new IllegalSymbolError(this.currentSymbol, this.position);
-    }
-
-    return new Token(tokenType, this.currentSymbol, this.position);
-  }
-
-  private recognizeBrackets(): Token {
-    const tokenType = symbolToTokenType.get(this.currentSymbol);
-
-    if (!tokenType) {
-      throw new IllegalSymbolError(this.currentSymbol, this.position);
-    }
-
-    return new Token(tokenType, this.currentSymbol, this.position);
+  private createToken(
+    type: TokenType,
+    startPosition?: number | undefined,
+    value?: string
+  ): Token {
+    return new Token(type, startPosition ?? this.position, value);
   }
 }

@@ -16,19 +16,23 @@ export class Numeral extends Expression {
   }
 }
 
+export type BinaryOperator = "+" | "-" | "*" | "/" | "**";
+
 export class BinaryOperation extends Expression {
   constructor(
     public readonly left: Expression,
-    public readonly operator: string,
+    public readonly operator: BinaryOperator,
     public readonly right: Expression
   ) {
     super();
   }
 }
 
+export type UnaryOperator = "+" | "-";
+
 export class UnaryOperation extends Expression {
   constructor(
-    public readonly operator: string,
+    public readonly operator: UnaryOperator,
     public readonly child: Expression
   ) {
     super();

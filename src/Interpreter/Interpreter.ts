@@ -139,7 +139,6 @@ export class Interpreter {
     const left = this.visit(node.left);
     const right = this.visit(node.right);
 
-    // TODO: Think about better typings for the operators
     switch (node.operator) {
       case "+":
         return left.add(right);
