@@ -3,7 +3,7 @@ import * as readline from "readline";
 import { Interpreter } from "./Interpreter";
 import { SymbolTable } from "./Interpreter/SymbolTable";
 import { Lexer, IllegalSymbolError } from "./Lexer";
-import { Parser, printAst } from "./Parser";
+import { Parser } from "./Parser";
 
 const PROMPT = "> ";
 
@@ -22,11 +22,7 @@ scanner.on("line", (line) => {
 
   try {
     const lexer = new Lexer(input).tokenize();
-
     const ast = new Parser(lexer).parse();
-    console.log("\nAbstract Syntax Tree:");
-    console.log(printAst(ast));
-
     const result = new Interpreter(ast, symbolTable).run();
     console.log(result);
   } catch (error) {
