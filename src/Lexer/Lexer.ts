@@ -5,7 +5,12 @@ import {
   NumeralRecognizer,
   Recognizer,
 } from "./Recognizer";
-import { BeginComment, Digits, Dot, Letters, Whitespaces } from "./symbols";
+import {
+  isBeginningOfComment,
+  isBeginningOfIdentifier,
+  isBeginningOfNumber,
+  isWhitespace,
+} from "./symbols";
 import {
   Delimiter,
   Keywords,
@@ -37,7 +42,7 @@ export class Lexer {
 
     this.skipWhitespaces();
 
-    if (this.currentSymbol === BeginComment) {
+    if (isBeginningOfComment(this.currentSymbol)) {
       this.skipComment();
     }
 
@@ -87,11 +92,11 @@ export class Lexer {
       // Literals
 
       default: {
-        if (Letters.includes(this.currentSymbol)) {
+        if (isBeginningOfIdentifier(this.currentSymbol)) {
           return this.recognizeKeywordOrIdentifier();
         }
 
-        if ([...Digits, Dot].includes(this.currentSymbol)) {
+        if (isBeginningOfNumber(this.currentSymbol)) {
           return this.recognizeNumber();
         }
 
@@ -113,7 +118,7 @@ export class Lexer {
   }
 
   private skipWhitespaces(): void {
-    while (Whitespaces.includes(this.currentSymbol)) {
+    while (isWhitespace(this.currentSymbol)) {
       this.advance();
     }
   }
