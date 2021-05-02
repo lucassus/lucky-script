@@ -132,7 +132,7 @@ export class Lexer {
     const startPosition = this.position;
     const value = this.recognizeWith(new NumeralRecognizer());
 
-    return this.createToken(Literal.Number, value, startPosition);
+    return this.createToken(Literal.Number, startPosition, value);
   }
 
   private recognizeKeywordOrIdentifier(): Token {
@@ -142,8 +142,8 @@ export class Lexer {
 
     return this.createToken(
       tokenType,
-      tokenType === Literal.Identifier ? value : undefined,
-      startPosition
+      startPosition,
+      tokenType === Literal.Identifier ? value : undefined
     );
   }
 
@@ -165,8 +165,8 @@ export class Lexer {
 
   private createToken(
     type: TokenType,
-    value?: string,
-    startPosition?: number | undefined
+    startPosition?: number | undefined,
+    value?: string
   ): Token {
     return new Token(type, startPosition ?? this.position, value);
   }
