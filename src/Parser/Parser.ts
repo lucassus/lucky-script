@@ -1,5 +1,4 @@
-import { Token } from "../Lexer";
-import { TokenType } from "../Lexer/Token";
+import { Token, TokenType } from "../Lexer";
 import {
   BinaryOperation,
   Expression,
@@ -121,13 +120,13 @@ export class Parser {
       return [];
     }
 
-    const args: string[] = [this.currentToken.value];
+    const args: string[] = [this.currentToken.value!];
     this.match(TokenType.Identifier);
 
     while (this.currentToken.type === TokenType.Comma) {
       this.match(TokenType.Comma);
 
-      args.push(this.currentToken.value);
+      args.push(this.currentToken.value!);
       this.match(TokenType.Identifier);
     }
 
@@ -163,12 +162,12 @@ export class Parser {
     const args = this.functionCallArguments();
     this.match(TokenType.RightBracket);
 
-    return new FunctionCall(name, args);
+    return new FunctionCall(name!, args);
   }
 
   // (expression ("," expression)*)?
   private functionCallArguments(): Expression[] {
-    if (this.currentToken.value === TokenType.RightBracket) {
+    if (this.currentToken.type === TokenType.RightBracket) {
       return [];
     }
 
@@ -183,7 +182,7 @@ export class Parser {
   }
 
   private variableAssigment(): Expression {
-    const variableName = this.currentToken.value;
+    const variableName = this.currentToken.value!;
 
     this.match(TokenType.Identifier);
     this.match(TokenType.Assigment);
@@ -203,7 +202,8 @@ export class Parser {
 
     if ([TokenType.Plus, TokenType.Minus].includes(currentToken.type)) {
       this.match(currentToken.type);
-      return new UnaryOperation(currentToken.value, this.factor());
+      const operator = currentToken.type === TokenType.Plus ? "+" : "-";
+      return new UnaryOperation(operator, this.factor());
     }
 
     return this.power();
@@ -218,7 +218,7 @@ export class Parser {
 
     if (currentToken.type === TokenType.NumberLiteral) {
       this.match(TokenType.NumberLiteral);
-      return new Numeral(currentToken.value);
+      return new Numeral(currentToken.value!);
     }
 
     if (
@@ -230,7 +230,7 @@ export class Parser {
 
     if (currentToken.type === TokenType.Identifier) {
       this.match(TokenType.Identifier);
-      return new VariableAccess(currentToken.value);
+      return new VariableAccess(currentToken.value!);
     }
 
     if (currentToken.type === TokenType.LeftBracket) {
@@ -260,7 +260,9 @@ export class Parser {
       this.match(operationToken.type);
 
       const right = (rightBranch || leftBranch).apply(this);
-      left = new BinaryOperation(left, operationToken.value, right);
+      // TODO: Fix this @ts-ignore
+      // @ts-ignore
+      left = new BinaryOperation(left, operationToken.type, right);
     }
 
     return left;

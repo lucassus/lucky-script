@@ -1,3 +1,3 @@
 export { Lexer } from "./Lexer";
-export { Token } from "./Token";
+export { Token, TokenType } from "./Token";
 export { IllegalSymbolError } from "./errors";

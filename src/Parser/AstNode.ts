@@ -19,7 +19,7 @@ export class Numeral extends Expression {
 export class BinaryOperation extends Expression {
   constructor(
     public readonly left: Expression,
-    public readonly operator: string,
+    public readonly operator: "+" | "-" | "*" | "/" | "**",
     public readonly right: Expression
   ) {
     super();
@@ -28,7 +28,7 @@ export class BinaryOperation extends Expression {
 
 export class UnaryOperation extends Expression {
   constructor(
-    public readonly operator: string,
+    public readonly operator: "+" | "-",
     public readonly child: Expression
   ) {
     super();

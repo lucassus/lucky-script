@@ -1,4 +1,3 @@
-import { IllegalSymbolError } from "../Lexer";
 import { parse } from "../testingUtils";
 import {
   BinaryOperation,
