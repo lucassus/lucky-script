@@ -90,7 +90,7 @@ describe("Parser", () => {
 
   it.each`
     script      | message
-    ${"(1 + 2"} | ${"Expecting ) but got EndOfInput"}
+    ${"(1 + 2"} | ${"Expecting ) but got End"}
     ${")"}      | ${"Unexpected token )"}
   `(
     "raises an error when the matching bracket is not found",
@@ -175,8 +175,8 @@ describe("Parser", () => {
 
     it.each`
       script                     | message
-      ${"x = function foo() {}"} | ${"Expecting ( but got IDENTIFIER"}
-      ${"x = "}                  | ${"Unexpected token EndOfInput"}
+      ${"x = function foo() {}"} | ${"Expecting ( but got Identifier"}
+      ${"x = "}                  | ${"Unexpected token End"}
     `("raises errors for invalid assignments", ({ script, message }) => {
       expect(() => parse(script)).toThrow(SyntaxError);
       expect(() => parse(script)).toThrow(message);
@@ -293,14 +293,14 @@ describe("Parser", () => {
       const parseScript = () => parse("x = function abc() {}");
 
       expect(parseScript).toThrow(SyntaxError);
-      expect(parseScript).toThrow("Expecting ( but got IDENTIFIER");
+      expect(parseScript).toThrow("Expecting ( but got Identifier");
     });
 
     it.each`
       script                     | message
-      ${"function abc(,x,y) {}"} | ${"Expecting IDENTIFIER but got ,"}
-      ${"function abc(x,) {}"}   | ${"Expecting IDENTIFIER but got )"}
-      ${"function abc(x,,) {}"}  | ${"Expecting IDENTIFIER but got ,"}
+      ${"function abc(,x,y) {}"} | ${"Expecting Identifier but got ,"}
+      ${"function abc(x,) {}"}   | ${"Expecting Identifier but got )"}
+      ${"function abc(x,,) {}"}  | ${"Expecting Identifier but got ,"}
     `(
       "can't parse declaration with invalid arguments",
       ({ script, message }) => {

@@ -6,7 +6,14 @@ import {
   Recognizer,
 } from "./Recognizer";
 import { BeginComment, Digits, Dot, Letters, Whitespaces } from "./symbols";
-import { Keywords, Token, TokenType } from "./Token";
+import {
+  Delimiter,
+  Keywords,
+  Literal,
+  Operator,
+  Token,
+  TokenType,
+} from "./Token";
 
 export class Lexer {
   private position = -1;
@@ -19,7 +26,7 @@ export class Lexer {
 
       yield nextToken;
 
-      if (nextToken.type === TokenType.End) {
+      if (nextToken.type === Delimiter.End) {
         break;
       }
     }
@@ -35,44 +42,49 @@ export class Lexer {
     }
 
     if (this.currentSymbol === undefined) {
-      return this.createToken(TokenType.End);
+      return this.createToken(Delimiter.End);
     }
 
     switch (this.currentSymbol) {
+      // Delimiters
+
       case "(":
-        return this.createToken(TokenType.LeftBracket);
+        return this.createToken(Delimiter.LeftBracket);
       case ")":
-        return this.createToken(TokenType.RightBracket);
+        return this.createToken(Delimiter.RightBracket);
       case "{":
-        return this.createToken(TokenType.LeftBrace);
+        return this.createToken(Delimiter.LeftBrace);
       case "}":
-        return this.createToken(TokenType.RightBrace);
+        return this.createToken(Delimiter.RightBrace);
       case ",":
-        return this.createToken(TokenType.Comma);
+        return this.createToken(Delimiter.Comma);
+
+      case "\n":
+      case ";":
+        return this.createToken(Delimiter.NewLine);
+
+      // Operators
 
       case "+":
-        return this.createToken(TokenType.Plus);
+        return this.createToken(Operator.Plus, "+");
       case "-":
-        return this.createToken(TokenType.Minus);
+        return this.createToken(Operator.Minus, "-");
       case "*": {
         if (this.nextSymbol === "*") {
-          const token = this.createToken(TokenType.Power);
+          const token = this.createToken(Operator.Power, "**");
           this.advance();
 
           return token;
         }
 
-        return this.createToken(TokenType.Multiply);
+        return this.createToken(Operator.Multiply, "*");
       }
       case "/":
-        return this.createToken(TokenType.Divide);
-
+        return this.createToken(Operator.Divide, "/");
       case "=":
-        return this.createToken(TokenType.Assigment);
+        return this.createToken(Operator.Assigment);
 
-      case "\n":
-      case ";":
-        return this.createToken(TokenType.NewLine);
+      // Literals
 
       default: {
         if (Letters.includes(this.currentSymbol)) {
@@ -115,18 +127,18 @@ export class Lexer {
     const startPosition = this.position;
     const value = this.recognizeWith(new NumeralRecognizer());
 
-    return this.createToken(TokenType.NumberLiteral, startPosition, value);
+    return this.createToken(Literal.Number, value, startPosition);
   }
 
   private recognizeKeywordOrIdentifier(): Token {
     const startPosition = this.position;
     const value = this.recognizeWith(new IdentifierRecognizer());
-    const tokenType = Keywords.get(value) || TokenType.Identifier;
+    const tokenType = Keywords.get(value) || Literal.Identifier;
 
     return this.createToken(
       tokenType,
-      startPosition,
-      tokenType === TokenType.Identifier ? value : undefined
+      tokenType === Literal.Identifier ? value : undefined,
+      startPosition
     );
   }
 
@@ -148,8 +160,8 @@ export class Lexer {
 
   private createToken(
     type: TokenType,
-    startPosition?: number | undefined,
-    value?: string
+    value?: string,
+    startPosition?: number | undefined
   ): Token {
     return new Token(type, startPosition ?? this.position, value);
   }
