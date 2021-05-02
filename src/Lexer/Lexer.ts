@@ -52,24 +52,24 @@ export class Lexer {
     }
 
     if (this.currentSymbol === undefined) {
-      return new Token(TokenType.End, "", this.position);
+      return this.createToken(TokenType.End, "");
     }
 
     if (Newlines.includes(this.currentSymbol)) {
-      return new Token(TokenType.NewLine, this.currentSymbol, this.position);
+      return this.createToken(TokenType.NewLine, this.currentSymbol);
     }
 
     if (this.currentSymbol === Comma) {
-      return new Token(TokenType.Comma, this.currentSymbol, this.position);
+      return this.createToken(TokenType.Comma, this.currentSymbol);
     }
 
     // TODO: Dry it, see `this.recognizeBrackets` or something similar
     if (this.currentSymbol === LeftBrace) {
-      return new Token(TokenType.LeftBrace, this.currentSymbol, this.position);
+      return this.createToken(TokenType.LeftBrace, this.currentSymbol);
     }
 
     if (this.currentSymbol === RightBrace) {
-      return new Token(TokenType.RightBrace, this.currentSymbol, this.position);
+      return this.createToken(TokenType.RightBrace, this.currentSymbol);
     }
 
     if (Letters.includes(this.currentSymbol)) {
@@ -122,7 +122,7 @@ export class Lexer {
     const startPosition = this.position;
     const value = this.recognizeWith(new NumeralRecognizer());
 
-    return new Token(TokenType.NumberLiteral, value, startPosition);
+    return this.createToken(TokenType.NumberLiteral, value, startPosition);
   }
 
   private recognizeKeywordOrIdentifier(): Token {
@@ -130,11 +130,11 @@ export class Lexer {
     const value = this.recognizeWith(new IdentifierRecognizer());
     const tokenType = keywordToTokenType.get(value) || TokenType.Identifier;
 
-    return new Token(tokenType, value, startPosition);
+    return this.createToken(tokenType, value, startPosition);
   }
 
   private recognizeAssigment(): Token {
-    return new Token(TokenType.Assigment, this.currentSymbol, this.position);
+    return this.createToken(TokenType.Assigment, this.currentSymbol);
   }
 
   private recognizeWith(recognizer: Recognizer): string {
@@ -158,7 +158,7 @@ export class Lexer {
       const { position } = this;
       this.advance();
 
-      return new Token(TokenType.Power, Power, position);
+      return this.createToken(TokenType.Power, Power, position);
     }
 
     const tokenType = symbolToTokenType.get(this.currentSymbol);
@@ -167,7 +167,7 @@ export class Lexer {
       throw new IllegalSymbolError(this.currentSymbol, this.position);
     }
 
-    return new Token(tokenType, this.currentSymbol, this.position);
+    return this.createToken(tokenType, this.currentSymbol);
   }
 
   private recognizeBrackets(): Token {
@@ -177,6 +177,14 @@ export class Lexer {
       throw new IllegalSymbolError(this.currentSymbol, this.position);
     }
 
-    return new Token(tokenType, this.currentSymbol, this.position);
+    return this.createToken(tokenType, this.currentSymbol);
+  }
+
+  private createToken(
+    type: TokenType,
+    value: string,
+    startPosition?: undefined | number
+  ): Token {
+    return new Token(type, value, startPosition ?? this.position);
   }
 }
