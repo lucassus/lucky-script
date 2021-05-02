@@ -63,7 +63,6 @@ export class Lexer {
       return this.createToken(TokenType.Comma, this.currentSymbol);
     }
 
-    // TODO: Dry it, see `this.recognizeBrackets` or something similar
     if (this.currentSymbol === LeftBrace) {
       return this.createToken(TokenType.LeftBrace, this.currentSymbol);
     }
