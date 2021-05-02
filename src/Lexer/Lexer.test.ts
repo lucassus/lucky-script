@@ -50,7 +50,7 @@ describe("Lexer", () => {
     expect(tokens.length).toBe(4);
     expect(tokens).toEqual([
       new Token(Literal.Number, expect.any(Number), "1"),
-      new Token(Operator.Plus, expect.any(Number), "+"),
+      new Token(Operator.Plus, expect.any(Number)),
       new Token(Literal.Number, expect.any(Number), "2"),
       new Token(Delimiter.End, expect.any(Number)),
     ]);
@@ -123,7 +123,7 @@ describe("Lexer", () => {
       ${"**"}  | ${Operator.Power}
     `("recognizes $operator operator", ({ operator, tokenType }) => {
       const lexer = new Lexer(operator);
-      expect(lexer.nextToken()).toEqual(new Token(tokenType, 0, operator));
+      expect(lexer.nextToken()).toEqual(new Token(tokenType, 0));
     });
   });
 
@@ -134,7 +134,7 @@ describe("Lexer", () => {
     expect(tokens.length).toBe(4);
     expect(tokens).toEqual([
       new Token(Literal.Number, 0, "1"),
-      new Token(Operator.Plus, 1, "+"),
+      new Token(Operator.Plus, 1),
       new Token(Literal.Number, 2, "2"),
       new Token(Delimiter.End, 3),
     ]);
@@ -208,7 +208,7 @@ describe("Lexer", () => {
       new Token(Delimiter.LeftBrace, 15),
       new Token(Keyword.Return, 17),
       new Token(Literal.Number, 24, "1"),
-      new Token(Operator.Plus, 26, "+"),
+      new Token(Operator.Plus, 26),
       new Token(Literal.Number, 28, "2"),
       new Token(Delimiter.RightBrace, 30),
       new Token(Delimiter.End, 31),

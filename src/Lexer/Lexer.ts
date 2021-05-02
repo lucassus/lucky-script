@@ -71,21 +71,21 @@ export class Lexer {
       // Operators
 
       case "+":
-        return this.createToken(Operator.Plus, "+");
+        return this.createToken(Operator.Plus);
       case "-":
-        return this.createToken(Operator.Minus, "-");
+        return this.createToken(Operator.Minus);
       case "*": {
         if (this.nextSymbol === "*") {
-          const token = this.createToken(Operator.Power, "**");
+          const token = this.createToken(Operator.Power);
           this.advance();
 
           return token;
         }
 
-        return this.createToken(Operator.Multiply, "*");
+        return this.createToken(Operator.Multiply);
       }
       case "/":
-        return this.createToken(Operator.Divide, "/");
+        return this.createToken(Operator.Divide);
       case "=":
         return this.createToken(Operator.Assigment);
 

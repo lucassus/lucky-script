@@ -211,7 +211,11 @@ export class Parser {
 
     if ([Operator.Plus, Operator.Minus].includes(token.type)) {
       this.match(token.type);
-      return new UnaryOperation(token.value as UnaryOperator, this.factor());
+
+      return new UnaryOperation(
+        token.type.name as UnaryOperator,
+        this.factor()
+      );
     }
 
     return this.power();
@@ -268,7 +272,11 @@ export class Parser {
       this.match(token.type);
 
       const right = (rightBranch || leftBranch).apply(this);
-      left = new BinaryOperation(left, token.value as BinaryOperator, right);
+      left = new BinaryOperation(
+        left,
+        token.type.name as BinaryOperator,
+        right
+      );
     }
 
     return left;
