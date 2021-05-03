@@ -20,6 +20,14 @@ export class Operator extends TokenType {
 export class Keyword extends TokenType {
   static Function = new Keyword("function");
   static Return = new Keyword("return");
+
+  static get values() {
+    return [this.Function, this.Return];
+  }
+
+  static fromString(string: string): undefined | Keyword {
+    return this.values.find((keyword) => keyword.name === string);
+  }
 }
 
 export class Delimiter extends TokenType {
@@ -31,11 +39,6 @@ export class Delimiter extends TokenType {
   static Comma = new Delimiter(",");
   static End = new Delimiter("End");
 }
-
-export const Keywords: ReadonlyMap<string, Keyword> = new Map([
-  ["function", Keyword.Function],
-  ["return", Keyword.Return],
-]);
 
 export class Token {
   constructor(
