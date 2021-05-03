@@ -1,10 +1,10 @@
 import {
-  Token,
-  TokenType,
   Delimiter,
   Keyword,
   Literal,
   Operator,
+  Token,
+  TokenType,
 } from "../Lexer";
 import {
   BinaryOperation,
@@ -207,15 +207,11 @@ export class Parser {
   }
 
   private factor(): Expression {
-    const token = this.currentToken;
+    const tokenType = this.currentToken.type;
 
-    if ([Operator.Plus, Operator.Minus].includes(token.type)) {
-      this.match(token.type);
-
-      return new UnaryOperation(
-        token.type.name as UnaryOperator,
-        this.factor()
-      );
+    if ([Operator.Plus, Operator.Minus].includes(tokenType)) {
+      this.match(tokenType);
+      return new UnaryOperation(tokenType.name as UnaryOperator, this.factor());
     }
 
     return this.power();
@@ -262,21 +258,17 @@ export class Parser {
 
   private binaryOperation(
     leftBranch: () => Expression,
-    operations: Operator[],
+    operators: Operator[],
     rightBranch?: () => Expression
   ): Expression {
     let left = leftBranch.apply(this);
 
-    while (operations.includes(this.currentToken.type)) {
-      const token = this.currentToken;
-      this.match(token.type);
+    while (operators.includes(this.currentToken.type)) {
+      const tokenType = this.currentToken.type;
+      this.match(tokenType);
 
       const right = (rightBranch || leftBranch).apply(this);
-      left = new BinaryOperation(
-        left,
-        token.type.name as BinaryOperator,
-        right
-      );
+      left = new BinaryOperation(left, tokenType.name as BinaryOperator, right);
     }
 
     return left;
