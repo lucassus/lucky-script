@@ -15,12 +15,15 @@ import {
   Delimiter,
   Keyword,
   Literal,
+  Location,
   Operator,
+  Position,
   Token,
   TokenType,
 } from "./Token";
 
 export class Lexer {
+  // TODO: Reuse Position data structure?
   private line = 0;
   private column = -1;
   private position = -1;
@@ -141,10 +144,7 @@ export class Lexer {
     const startPosition = this.getPosition();
     const value = this.recognizeWith(new NumeralRecognizer());
 
-    return this.createToken(Literal.Number, {
-      start: startPosition,
-      end: this.getPosition(),
-    }, value);
+    return this.createToken(Literal.Number, startPosition, value);
   }
 
   private recognizeKeywordOrIdentifier(): Token {
@@ -154,10 +154,7 @@ export class Lexer {
 
     return this.createToken(
       tokenType,
-      {
-      start: startPosition,
-      end: this.getPosition(),
-    },
+      startPosition,
       tokenType === Literal.Identifier ? value : undefined
     );
   }
@@ -178,7 +175,6 @@ export class Lexer {
     return value;
   }
 
-    // TODO: This is messy, find a more elegant solution
   private getPosition(): Position {
     return {
       position: this.position,
@@ -189,13 +185,14 @@ export class Lexer {
 
   private createToken(
     type: TokenType,
-    startPosition?: number | undefined,
+    startPosition?: Position,
     value?: string
   ): Token {
-    return new Token(type, {
+    const location: Location = {
       start: startPosition ? startPosition : this.getPosition(),
       end: this.getPosition(),
-    }, value);
-  }
+    };
 
+    return new Token(type, location, value);
+  }
 }

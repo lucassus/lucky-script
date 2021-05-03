@@ -1,6 +1,13 @@
 import { IllegalSymbolError } from "./errors";
 import { Lexer } from "./Lexer";
-import { Token, Location, Delimiter, Keyword, Literal, Operator } from "./Token";
+import {
+  Token,
+  Location,
+  Delimiter,
+  Keyword,
+  Literal,
+  Operator,
+} from "./Token";
 
 const anyLocation = expect.objectContaining<Location>({
   start: {
@@ -19,9 +26,7 @@ describe("Lexer", () => {
   it("tokenizes an empty input", () => {
     const lexer = new Lexer("");
 
-    expect(lexer.nextToken()).toEqual(
-      new Token(Delimiter.End, anyLocation)
-    );
+    expect(lexer.nextToken()).toEqual(new Token(Delimiter.End, anyLocation));
   });
 
   describe("statements separators", () => {
@@ -36,7 +41,7 @@ describe("Lexer", () => {
         new Token(Delimiter.NewLine, anyLocation),
         new Token(Literal.Number, anyLocation, "2"),
         new Token(Delimiter.NewLine, anyLocation),
-        new Token(Delimiter.NewLine,anyLocation),
+        new Token(Delimiter.NewLine, anyLocation),
         new Token(Delimiter.End, anyLocation),
       ]);
     });
@@ -101,7 +106,9 @@ describe("Lexer", () => {
       ${"1_000_000"}
     `("recognizes integer numeral, like $input", ({ input }) => {
       const lexer = new Lexer(input);
-      expect(lexer.nextToken()).toEqual(new Token(Literal.Number, anyLocation, input));
+      expect(lexer.nextToken()).toEqual(
+        new Token(Literal.Number, anyLocation, input)
+      );
     });
 
     it.each`
@@ -113,7 +120,9 @@ describe("Lexer", () => {
       ${"1_000.1"}
     `("recognizes decimal numerals, like $input", ({ input }) => {
       const lexer = new Lexer(input);
-      expect(lexer.nextToken()).toEqual(new Token(Literal.Number, anyLocation, input));
+      expect(lexer.nextToken()).toEqual(
+        new Token(Literal.Number, anyLocation, input)
+      );
     });
 
     it.each`
@@ -191,10 +200,10 @@ describe("Lexer", () => {
       const tokens = [...lexer.tokenize()];
 
       expect(tokens.length).toBe(4);
-      expect(tokens[0]).toEqual(new Token(Literal.Identifier, anyLocation, input));
-      expect(tokens[1]).toEqual(
-        new Token(Operator.Assigment, anyLocation)
+      expect(tokens[0]).toEqual(
+        new Token(Literal.Identifier, anyLocation, input)
       );
+      expect(tokens[1]).toEqual(new Token(Operator.Assigment, anyLocation));
     });
 
     it("recognizes assignments", () => {
@@ -255,7 +264,7 @@ describe("Lexer", () => {
     });
 
     token = lexer.nextToken();
-    expect(token.value).toBe("\n");
+    expect(token.type).toBe(Delimiter.NewLine);
     expect(token.location).toEqual<Location>({
       start: {
         position: 3,
@@ -270,6 +279,7 @@ describe("Lexer", () => {
     });
 
     token = lexer.nextToken();
+    expect(token.type).toBe(Literal.Number);
     expect(token.value).toBe("123");
     expect(token.location).toEqual<Location>({
       start: {
@@ -285,7 +295,7 @@ describe("Lexer", () => {
     });
 
     token = lexer.nextToken();
-    expect(token.value).toBe("+");
+    expect(token.type).toBe(Operator.Plus);
     expect(token.location).toEqual<Location>({
       start: {
         position: 8,
@@ -300,6 +310,7 @@ describe("Lexer", () => {
     });
 
     token = lexer.nextToken();
+    expect(token.type).toBe(Literal.Number);
     expect(token.value).toBe("4");
     expect(token.location).toEqual<Location>({
       start: {
@@ -318,6 +329,7 @@ describe("Lexer", () => {
     lexer.nextToken();
 
     token = lexer.nextToken();
+    expect(token.type).toBe(Literal.Identifier);
     expect(token.value).toBe("bar");
     expect(token.location).toEqual<Location>({
       start: {
@@ -333,7 +345,7 @@ describe("Lexer", () => {
     });
 
     token = lexer.nextToken();
-    expect(token.value).toBe("");
+    expect(token.type).toBe(Delimiter.End);
     expect(token.location).toEqual<Location>({
       start: {
         position: 16,

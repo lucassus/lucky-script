@@ -56,7 +56,7 @@ export interface Position {
 export class Token {
   constructor(
     public readonly type: TokenType,
-    public readonly value: string,
-    public readonly location: Location
+    public readonly location: Location,
+    public readonly value?: string
   ) {}
 }
