@@ -25,12 +25,10 @@ export class Keyword extends TokenType {
   static Function = new Keyword("function");
   static Return = new Keyword("return");
 
-  static get values() {
-    return [this.Function, this.Return];
-  }
-
   static fromString(string: string): undefined | Keyword {
-    return this.values.find((keyword) => keyword.name === string);
+    return [this.Function, this.Return].find(
+      (keyword) => keyword.name === string
+    );
   }
 }
 
