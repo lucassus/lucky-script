@@ -1,6 +1,10 @@
 export abstract class TokenType {
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   protected constructor(public readonly name: string) {}
+
+  toString() {
+    return `'${this.name}' ${this.constructor.name.toLowerCase()}`;
+  }
 }
 
 export class Literal extends TokenType {

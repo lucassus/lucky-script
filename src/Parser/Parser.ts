@@ -249,7 +249,7 @@ export class Parser {
       return this.group();
     }
 
-    throw new SyntaxError(`Unexpected token ${currentToken.type.name}`);
+    throw new SyntaxError(`Unexpected ${currentToken.type}.`);
   }
 
   private group(): Expression {
@@ -285,7 +285,7 @@ export class Parser {
   private match(tokenType: TokenType): void {
     if (this.currentToken.type !== tokenType) {
       throw new SyntaxError(
-        `Expecting ${tokenType.name} but got ${this.currentToken.type.name}`
+        `Expected ${tokenType} but got ${this.currentToken.type}.`
       );
     }
 

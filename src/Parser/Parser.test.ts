@@ -90,8 +90,8 @@ describe("Parser", () => {
 
   it.each`
     script      | message
-    ${"(1 + 2"} | ${"Expecting ) but got End"}
-    ${")"}      | ${"Unexpected token )"}
+    ${"(1 + 2"} | ${"Expected ')' delimiter but got 'End' delimiter"}
+    ${")"}      | ${"Unexpected ')' delimiter."}
   `(
     "raises an error when the matching bracket is not found",
     ({ script, message }) => {
@@ -175,8 +175,8 @@ describe("Parser", () => {
 
     it.each`
       script                     | message
-      ${"x = function foo() {}"} | ${"Expecting ( but got Identifier"}
-      ${"x = "}                  | ${"Unexpected token End"}
+      ${"x = function foo() {}"} | ${"Expected '(' delimiter but got 'Identifier' literal."}
+      ${"x = "}                  | ${"Unexpected 'End' delimiter."}
     `("raises errors for invalid assignments", ({ script, message }) => {
       expect(() => parse(script)).toThrow(SyntaxError);
       expect(() => parse(script)).toThrow(message);
@@ -186,10 +186,11 @@ describe("Parser", () => {
   it("parses a script with several lines of code", () => {
     const ast = parse(`
     
-    x = 1
-    y = 2
-    
-    x + y * 3
+      x = 1
+      y = 2
+      
+      x + y * 3
+
     `);
 
     expect(ast).toEqual(
@@ -293,14 +294,16 @@ describe("Parser", () => {
       const parseScript = () => parse("x = function abc() {}");
 
       expect(parseScript).toThrow(SyntaxError);
-      expect(parseScript).toThrow("Expecting ( but got Identifier");
+      expect(parseScript).toThrow(
+        "Expected '(' delimiter but got 'Identifier' literal"
+      );
     });
 
     it.each`
       script                     | message
-      ${"function abc(,x,y) {}"} | ${"Expecting Identifier but got ,"}
-      ${"function abc(x,) {}"}   | ${"Expecting Identifier but got )"}
-      ${"function abc(x,,) {}"}  | ${"Expecting Identifier but got ,"}
+      ${"function abc(,x,y) {}"} | ${"Expected 'Identifier' literal but got ',' delimiter."}
+      ${"function abc(x,) {}"}   | ${"Expected 'Identifier' literal but got ')' delimiter."}
+      ${"function abc(x,,) {}"}  | ${"Expected 'Identifier' literal but got ',' delimiter."}
     `(
       "can't parse declaration with invalid arguments",
       ({ script, message }) => {
