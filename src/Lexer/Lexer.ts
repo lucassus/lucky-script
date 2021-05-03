@@ -13,7 +13,7 @@ import {
 } from "./symbols";
 import {
   Delimiter,
-  Keywords,
+  Keyword,
   Literal,
   Operator,
   Token,
@@ -138,7 +138,7 @@ export class Lexer {
   private recognizeKeywordOrIdentifier(): Token {
     const startPosition = this.position;
     const value = this.recognizeWith(new IdentifierRecognizer());
-    const tokenType = Keywords.get(value) || Literal.Identifier;
+    const tokenType = Keyword.fromString(value) || Literal.Identifier;
 
     return this.createToken(
       tokenType,
