@@ -79,21 +79,52 @@ export class Lexer {
         return this.createToken(Operator.Minus);
       case "*": {
         if (this.nextSymbol === "*") {
-          const token = this.createToken(Operator.Power);
+          // TODO: Fixed version, figure out how to re-use this implementation
+          const startPosition = this.getPosition();
           this.advance();
 
-          return token;
+          return this.createToken(Operator.Power, startPosition);
         }
 
         return this.createToken(Operator.Multiply);
       }
       case "/":
         return this.createToken(Operator.Divide);
-      case "=":
-        return this.createToken(Operator.Assigment);
 
-      case "<":
+      case "<": {
+        if (this.nextSymbol === "=") {
+          // TODO: Double check if the position is correctly recorded in this case
+          const token = this.createToken(Operator.Lte);
+          this.advance();
+
+          return token;
+        }
         return this.createToken(Operator.Lt);
+      }
+
+      case "=": {
+        if (this.nextSymbol === "=") {
+          // TODO: Find a way to dry this up
+          const token = this.createToken(Operator.Eq);
+          this.advance();
+
+          return token;
+        }
+
+        return this.createToken(Operator.Assigment);
+      }
+
+      case ">": {
+        if (this.nextSymbol === "=") {
+          // TODO: Find a way to dry this up
+          const token = this.createToken(Operator.Gte);
+          this.advance();
+
+          return token;
+        }
+
+        return this.createToken(Operator.Gt);
+      }
 
       // Literals
 

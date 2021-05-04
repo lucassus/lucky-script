@@ -106,17 +106,13 @@ export class Parser {
     return this.comparison();
   }
 
-  // TODO: Add more operators
   // arith_expression (("<=" | "<" | "==" | ">" | ">=") arith_expression)*
   private comparison(): Expression {
-    let left = this.arithmeticExpression();
-
-    while (this.currentToken.type === Operator.Lt) {
-      this.consume(Operator.Lt);
-      left = new BinaryOperation(left, "<", this.arithmeticExpression());
-    }
-
-    return left;
+    return this.binaryOperation(
+      this.arithmeticExpression,
+      [Operator.Lte, Operator.Lt, Operator.Eq, Operator.Gt, Operator.Gte],
+      this.arithmeticExpression
+    );
   }
 
   private arithmeticExpression(): Expression {

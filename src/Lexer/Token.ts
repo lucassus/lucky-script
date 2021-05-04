@@ -13,15 +13,19 @@ export class Literal extends TokenType {
 }
 
 export class Operator extends TokenType {
+  static Assigment = new Operator("=");
+
   static Plus = new Operator("+");
   static Minus = new Operator("-");
   static Multiply = new Operator("*");
   static Divide = new Operator("/");
   static Power = new Operator("**");
-  static Assigment = new Operator("=");
 
-  // TODO: Add more cmp operators
   static Lt = new Operator("<");
+  static Lte = new Operator("<=");
+  static Eq = new Operator("==");
+  static Gt = new Operator(">");
+  static Gte = new Operator(">=");
 }
 
 export class Keyword extends TokenType {

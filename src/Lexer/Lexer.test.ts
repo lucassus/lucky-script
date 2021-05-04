@@ -131,18 +131,29 @@ describe("Lexer", () => {
     });
   });
 
-  describe("arithmetic operators", () => {
-    it.each`
-      operator | tokenType
-      ${"+"}   | ${Operator.Plus}
-      ${"-"}   | ${Operator.Minus}
-      ${"*"}   | ${Operator.Multiply}
-      ${"/"}   | ${Operator.Divide}
-      ${"**"}  | ${Operator.Power}
-    `("recognizes $operator operator", ({ operator, tokenType }) => {
-      const lexer = new Lexer(operator);
-      expect(lexer.nextToken()).toEqual(new Token(tokenType, anyLocation));
-    });
+  it.each`
+    operator | tokenType
+    ${"+"}   | ${Operator.Plus}
+    ${"-"}   | ${Operator.Minus}
+    ${"*"}   | ${Operator.Multiply}
+    ${"/"}   | ${Operator.Divide}
+    ${"**"}  | ${Operator.Power}
+    ${"<"}   | ${Operator.Lt}
+    ${"<="}  | ${Operator.Lte}
+    ${"="}   | ${Operator.Assigment}
+    ${"=="}  | ${Operator.Eq}
+    ${">"}   | ${Operator.Gt}
+    ${">="}  | ${Operator.Gte}
+  `("recognizes operator $operator", ({ operator, tokenType }) => {
+    const lexer = new Lexer(operator);
+
+    expect(lexer.nextToken()).toEqual(
+      new Token(tokenType, {
+          position: 0,
+          line: 0,
+          column: 0
+      })
+    );
   });
 
   it("recognizes a simple expression", () => {
