@@ -176,7 +176,7 @@ export class Interpreter {
   }
 
   private visitVariableAssigment(node: VariableAssigment): LuckyObject {
-    // TODO: Consider adding `this.visitExpressions(code.value)`
+    // TODO: Consider adding `this.visitExpression(code.value)`
     const value = this.visit(node.value);
     this.scope.set(node.name, value);
 

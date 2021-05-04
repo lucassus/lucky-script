@@ -1,11 +1,32 @@
 import { IllegalSymbolError } from "./errors";
 import { Lexer } from "./Lexer";
-import { Delimiter, Keyword, Literal, Operator, Token } from "./Token";
+import {
+  Token,
+  Location,
+  Delimiter,
+  Keyword,
+  Literal,
+  Operator,
+} from "./Token";
+
+const anyLocation = expect.objectContaining<Location>({
+  start: {
+    position: expect.any(Number),
+    line: expect.any(Number),
+    column: expect.any(Number),
+  },
+  end: {
+    position: expect.any(Number),
+    line: expect.any(Number),
+    column: expect.any(Number),
+  },
+});
 
 describe("Lexer", () => {
   it("tokenizes an empty input", () => {
     const lexer = new Lexer("");
-    expect(lexer.nextToken()).toEqual(new Token(Delimiter.End, 0));
+
+    expect(lexer.nextToken()).toEqual(new Token(Delimiter.End, anyLocation));
   });
 
   describe("statements separators", () => {
@@ -15,13 +36,13 @@ describe("Lexer", () => {
 
       expect(tokens.length).toBe(7);
       expect(tokens).toEqual([
-        new Token(Delimiter.NewLine, 0),
-        new Token(Literal.Number, 1, "1"),
-        new Token(Delimiter.NewLine, 2),
-        new Token(Literal.Number, 3, "2"),
-        new Token(Delimiter.NewLine, 4),
-        new Token(Delimiter.NewLine, 5),
-        new Token(Delimiter.End, 6),
+        new Token(Delimiter.NewLine, anyLocation),
+        new Token(Literal.Number, anyLocation, "1"),
+        new Token(Delimiter.NewLine, anyLocation),
+        new Token(Literal.Number, anyLocation, "2"),
+        new Token(Delimiter.NewLine, anyLocation),
+        new Token(Delimiter.NewLine, anyLocation),
+        new Token(Delimiter.End, anyLocation),
       ]);
     });
 
@@ -31,8 +52,8 @@ describe("Lexer", () => {
 
       expect(tokens.length).toBe(2);
       expect(tokens).toEqual([
-        new Token(Delimiter.NewLine, 0),
-        new Token(Delimiter.End, 1),
+        new Token(Delimiter.NewLine, anyLocation),
+        new Token(Delimiter.End, anyLocation),
       ]);
     });
   });
@@ -49,10 +70,10 @@ describe("Lexer", () => {
 
     expect(tokens.length).toBe(4);
     expect(tokens).toEqual([
-      new Token(Literal.Number, expect.any(Number), "1"),
-      new Token(Operator.Plus, expect.any(Number)),
-      new Token(Literal.Number, expect.any(Number), "2"),
-      new Token(Delimiter.End, expect.any(Number)),
+      new Token(Literal.Number, anyLocation, "1"),
+      new Token(Operator.Plus, anyLocation),
+      new Token(Literal.Number, anyLocation, "2"),
+      new Token(Delimiter.End, anyLocation),
     ]);
   });
 
@@ -66,12 +87,12 @@ describe("Lexer", () => {
     const tokens = [...lexer.tokenize()];
 
     expect(tokens).toEqual([
-      new Token(Delimiter.NewLine, expect.any(Number)),
-      new Token(Literal.Identifier, expect.any(Number), "first"),
-      new Token(Delimiter.NewLine, expect.any(Number)),
-      new Token(Literal.Identifier, expect.any(Number), "second"),
-      new Token(Delimiter.NewLine, expect.any(Number)),
-      new Token(Delimiter.End, expect.any(Number)),
+      new Token(Delimiter.NewLine, anyLocation),
+      new Token(Literal.Identifier, anyLocation, "first"),
+      new Token(Delimiter.NewLine, anyLocation),
+      new Token(Literal.Identifier, anyLocation, "second"),
+      new Token(Delimiter.NewLine, anyLocation),
+      new Token(Delimiter.End, anyLocation),
     ]);
   });
 
@@ -85,7 +106,9 @@ describe("Lexer", () => {
       ${"1_000_000"}
     `("recognizes integer numeral, like $input", ({ input }) => {
       const lexer = new Lexer(input);
-      expect(lexer.nextToken()).toEqual(new Token(Literal.Number, 0, input));
+      expect(lexer.nextToken()).toEqual(
+        new Token(Literal.Number, anyLocation, input)
+      );
     });
 
     it.each`
@@ -97,7 +120,9 @@ describe("Lexer", () => {
       ${"1_000.1"}
     `("recognizes decimal numerals, like $input", ({ input }) => {
       const lexer = new Lexer(input);
-      expect(lexer.nextToken()).toEqual(new Token(Literal.Number, 0, input));
+      expect(lexer.nextToken()).toEqual(
+        new Token(Literal.Number, anyLocation, input)
+      );
     });
 
     it.each`
@@ -123,7 +148,7 @@ describe("Lexer", () => {
       ${"**"}  | ${Operator.Power}
     `("recognizes $operator operator", ({ operator, tokenType }) => {
       const lexer = new Lexer(operator);
-      expect(lexer.nextToken()).toEqual(new Token(tokenType, 0));
+      expect(lexer.nextToken()).toEqual(new Token(tokenType, anyLocation));
     });
   });
 
@@ -133,10 +158,10 @@ describe("Lexer", () => {
 
     expect(tokens.length).toBe(4);
     expect(tokens).toEqual([
-      new Token(Literal.Number, 0, "1"),
-      new Token(Operator.Plus, 1),
-      new Token(Literal.Number, 2, "2"),
-      new Token(Delimiter.End, 3),
+      new Token(Literal.Number, anyLocation, "1"),
+      new Token(Operator.Plus, anyLocation),
+      new Token(Literal.Number, anyLocation, "2"),
+      new Token(Delimiter.End, anyLocation),
     ]);
   });
 
@@ -146,9 +171,9 @@ describe("Lexer", () => {
 
     expect(tokens.length).toBe(3);
     expect(tokens).toEqual([
-      new Token(Delimiter.LeftBracket, 0),
-      new Token(Delimiter.RightBracket, 1),
-      new Token(Delimiter.End, 2),
+      new Token(Delimiter.LeftBracket, anyLocation),
+      new Token(Delimiter.RightBracket, anyLocation),
+      new Token(Delimiter.End, anyLocation),
     ]);
   });
 
@@ -158,9 +183,9 @@ describe("Lexer", () => {
 
     expect(tokens.length).toBe(3);
     expect(tokens).toEqual([
-      new Token(Delimiter.LeftBrace, 0),
-      new Token(Delimiter.RightBrace, 1),
-      new Token(Delimiter.End, 2),
+      new Token(Delimiter.LeftBrace, anyLocation),
+      new Token(Delimiter.RightBrace, anyLocation),
+      new Token(Delimiter.End, anyLocation),
     ]);
   });
 
@@ -175,10 +200,10 @@ describe("Lexer", () => {
       const tokens = [...lexer.tokenize()];
 
       expect(tokens.length).toBe(4);
-      expect(tokens[0]).toEqual(new Token(Literal.Identifier, 0, input));
-      expect(tokens[1]).toEqual(
-        new Token(Operator.Assigment, input.length + 1)
+      expect(tokens[0]).toEqual(
+        new Token(Literal.Identifier, anyLocation, input)
       );
+      expect(tokens[1]).toEqual(new Token(Operator.Assigment, anyLocation));
     });
 
     it("recognizes assignments", () => {
@@ -187,10 +212,10 @@ describe("Lexer", () => {
 
       expect(tokens.length).toBe(4);
       expect(tokens).toEqual([
-        new Token(Literal.Identifier, 0, "someVar"),
-        new Token(Operator.Assigment, 8),
-        new Token(Literal.Number, 10, "123"),
-        new Token(Delimiter.End, 13),
+        new Token(Literal.Identifier, anyLocation, "someVar"),
+        new Token(Operator.Assigment, anyLocation),
+        new Token(Literal.Number, anyLocation, "123"),
+        new Token(Delimiter.End, anyLocation),
       ]);
     });
   });
@@ -201,22 +226,137 @@ describe("Lexer", () => {
 
     expect(tokens.length).toBe(11);
     expect(tokens).toEqual([
-      new Token(Keyword.Function, 0),
-      new Token(Literal.Identifier, 9, "add"),
-      new Token(Delimiter.LeftBracket, 12),
-      new Token(Delimiter.RightBracket, 13),
-      new Token(Delimiter.LeftBrace, 15),
-      new Token(Keyword.Return, 17),
-      new Token(Literal.Number, 24, "1"),
-      new Token(Operator.Plus, 26),
-      new Token(Literal.Number, 28, "2"),
-      new Token(Delimiter.RightBrace, 30),
-      new Token(Delimiter.End, 31),
+      new Token(Keyword.Function, anyLocation),
+      new Token(Literal.Identifier, anyLocation, "add"),
+      new Token(Delimiter.LeftBracket, anyLocation),
+      new Token(Delimiter.RightBracket, anyLocation),
+      new Token(Delimiter.LeftBrace, anyLocation),
+      new Token(Keyword.Return, anyLocation),
+      new Token(Literal.Number, anyLocation, "1"),
+      new Token(Operator.Plus, anyLocation),
+      new Token(Literal.Number, anyLocation, "2"),
+      new Token(Delimiter.RightBrace, anyLocation),
+      new Token(Delimiter.End, anyLocation),
     ]);
   });
 
   it("throws IllegalSymbolError when unexpected symbol is given", () => {
     const lexer = new Lexer("1 @");
     expect(() => [...lexer.tokenize()]).toThrow(new IllegalSymbolError("@", 2));
+  });
+
+  it("sets valid locations for tokens", () => {
+    const lexer = new Lexer("foo\n123 + 4\n\nbar");
+
+    let token = lexer.nextToken();
+    expect(token.value).toBe("foo");
+    expect(token.location).toEqual<Location>({
+      start: {
+        position: 0,
+        line: 0,
+        column: 0,
+      },
+      end: {
+        position: 2,
+        line: 0,
+        column: 2,
+      },
+    });
+
+    token = lexer.nextToken();
+    expect(token.type).toBe(Delimiter.NewLine);
+    expect(token.location).toEqual<Location>({
+      start: {
+        position: 3,
+        line: 0,
+        column: 3,
+      },
+      end: {
+        position: 3,
+        line: 0,
+        column: 3,
+      },
+    });
+
+    token = lexer.nextToken();
+    expect(token.type).toBe(Literal.Number);
+    expect(token.value).toBe("123");
+    expect(token.location).toEqual<Location>({
+      start: {
+        position: 4,
+        line: 1,
+        column: 0,
+      },
+      end: {
+        position: 6,
+        line: 1,
+        column: 2,
+      },
+    });
+
+    token = lexer.nextToken();
+    expect(token.type).toBe(Operator.Plus);
+    expect(token.location).toEqual<Location>({
+      start: {
+        position: 8,
+        line: 1,
+        column: 4,
+      },
+      end: {
+        position: 8,
+        line: 1,
+        column: 4,
+      },
+    });
+
+    token = lexer.nextToken();
+    expect(token.type).toBe(Literal.Number);
+    expect(token.value).toBe("4");
+    expect(token.location).toEqual<Location>({
+      start: {
+        position: 10,
+        line: 1,
+        column: 6,
+      },
+      end: {
+        position: 10,
+        line: 1,
+        column: 6,
+      },
+    });
+
+    lexer.nextToken();
+    lexer.nextToken();
+
+    token = lexer.nextToken();
+    expect(token.type).toBe(Literal.Identifier);
+    expect(token.value).toBe("bar");
+    expect(token.location).toEqual<Location>({
+      start: {
+        position: 13,
+        line: 3,
+        column: 0,
+      },
+      end: {
+        position: 15,
+        line: 3,
+        column: 2,
+      },
+    });
+
+    token = lexer.nextToken();
+    expect(token.type).toBe(Delimiter.End);
+    expect(token.location).toEqual<Location>({
+      start: {
+        position: 16,
+        line: 3,
+        column: 3,
+      },
+      end: {
+        position: 16,
+        line: 3,
+        column: 3,
+      },
+    });
   });
 });
