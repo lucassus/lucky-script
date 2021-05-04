@@ -42,16 +42,11 @@ export class LuckyNumber extends LuckyObject {
     return new LuckyNumber(this.value ** object.value);
   }
 
-  lt(object: LuckyObject) {
+  lt(object: LuckyObject): LuckyObject {
     this.ensureLuckyNumber(object);
 
-    if (object.value < this.value) {
-      // TODO: 1 for true
-      return new LuckyNumber(1);
-    } else {
-      // TODO: 0 for false, think about better solution, like true, false values etc
-      return new LuckyNumber(0);
-    }
+    // TODO: 0 for false, think about better solution, like true, false values etc
+    return new LuckyNumber(this.value < object.value ? 1 : 0);
   }
 
   private ensureLuckyNumber(

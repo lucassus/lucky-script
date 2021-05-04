@@ -246,7 +246,7 @@ describe("Interpreter", () => {
       expect(runScript).toThrow("Illegal operation");
     });
 
-    it("raises an error when return is given outside a function body", () => {
+    it.skip("raises an error when return is given outside a function body", () => {
       const runScript = () => run("return 123");
 
       expect(runScript).toThrow(RuntimeError);
@@ -370,6 +370,7 @@ describe("Interpreter", () => {
     });
   });
 
+  // TODO: Write more tests for conditions
   describe("if statements", () => {
     it("interprets a simple if statement", () => {
       const symbolTable = new SymbolTable();

@@ -8,7 +8,7 @@ import {
   VariableAccess,
   VariableAssigment,
 } from "../Parser/AstNode";
-import { RuntimeError } from "./errors";
+import { Return, RuntimeError } from "./errors";
 import { LuckyFunction, LuckyNumber, LuckyObject } from "./objects";
 import { SymbolTable } from "./SymbolTable";
 
@@ -61,6 +61,10 @@ export class Interpreter {
 
     if (node instanceof IfStatement) {
       return this.visitIfStatement(node);
+    }
+
+    if (node instanceof ReturnStatement) {
+      throw new Return(this.visit(node.expression));
     }
 
     throw new RuntimeError(
@@ -119,11 +123,15 @@ export class Interpreter {
 
     return this.withScope(fnScope, () => {
       for (const statement of luckyFunction.statements) {
-        if (statement instanceof ReturnStatement) {
-          return this.visit(statement.expression);
-        }
+        try {
+          this.visit(statement);
+        } catch (error) {
+          if (error instanceof Return) {
+            return error.result;
+          }
 
-        this.visit(statement);
+          throw error;
+        }
       }
 
       return new LuckyNumber(0);
@@ -199,7 +207,7 @@ export class Interpreter {
 
     // TODO: It should create a new scope
     // TODO: 0 for false
-    if (testResult !== new LuckyNumber(0)) {
+    if (testResult instanceof LuckyNumber && testResult.value === 1) {
       for (const statement of node.thenBranch) {
         this.visit(statement);
       }

@@ -1,3 +1,5 @@
+import { LuckyObject } from "./objects";
+
 export class RuntimeError extends Error {
   constructor(message: string) {
     super(message);
@@ -16,5 +18,12 @@ export class ZeroDivisionError extends RuntimeError {
   constructor() {
     super("Division by zero");
     Object.setPrototypeOf(this, ZeroDivisionError.prototype);
+  }
+}
+
+export class Return extends RuntimeError {
+  constructor(public readonly result: LuckyObject) {
+    super("Return");
+    Object.setPrototypeOf(this, Return.prototype);
   }
 }
