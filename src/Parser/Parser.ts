@@ -12,6 +12,7 @@ import {
   Expression,
   FunctionCall,
   FunctionDeclaration,
+  IfStatement,
   Numeral,
   Program,
   ReturnStatement,
@@ -72,6 +73,10 @@ export class Parser {
       return this.functionDeclaration();
     }
 
+    if (this.currentToken.type === Keyword.If) {
+      return this.ifStatement();
+    }
+
     if (this.currentToken.type === Keyword.Return) {
       return this.returnStatement();
     }
@@ -83,6 +88,9 @@ export class Parser {
     return this.expression();
   }
 
+  // : assigment
+  // | anonymous_func
+  // | comparison
   private expression(): Expression {
     if (
       this.currentToken.type === Literal.Identifier &&
@@ -92,9 +100,26 @@ export class Parser {
     }
 
     if (this.currentToken.type === Keyword.Function) {
-      return this.anonymousFunctionDeclaration();
+      return this.anonymousFunction();
     }
 
+    return this.comparison();
+  }
+
+  // TODO: Add more operators
+  // arith_expression (("<=" | "<" | "==" | ">" | ">=") arith_expression)*
+  private comparison(): Expression {
+    let left = this.arithmeticExpression();
+
+    while (this.currentToken.type === Operator.Lt) {
+      this.consume(Operator.Lt);
+      left = new BinaryOperation(left, "<", this.arithmeticExpression());
+    }
+
+    return left;
+  }
+
+  private arithmeticExpression(): Expression {
     return this.binaryOperation(this.term, [Operator.Plus, Operator.Minus]);
   }
 
@@ -111,7 +136,7 @@ export class Parser {
   }
 
   // "function" "(" func_parameters ")" block
-  private anonymousFunctionDeclaration(): Expression {
+  private anonymousFunction(): Expression {
     this.consume(Keyword.Function);
 
     this.consume(Delimiter.LeftBracket);
@@ -135,6 +160,17 @@ export class Parser {
     }
 
     return args;
+  }
+
+  // "if" "(" expression ")" block
+  private ifStatement(): IfStatement {
+    this.consume(Keyword.If);
+
+    this.consume(Delimiter.LeftBracket);
+    const condition = this.expression();
+    this.consume(Delimiter.RightBracket);
+
+    return new IfStatement(condition, this.block());
   }
 
   private returnStatement(): ReturnStatement {

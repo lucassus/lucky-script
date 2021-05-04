@@ -8,7 +8,7 @@ export class Program extends AstNode {
 
 export abstract class Statement extends AstNode {}
 
-export abstract class Expression extends AstNode {}
+export abstract class Expression extends Statement {}
 
 export class Numeral extends Expression {
   constructor(public readonly value: string) {
@@ -16,7 +16,7 @@ export class Numeral extends Expression {
   }
 }
 
-export type BinaryOperator = "+" | "-" | "*" | "/" | "**";
+export type BinaryOperator = "+" | "-" | "*" | "/" | "**" | "<";
 
 export class BinaryOperation extends Expression {
   constructor(
@@ -56,6 +56,16 @@ export class FunctionDeclaration extends Statement {
     public readonly name: undefined | string,
     public readonly parameters: string[],
     public readonly statements: Statement[]
+  ) {
+    super();
+  }
+}
+
+export class IfStatement extends Statement {
+  constructor(
+    public readonly condition: Expression,
+    // TODO: Introduce a block?
+    public readonly thenBranch: Statement[]
   ) {
     super();
   }
