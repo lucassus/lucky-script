@@ -174,9 +174,9 @@ describe("Parser", () => {
     });
 
     it.each`
-      script                     | message
-      ${"x = function foo() {}"} | ${"Expected '(' delimiter but got 'Identifier' literal."}
-      ${"x = "}                  | ${"Unexpected 'End' delimiter."}
+      script                | message
+      ${"x = fun foo() {}"} | ${"Expected '(' delimiter but got 'Identifier' literal."}
+      ${"x = "}             | ${"Unexpected 'End' delimiter."}
     `("raises errors for invalid assignments", ({ script, message }) => {
       expect(() => parse(script)).toThrow(SyntaxError);
       expect(() => parse(script)).toThrow(message);
@@ -208,7 +208,7 @@ describe("Parser", () => {
 
   describe("function declaration", () => {
     it("parses a declaration without arguments", () => {
-      const ast = parse("function add() { x = 1\nreturn x + 2 }");
+      const ast = parse("fun add() { x = 1\nreturn x + 2 }");
 
       expect(ast).toEqual(
         new Program([
@@ -231,7 +231,7 @@ describe("Parser", () => {
     });
 
     it("parses a declaration with arguments", () => {
-      const ast = parse("function add(x, y) { return x + y }");
+      const ast = parse("fun add(x, y) { return x + y }");
 
       expect(ast).toEqual(
         new Program([
@@ -254,9 +254,9 @@ describe("Parser", () => {
 
     it.each`
       input
-      ${"function add() {}"}
-      ${"function add() { }"}
-      ${"function add() {\n}"}
+      ${"fun add() {}"}
+      ${"fun add() { }"}
+      ${"fun add() {\n}"}
     `("parses a declaration with empty body", ({ input }) => {
       const ast = parse(input);
 
@@ -266,7 +266,7 @@ describe("Parser", () => {
     });
 
     it("parses anonymous function declaration", () => {
-      const ast = parse("add = function (a, b) { return a + b }");
+      const ast = parse("add = fun (a, b) { return a + b }");
 
       expect(ast).toEqual(
         new Program([
@@ -291,7 +291,7 @@ describe("Parser", () => {
     });
 
     it("can't parse declaration assigment to a variable", () => {
-      const parseScript = () => parse("x = function abc() {}");
+      const parseScript = () => parse("x = fun abc() {}");
 
       expect(parseScript).toThrow(SyntaxError);
       expect(parseScript).toThrow(
@@ -300,10 +300,10 @@ describe("Parser", () => {
     });
 
     it.each`
-      script                     | message
-      ${"function abc(,x,y) {}"} | ${"Expected 'Identifier' literal but got ',' delimiter."}
-      ${"function abc(x,) {}"}   | ${"Expected 'Identifier' literal but got ')' delimiter."}
-      ${"function abc(x,,) {}"}  | ${"Expected 'Identifier' literal but got ',' delimiter."}
+      script                | message
+      ${"fun abc(,x,y) {}"} | ${"Expected 'Identifier' literal but got ',' delimiter."}
+      ${"fun abc(x,) {}"}   | ${"Expected 'Identifier' literal but got ')' delimiter."}
+      ${"fun abc(x,,) {}"}  | ${"Expected 'Identifier' literal but got ',' delimiter."}
     `(
       "can't parse declaration with invalid arguments",
       ({ script, message }) => {

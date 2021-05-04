@@ -99,7 +99,7 @@ describe("Interpreter", () => {
   describe("functions", () => {
     it("interprets function calls", () => {
       const script = `
-        function foo() {
+        fun foo() {
           return 1 + 2
         }
         
@@ -111,7 +111,7 @@ describe("Interpreter", () => {
 
     it("interprets function calls with arguments", () => {
       const script = `
-        function add(x, y) {
+        fun add(x, y) {
           return x + y
         }
         
@@ -123,15 +123,15 @@ describe("Interpreter", () => {
 
     it("interprets function calls with complex arguments", () => {
       const script = `
-        function giveMeOne() { return 1 }
+        fun giveMeOne() { return 1 }
       
-        function add(x, fn) {
+        fun add(x, fn) {
           # Yes! It can take another function as parameter.
           return x + fn()
         }
         
         # A function call could take anonymous function
-        add(giveMeOne(), function () { return 2 })
+        add(giveMeOne(), fun () { return 2 })
       `;
 
       expect(run(script)).toBe(3);
@@ -147,7 +147,7 @@ describe("Interpreter", () => {
         "raises an error when invalid number of arguments is given",
         ({ args }) => {
           const script = `
-            function add(x, y) {
+            fun add(x, y) {
               return x + y
             }
             
@@ -163,7 +163,7 @@ describe("Interpreter", () => {
 
       it("raises an error when anonymous function is called with invalid number of arguments", () => {
         const script = `;
-          foo = function (x, y) { return x + y }
+          foo = fun (x, y) { return x + y }
           
           foo(1, 2, 3)
         `;
@@ -176,7 +176,7 @@ describe("Interpreter", () => {
 
     it("obeys the return statement", () => {
       const script = `
-        function foo() {
+        fun foo() {
           return 1 + 2
           
           # These lines should be skipped
@@ -194,7 +194,7 @@ describe("Interpreter", () => {
 
     it("returns 0 when the return statement is not present", () => {
       const script = `
-        function foo() { 123 }
+        fun foo() { 123 }
         foo()
     `;
 
@@ -203,8 +203,8 @@ describe("Interpreter", () => {
 
     it("interprets nested function declaration", () => {
       const script = `
-        function foo() {
-          function bar() { return 3 }
+        fun foo() {
+          fun bar() { return 3 }
         
           return 1 + 2 + bar()
         }
@@ -217,11 +217,11 @@ describe("Interpreter", () => {
 
     it("interprets anonymous functions", () => {
       const script = `
-        foo = function () { 
+        foo = fun () { 
           x = 1
           
           # Yes! It's a function that returns another function ;)
-          return function () {
+          return fun () {
             return x + 2
           }
         }
@@ -235,7 +235,7 @@ describe("Interpreter", () => {
 
     it("raises an error on illegal binary operation", () => {
       const script = `
-        function foo() { return 1 }
+        fun foo() { return 1 }
         
         1 + foo
     `;
@@ -255,7 +255,7 @@ describe("Interpreter", () => {
 
     it("raises an error on illegal unary operation", () => {
       const script = `
-        function foo() { return 1 }
+        fun foo() { return 1 }
         
         -foo
     `;
@@ -286,7 +286,7 @@ describe("Interpreter", () => {
 
     it("allows to re-assign the function to a new identifier", () => {
       const script = `
-        function foo() { return 41 }
+        fun foo() { return 41 }
         bar = foo
         bar()
     `;
@@ -301,11 +301,11 @@ describe("Interpreter", () => {
       const script = `
         a = 1
         
-        function foo() {
+        fun foo() {
           a = 2 # Should replace value of on the parent scope
           b = 1 # Should be accessible only in the current scope
           
-          function bar() {
+          fun bar() {
             c = 3 # Should be accessible only in the current scope
             return a + b + c
           }
@@ -330,7 +330,7 @@ describe("Interpreter", () => {
       const script = `
         a = 1
         
-        function add() {
+        fun add() {
           # Currently a is 1, but later its value will be changed
           
           return a + 1
@@ -353,7 +353,7 @@ describe("Interpreter", () => {
       const script = `
         x = 1
   
-        function foo(x) {
+        fun foo(x) {
           # Function argument x should shadow x from the parent scope
           x = x + 1
           

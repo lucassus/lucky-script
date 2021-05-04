@@ -29,7 +29,7 @@ export class Keyword extends TokenType {
     Keyword.values.push(this);
   }
 
-  static Function = new Keyword("function");
+  static Function = new Keyword("fun");
   static Return = new Keyword("return");
 
   static fromString(string: string): undefined | Keyword {

@@ -221,7 +221,7 @@ describe("Lexer", () => {
   });
 
   it("recognizes function declaration", () => {
-    const lexer = new Lexer("function add() { return 1 + 2 }");
+    const lexer = new Lexer("fun add() { return 1 + 2 }");
     const tokens = [...lexer.tokenize()];
 
     expect(tokens.length).toBe(11);
