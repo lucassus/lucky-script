@@ -1,4 +1,5 @@
 import { RuntimeError } from "../errors";
+import { LuckyBoolean } from "./LuckyBoolean";
 
 export abstract class LuckyObject {
   add(value: LuckyObject): LuckyObject {
@@ -21,9 +22,11 @@ export abstract class LuckyObject {
     this.throwIllegalOperationError();
   }
 
-  lt(right: LuckyObject): LuckyObject {
+  lt(right: LuckyObject): LuckyBoolean {
     this.throwIllegalOperationError();
   }
+
+  abstract toBoolean(): LuckyBoolean;
 
   protected throwIllegalOperationError(): never {
     throw new RuntimeError("Illegal operation");

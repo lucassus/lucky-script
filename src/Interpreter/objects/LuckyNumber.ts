@@ -1,4 +1,5 @@
 import { ZeroDivisionError } from "../errors";
+import { LuckyBoolean } from "./LuckyBoolean";
 import { LuckyObject } from "./LuckyObject";
 
 export class LuckyNumber extends LuckyObject {
@@ -42,11 +43,9 @@ export class LuckyNumber extends LuckyObject {
     return new LuckyNumber(this.value ** object.value);
   }
 
-  lt(object: LuckyObject): LuckyObject {
+  lt(object: LuckyObject): LuckyBoolean {
     this.ensureLuckyNumber(object);
-
-    // TODO: 0 for false, think about better solution, like true, false values etc
-    return new LuckyNumber(this.value < object.value ? 1 : 0);
+    return this.value < object.value ? LuckyBoolean.True : LuckyBoolean.False;
   }
 
   private ensureLuckyNumber(
@@ -55,5 +54,9 @@ export class LuckyNumber extends LuckyObject {
     if (!(object instanceof LuckyNumber)) {
       this.throwIllegalOperationError();
     }
+  }
+
+  toBoolean(): LuckyBoolean {
+    this.throwIllegalOperationError();
   }
 }

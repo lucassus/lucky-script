@@ -9,7 +9,12 @@ import {
   VariableAssigment,
 } from "../Parser/AstNode";
 import { Return, RuntimeError } from "./errors";
-import { LuckyFunction, LuckyNumber, LuckyObject } from "./objects";
+import {
+  LuckyFunction,
+  LuckyNumber,
+  LuckyObject,
+  LuckyBoolean,
+} from "./objects";
 import { SymbolTable } from "./SymbolTable";
 
 export class Interpreter {
@@ -206,8 +211,7 @@ export class Interpreter {
     const testResult = this.visit(node.condition);
 
     // TODO: It should create a new scope
-    // TODO: 0 for false
-    if (testResult instanceof LuckyNumber && testResult.value === 1) {
+    if (testResult.toBoolean() === LuckyBoolean.True) {
       for (const statement of node.thenBranch) {
         this.visit(statement);
       }
