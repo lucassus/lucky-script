@@ -21,6 +21,10 @@ export abstract class LuckyObject {
     this.throwIllegalOperationError();
   }
 
+  lt(right: LuckyObject): LuckyObject {
+    this.throwIllegalOperationError();
+  }
+
   protected throwIllegalOperationError(): never {
     throw new RuntimeError("Illegal operation");
   }

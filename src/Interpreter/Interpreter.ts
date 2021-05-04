@@ -2,6 +2,7 @@ import { AstNode, BinaryOperation, Numeral, UnaryOperation } from "../Parser";
 import {
   FunctionCall,
   FunctionDeclaration,
+  IfStatement,
   Program,
   ReturnStatement,
   VariableAccess,
@@ -56,6 +57,10 @@ export class Interpreter {
 
     if (node instanceof VariableAccess) {
       return this.visitVariableAccess(node);
+    }
+
+    if (node instanceof IfStatement) {
+      return this.visitIfStatement(node);
     }
 
     throw new RuntimeError(
@@ -150,6 +155,8 @@ export class Interpreter {
         return left.div(right);
       case "**":
         return left.pow(right);
+      case "<":
+        return left.lt(right);
       default:
         throw new RuntimeError(`Unsupported operator ${node.operator}`);
     }
@@ -185,5 +192,20 @@ export class Interpreter {
 
   private visitVariableAccess(node: VariableAccess): LuckyObject {
     return this.scope.lookup(node.name);
+  }
+
+  private visitIfStatement(node: IfStatement) {
+    const testResult = this.visit(node.condition);
+
+    // TODO: It should create a new scope
+    // TODO: 0 for false
+    if (testResult !== new LuckyNumber(0)) {
+      for (const statement of node.thenBranch) {
+        this.visit(statement);
+      }
+    }
+
+    // TODO: A workaround, if statement, like the other statement, should not return a value
+    return new LuckyNumber(0);
   }
 }

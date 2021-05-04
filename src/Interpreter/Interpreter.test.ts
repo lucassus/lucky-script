@@ -369,4 +369,20 @@ describe("Interpreter", () => {
       expect(symbolTable.lookup("y")).toEqual(new LuckyNumber(4));
     });
   });
+
+  describe("if statements", () => {
+    it("interprets a simple if statement", () => {
+      const symbolTable = new SymbolTable();
+      const script = `
+        x = 0
+        
+        if (x < 1) {
+          x = 1
+        }
+      `;
+
+      run(script, symbolTable);
+      expect(symbolTable.lookup("x")).toEqual(new LuckyNumber(1));
+    });
+  });
 });
