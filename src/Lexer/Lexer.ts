@@ -23,7 +23,6 @@ import {
 } from "./Token";
 
 export class Lexer {
-  // TODO: Reuse Position data structure?
   private line = 0;
   private column = -1;
   private position = -1;

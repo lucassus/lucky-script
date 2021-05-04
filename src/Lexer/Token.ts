@@ -22,13 +22,18 @@ export class Operator extends TokenType {
 }
 
 export class Keyword extends TokenType {
+  private static values: Keyword[] = [];
+
+  constructor(keyword: string) {
+    super(keyword);
+    Keyword.values.push(this);
+  }
+
   static Function = new Keyword("function");
   static Return = new Keyword("return");
 
   static fromString(string: string): undefined | Keyword {
-    return [this.Function, this.Return].find(
-      (keyword) => keyword.name === string
-    );
+    return this.values.find((keyword) => keyword.name === string);
   }
 }
 
