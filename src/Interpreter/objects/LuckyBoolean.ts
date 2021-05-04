@@ -11,4 +11,8 @@ export class LuckyBoolean extends LuckyObject {
   toBoolean(): LuckyBoolean {
     return this;
   }
+
+  static fromNative(value: boolean): LuckyBoolean {
+    return value ? LuckyBoolean.True : LuckyBoolean.False;
+  }
 }

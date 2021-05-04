@@ -173,6 +173,14 @@ export class Interpreter {
         return left.pow(right);
       case "<":
         return left.lt(right);
+      case "<=":
+        return left.lte(right);
+      case "==":
+        return left.eq(right);
+      case ">=":
+        return left.gte(right);
+      case ">":
+        return left.gt(right);
       default:
         throw new RuntimeError(`Unsupported operator ${node.operator}`);
     }
@@ -221,6 +229,7 @@ export class Interpreter {
     }
 
     // TODO: A workaround, if statement, like the other statement, should not return a value
+    // TODO: Introduce Nothing keyword
     return new LuckyNumber(0);
   }
 }

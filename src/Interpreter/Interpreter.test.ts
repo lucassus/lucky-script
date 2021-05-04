@@ -50,6 +50,11 @@ describe("Interpreter", () => {
       ${"1 < 2"}     | ${true}
       ${"1 < 2 - 1"} | ${false}
       ${"2 * 2 < 1"} | ${false}
+      ${"1 <= 1"}    | ${true}
+      ${"1 < 1"}     | ${false}
+      ${"2 == 2"}    | ${true}
+      ${"2 > 2"}     | ${false}
+      ${"2 >= 2"}    | ${true}
     `("interprets comparisons, like $input", ({ input, expected }) => {
       expect(run(input)).toBe(expected);
     });

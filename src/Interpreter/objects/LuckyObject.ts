@@ -26,6 +26,22 @@ export abstract class LuckyObject {
     this.throwIllegalOperationError();
   }
 
+  lte(right: LuckyObject): LuckyBoolean {
+    this.throwIllegalOperationError();
+  }
+
+  eq(right: LuckyObject): LuckyBoolean {
+    this.throwIllegalOperationError();
+  }
+
+  gte(right: LuckyObject): LuckyBoolean {
+    this.throwIllegalOperationError();
+  }
+
+  gt(right: LuckyObject): LuckyBoolean {
+    this.throwIllegalOperationError();
+  }
+
   abstract toBoolean(): LuckyBoolean;
 
   protected throwIllegalOperationError(): never {

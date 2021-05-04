@@ -45,7 +45,27 @@ export class LuckyNumber extends LuckyObject {
 
   lt(object: LuckyObject): LuckyBoolean {
     this.ensureLuckyNumber(object);
-    return this.value < object.value ? LuckyBoolean.True : LuckyBoolean.False;
+    return LuckyBoolean.fromNative(this.value < object.value);
+  }
+
+  lte(object: LuckyObject): LuckyBoolean {
+    this.ensureLuckyNumber(object);
+    return LuckyBoolean.fromNative(this.value <= object.value);
+  }
+
+  eq(object: LuckyObject): LuckyBoolean {
+    this.ensureLuckyNumber(object);
+    return LuckyBoolean.fromNative(this.value === object.value);
+  }
+
+  gte(object: LuckyObject): LuckyBoolean {
+    this.ensureLuckyNumber(object);
+    return LuckyBoolean.fromNative(this.value >= object.value);
+  }
+
+  gt(object: LuckyObject): LuckyBoolean {
+    this.ensureLuckyNumber(object);
+    return LuckyBoolean.fromNative(this.value > object.value);
   }
 
   private ensureLuckyNumber(

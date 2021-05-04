@@ -16,7 +16,17 @@ export class Numeral extends Expression {
   }
 }
 
-export type BinaryOperator = "+" | "-" | "*" | "/" | "**" | "<";
+export type BinaryOperator =
+  | "+"
+  | "-"
+  | "*"
+  | "/"
+  | "**"
+  | "<"
+  | "<="
+  | "=="
+  | ">="
+  | ">";
 
 export class BinaryOperation extends Expression {
   constructor(

@@ -3,6 +3,7 @@ import { SymbolTable } from "../SymbolTable";
 import { LuckyBoolean } from "./LuckyBoolean";
 import { LuckyObject } from "./LuckyObject";
 
+// TODO: Implement function comparison
 export class LuckyFunction extends LuckyObject {
   constructor(
     public readonly scope: SymbolTable,
