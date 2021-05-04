@@ -23,10 +23,13 @@ export class Interpreter {
     private scope = new SymbolTable()
   ) {}
 
-  run(): undefined | number {
+  run(): undefined | boolean | number {
     const luckyObject = this.visit(this.node);
 
-    if (luckyObject instanceof LuckyNumber) {
+    if (
+      luckyObject instanceof LuckyNumber ||
+      luckyObject instanceof LuckyBoolean
+    ) {
       return luckyObject.value;
     }
   }
