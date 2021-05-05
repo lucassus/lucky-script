@@ -23,11 +23,17 @@ describe("Parser", () => {
     );
   });
 
+  it("evaluates", () => {
+    const tokens = new Tokenizer("1 + 2 * 3").tokenize();
+    const ast = new Parser(tokens).parse();
+    expect(ast.evaluate()).toBe(7);
+  });
+
   it("has nice errors reporting", () => {
     const tokens = new Tokenizer("(1 + 2 *").tokenize();
 
     expect(() => new Parser(tokens).parse()).toThrow(
-      "Unexpected token eof at position 5."
+      "Unexpected token eof at position 8."
     );
   });
 

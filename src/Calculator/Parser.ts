@@ -1,5 +1,4 @@
-import { AstNode } from "../Parser";
-import { BinaryOperation, NumberLiteral, UnaryOperation } from "./Ast";
+import { AstNode, BinaryOperation, NumberLiteral, UnaryOperation } from "./Ast";
 import { Token, TokenType } from "./Tokenizer";
 
 export class Parser {
@@ -78,9 +77,8 @@ export class Parser {
       return this.group();
     }
 
-    // TODO: Improve this error reporting
     throw new Error(
-      `Unexpected token ${this.currentToken.type} at position ${this.position}.`
+      `Unexpected token ${this.currentToken.type} at position ${this.currentToken.position}.`
     );
   }
 
