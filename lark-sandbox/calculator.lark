@@ -1,14 +1,22 @@
-expression : term (("+" | "-") term)*
+expression : term ((PLUS | MINUS) term)*
 
-term       : factor (("*" | "/") factor)*
+term       : factor ((MULTIPLY | DIVIDE) factor)*
 
-factor     : ("+" | "-") factor
+factor     : (PLUS | MINUS) factor
            | power
 
-power      : primary ("**" factor)*
+power      : primary (POWER factor)*
 
 primary    : NUMBER
            | "(" expression ")"
+
+// Operators
+
+PLUS     : "+"
+MINUS    : "-"
+MULTIPLY : "*"
+DIVIDE   : "/"
+POWER    : "**"
 
 %import common.WS_INLINE
 %import common.NUMBER
