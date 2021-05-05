@@ -31,6 +31,7 @@ export class Keyword extends TokenType {
 
   static Function = new Keyword("function");
   static Return = new Keyword("return");
+  static None = new Keyword("None");
 
   static fromString(string: string): undefined | Keyword {
     return this.values.find((keyword) => keyword.name === string);

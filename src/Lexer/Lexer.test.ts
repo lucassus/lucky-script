@@ -189,6 +189,30 @@ describe("Lexer", () => {
     ]);
   });
 
+  it.each`
+    input         | tokenType
+    ${"None"}     | ${Keyword.None}
+    ${"function"} | ${Keyword.Function}
+    ${"return"}   | ${Keyword.Return}
+  `("recognizes keywords, like $input", ({ input, tokenType }) => {
+    const token = new Lexer(input).nextToken();
+
+    expect(token).toEqual(
+      new Token(tokenType, {
+        start: {
+          position: 0,
+          line: 0,
+          column: 0,
+        },
+        end: {
+          position: input.length - 1,
+          line: 0,
+          column: input.length - 1,
+        },
+      })
+    );
+  });
+
   describe("identifiers", () => {
     it.each`
       input
