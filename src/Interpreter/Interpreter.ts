@@ -8,8 +8,7 @@ import {
   VariableAssigment,
 } from "../Parser/AstNode";
 import { RuntimeError } from "./errors";
-import { LuckyFunction, LuckyNumber, LuckyObject } from "./objects";
-import { LuckyNone } from "./objects/LuckyNone";
+import { LuckyFunction, LuckyNumber, LuckyObject, LuckyNone } from "./objects";
 import { SymbolTable } from "./SymbolTable";
 
 export class Interpreter {
