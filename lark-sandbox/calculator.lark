@@ -1,0 +1,16 @@
+expression : term (("+" | "-") term)*
+
+term       : factor (("*" | "/") factor)*
+
+factor     : ("+" | "-") factor
+           | power
+
+power      : primary ("**" factor)*
+
+primary    : NUMBER
+           | "(" expression ")"
+
+%import common.WS_INLINE
+%import common.NUMBER
+
+%ignore WS_INLINE
