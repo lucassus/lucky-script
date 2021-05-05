@@ -9,6 +9,7 @@ import {
 } from "../Parser/AstNode";
 import { RuntimeError } from "./errors";
 import { LuckyFunction, LuckyNumber, LuckyObject } from "./objects";
+import { LuckyNone } from "./objects/LuckyNone";
 import { SymbolTable } from "./SymbolTable";
 
 export class Interpreter {
@@ -64,7 +65,7 @@ export class Interpreter {
   }
 
   private visitProgram(program: Program): LuckyObject {
-    let result: LuckyObject = new LuckyNumber(0);
+    let result: LuckyObject = LuckyNone.Instance;
 
     program.statements.forEach((statements) => {
       result = this.visit(statements);
@@ -73,7 +74,7 @@ export class Interpreter {
     return result;
   }
 
-  private visitFunctionDeclaration(node: FunctionDeclaration): LuckyFunction {
+  private visitFunctionDeclaration(node: FunctionDeclaration): LuckyObject {
     const { name } = node;
 
     const luckyFunction = new LuckyFunction(
@@ -85,6 +86,8 @@ export class Interpreter {
 
     if (name) {
       this.scope.set(name, luckyFunction);
+
+      return LuckyNone.Instance;
     }
 
     return luckyFunction;
@@ -121,7 +124,7 @@ export class Interpreter {
         this.visit(statement);
       }
 
-      return new LuckyNumber(0);
+      return LuckyNone.Instance;
     });
   }
 

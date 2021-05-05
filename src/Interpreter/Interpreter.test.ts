@@ -4,7 +4,7 @@ import { Interpreter } from "./Interpreter";
 import { LuckyNumber } from "./objects";
 import { SymbolTable } from "./SymbolTable";
 
-function run(script: string, symbolTable?: SymbolTable): undefined | number {
+function run(script: string, symbolTable?: SymbolTable) {
   const ast = parse(script);
   const interpreter = new Interpreter(ast, symbolTable);
 
@@ -93,7 +93,7 @@ describe("Interpreter", () => {
   });
 
   it("interprets empty set of statements", () => {
-    expect(run("")).toBe(0);
+    expect(run("")).toBe(undefined);
   });
 
   describe("functions", () => {
@@ -192,13 +192,13 @@ describe("Interpreter", () => {
       expect(run(script)).toBe(3);
     });
 
-    it("returns 0 when the return statement is not present", () => {
+    it("returns undefined when the return statement is not present", () => {
       const script = `
         function foo() { 123 }
         foo()
     `;
 
-      expect(run(script)).toBe(0);
+      expect(run(script)).toBe(undefined);
     });
 
     it("interprets nested function declaration", () => {
