@@ -14,10 +14,10 @@ export class IllegalCharacterError extends SyntaxError {
 }
 
 export class IllegalTokenError extends SyntaxError {
-  constructor(currentToken: Token, expectedTokenType?: TokenType) {
+  constructor(currentToken: Token, expectedType?: TokenType) {
     super(
-      expectedTokenType
-        ? `Expected '${expectedTokenType}' but got '${currentToken.type}' at position ${currentToken.position}`
+      expectedType
+        ? `Expected '${expectedType}' but got '${currentToken.type}' at position ${currentToken.position}`
         : `Unexpected '${currentToken.type}' at position ${currentToken.position}`,
       currentToken.position
     );

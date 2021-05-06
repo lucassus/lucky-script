@@ -4,28 +4,31 @@ export abstract class Expression {}
 
 export class BinaryOperation extends Expression {
   constructor(
-    public left: Expression,
-    public operator: BinaryOperator,
-    public right: Expression
+    public readonly left: Expression,
+    public readonly operator: BinaryOperator,
+    public readonly right: Expression
   ) {
     super();
   }
 }
 
 export class UnaryOperation extends Expression {
-  constructor(public operator: UnaryOperator, public child: Expression) {
+  constructor(
+    public readonly operator: UnaryOperator,
+    public readonly child: Expression
+  ) {
     super();
   }
 }
 
 export class VariableAccess extends Expression {
-  constructor(public name: string) {
+  constructor(public readonly name: string) {
     super();
   }
 }
 
 export class NumberLiteral extends Expression {
-  constructor(public value: number) {
+  constructor(public readonly value: number) {
     super();
   }
 }

@@ -1,5 +1,6 @@
 import * as readline from "readline";
 
+import { SyntaxError } from "./errors";
 import { SymbolTable, Interpreter } from "./Interpreter";
 import { Parser } from "./Parser";
 import { Tokenizer } from "./Tokenizer";
@@ -29,7 +30,10 @@ scanner.on("line", (line) => {
     const result = new Interpreter(ast, symbolTable).evaluate();
     console.log(result);
   } catch (error) {
-    console.error(error);
+    if (error instanceof SyntaxError) {
+      console.error("^".padStart(PROMPT.length + error.position + 1, " "));
+    }
+    console.error(error.message);
   }
 
   scanner.prompt();
