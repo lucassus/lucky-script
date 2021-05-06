@@ -1,122 +1,76 @@
 import { Token, TokenType } from "./Token";
 
-const isDigit = (symbol: string): boolean => {
-  return /^[0-9]$/.test(symbol);
-};
-
-const isCharacter = (symbol: string): boolean => {
-  return /^[a-z]$/.test(symbol);
-};
+type Rule = (value: string) => Token;
 
 export class Tokenizer {
   private position = -1;
 
-  constructor(private expression: string) {}
+  private rules: [string | RegExp, undefined | Rule][] = [];
+
+  constructor(private expression: string) {
+    this.addRule(/^\s+/);
+    this.addRule("(", () => this.createToken("("));
+    this.addRule(")", () => this.createToken(")"));
+    this.addRule("+", () => this.createToken("+"));
+    this.addRule("-", () => this.createToken("-"));
+    this.addRule("**", () => this.createToken("**"));
+    this.addRule("*", () => this.createToken("*"));
+    this.addRule("/", () => this.createToken("/"));
+    this.addRule(/^\d+/, (value) =>
+      this.createToken("number", parseFloat(value))
+    );
+    this.addRule(/^\w+/, (value) => this.createToken("identifier", value));
+  }
 
   tokenize(): Token[] {
     const tokens: Token[] = [];
 
-    while (true) {
-      const token = this.nextToken();
+    this.position = 0;
+    while (!this.isEnd()) {
+      const rest = this.expression.slice(this.position);
 
-      tokens.push(token);
+      for (const [matcher, rule] of this.rules) {
+        if (typeof matcher === "string") {
+          const text = matcher;
+          if (rest.startsWith(text)) {
+            if (rule) {
+              tokens.push(rule(text));
+            }
 
-      if (token.type === "eof") {
-        break;
+            this.position += text.length;
+            break;
+          }
+        } else {
+          const result = rest.match(matcher);
+          if (result) {
+            const text = result[0];
+            if (rule) {
+              tokens.push(rule(text));
+            }
+
+            this.position += text.length;
+            break;
+          }
+        }
       }
+
+      // throw new Error(`Unrecognized character ${rest}!`);
     }
+
+    tokens.push(new Token(this.position, "eof"));
 
     return tokens;
   }
 
-  private nextToken(): Token {
-    this.advance();
-    this.skipWhitespaces();
-
-    switch (this.currentSymbol) {
-      case "+":
-        return this.createToken("+");
-      case "-":
-        return this.createToken("-");
-      case "*": {
-        if (this.nextSymbol === "*") {
-          const token = this.createToken("**");
-          this.advance();
-
-          return token;
-        }
-
-        return this.createToken("*");
-      }
-      case "/":
-        return this.createToken("/");
-      case "(":
-        return this.createToken("(");
-      case ")":
-        return this.createToken(")");
-      default: {
-        if (this.currentSymbol === undefined) {
-          return this.createToken("eof");
-        }
-
-        if (isDigit(this.currentSymbol)) {
-          return this.tokenizeNumber();
-        }
-
-        if (isCharacter(this.currentSymbol)) {
-          return this.tokenizeIdentifier();
-        }
-
-        throw Error(
-          `Unrecognized character ${this.currentSymbol} at ${this.position}`
-        );
-      }
-    }
-  }
-
-  private advance() {
-    this.position += 1;
-  }
-
-  private skipWhitespaces(): void {
-    while (this.currentSymbol === " ") {
-      this.advance();
-    }
-  }
-
-  private get currentSymbol(): undefined | string {
-    return this.expression[this.position];
-  }
-
-  private get nextSymbol(): undefined | string {
-    return this.expression[this.position + 1];
-  }
-
-  private tokenizeNumber(): Token {
-    const position = this.position;
-    let text = this.currentSymbol!;
-
-    while (this.nextSymbol !== undefined && isDigit(this.nextSymbol)) {
-      this.advance();
-      text += this.currentSymbol!;
-    }
-
-    return new Token(position, "number", parseFloat(text));
-  }
-
-  private tokenizeIdentifier(): Token {
-    const position = this.position;
-    let text = this.currentSymbol!;
-
-    while (this.nextSymbol !== undefined && isCharacter(this.nextSymbol)) {
-      this.advance();
-      text += this.currentSymbol!;
-    }
-
-    return new Token(position, "identifier", text);
+  private addRule(matcher: string | RegExp, rule?: Rule): void {
+    this.rules.push([matcher, rule]);
   }
 
   private createToken(type: TokenType, value?: string | number): Token {
     return new Token(this.position, type, value);
+  }
+
+  private isEnd(): boolean {
+    return this.position >= this.expression.length;
   }
 }

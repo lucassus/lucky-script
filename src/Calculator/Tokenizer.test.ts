@@ -18,4 +18,8 @@ describe("Tokenizer", () => {
       new Token(22, "eof"),
     ]);
   });
+
+  it.skip("raises error on unrecognized character", () => {
+    expect(() => new Tokenizer("123 %").tokenize()).toThrow();
+  });
 });
