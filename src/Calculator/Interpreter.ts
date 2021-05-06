@@ -1,3 +1,4 @@
+import { UndefinedVariableError, ZeroDivisionError } from "./errors";
 import {
   BinaryOperation,
   Expression,
@@ -51,7 +52,7 @@ export class Interpreter {
         return left * right;
       case "/": {
         if (right === 0) {
-          throw new Error("Division by zero");
+          throw new ZeroDivisionError();
         }
 
         return left / right;
@@ -81,7 +82,7 @@ export class Interpreter {
     const value = this.symbolTable[name];
 
     if (value === undefined) {
-      throw new Error(`Undefined variable ${name}`);
+      throw new UndefinedVariableError(name);
     }
 
     return value;
