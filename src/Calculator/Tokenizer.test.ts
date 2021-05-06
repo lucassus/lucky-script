@@ -6,16 +6,16 @@ describe("Tokenizer", () => {
     const tokens = new Tokenizer("(1 + 12) / fooBar ** 12.34").tokenize();
 
     expect(tokens).toEqual([
-      new Token(0, "("),
-      new Token(1, "number", 1),
-      new Token(3, "+"),
-      new Token(5, "number", 12),
-      new Token(7, ")"),
-      new Token(9, "/"),
-      new Token(11, "identifier", "fooBar"),
-      new Token(18, "**"),
-      new Token(21, "number", 12.34),
-      new Token(26, "eof"),
+      new Token("(", 0),
+      new Token("number", 1, 1),
+      new Token("+", 3),
+      new Token("number", 5, 12),
+      new Token(")", 7),
+      new Token("/", 9),
+      new Token("identifier", 11, "fooBar"),
+      new Token("**", 18),
+      new Token("number", 21, 12.34),
+      new Token("eof", 26),
     ]);
   });
 

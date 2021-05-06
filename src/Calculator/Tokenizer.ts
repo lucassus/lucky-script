@@ -69,7 +69,7 @@ export class Tokenizer {
       }
     }
 
-    tokens.push(new Token(this.position, "eof"));
+    tokens.push(new Token("eof", this.position));
 
     return tokens;
   }
@@ -98,7 +98,7 @@ export class Tokenizer {
   }
 
   private accept(type: TokenType, value?: string | number): Token {
-    return new Token(this.position, type, value);
+    return new Token(type, this.position, value);
   }
 
   private skip() {

@@ -10,8 +10,6 @@ power      : primary (POWER factor)*
 primary    : NUMBER
            | "(" expression ")"
 
-// Operators
-
 PLUS     : "+"
 MINUS    : "-"
 MULTIPLY : "*"
