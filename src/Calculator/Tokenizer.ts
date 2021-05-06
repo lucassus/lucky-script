@@ -1,3 +1,4 @@
+import { IllegalCharacterError, SyntaxError } from "./errors";
 import { Token } from "./Token";
 import { TokenType } from "./TokenType";
 
@@ -61,10 +62,9 @@ export class Tokenizer {
       }
 
       if (noMatchFound) {
-        throw new Error(
-          `Unrecognized character '${this.expression[this.position]}' at ${
-            this.position
-          }`
+        throw new IllegalCharacterError(
+          this.expression[this.position],
+          this.position
         );
       }
     }

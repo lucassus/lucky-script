@@ -1,3 +1,4 @@
+import { IllegalTokenError } from "./errors";
 import {
   BinaryOperation,
   NumberLiteral,
@@ -38,13 +39,15 @@ describe("Parser", () => {
 
   it.each`
     input         | error
-    ${"(1 + 2 *"} | ${"Unexpected 'eof' at position 8."}
-    ${"** **"}    | ${"Unexpected '**' at position 0."}
-    ${"1 2"}      | ${"Expected 'eof' but got 'number' at position 2."}
+    ${"(1 + 2 *"} | ${"Unexpected 'eof' at position 8"}
+    ${"** **"}    | ${"Unexpected '**' at position 0"}
+    ${"1 2"}      | ${"Expected 'eof' but got 'number' at position 2"}
   `(
     "throws error when the given input has invalid syntax",
     ({ input, error }) => {
       const tokens = new Tokenizer(input).tokenize();
+
+      expect(() => new Parser(tokens).parse()).toThrow(IllegalTokenError);
       expect(() => new Parser(tokens).parse()).toThrow(error);
     }
   );

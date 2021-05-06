@@ -1,3 +1,4 @@
+import { IllegalTokenError } from "./errors";
 import {
   Expression,
   BinaryOperation,
@@ -95,9 +96,7 @@ export class Parser {
       return this.group();
     }
 
-    throw new Error(
-      `Unexpected '${this.currentToken.type}' at position ${this.currentToken.position}.`
-    );
+    throw new IllegalTokenError(this.currentToken);
   }
 
   // "(" expression ")"
@@ -115,9 +114,7 @@ export class Parser {
 
   private consume(tokenType: TokenType): void {
     if (this.currentToken.type !== tokenType) {
-      throw new Error(
-        `Expected '${tokenType}' but got '${this.currentToken.type}' at position ${this.currentToken.position}.`
-      );
+      throw new IllegalTokenError(this.currentToken, tokenType);
     }
 
     this.advance();
