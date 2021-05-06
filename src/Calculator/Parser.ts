@@ -1,5 +1,5 @@
 import { AstNode, BinaryOperation, NumberLiteral, UnaryOperation } from "./Ast";
-import { Token, TokenType } from "./Tokenizer";
+import { Token, TokenType } from "./Token";
 
 export class Parser {
   private position = 0;
@@ -67,7 +67,7 @@ export class Parser {
   // | group
   private primary(): AstNode {
     if (this.currentToken.type === "number") {
-      const value = this.currentToken.value!;
+      const value = this.currentToken.value as number;
       this.consume("number");
 
       return new NumberLiteral(value);

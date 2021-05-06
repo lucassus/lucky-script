@@ -1,3 +1,5 @@
+import { Operator } from "./Token";
+
 export abstract class AstNode {
   abstract evaluate(): number;
 }
@@ -5,7 +7,7 @@ export abstract class AstNode {
 export class BinaryOperation extends AstNode {
   constructor(
     public left: AstNode,
-    public operator: "+" | "-" | "*" | "/" | "**",
+    public operator: Operator,
     public right: AstNode
   ) {
     super();
@@ -26,12 +28,14 @@ export class BinaryOperation extends AstNode {
         return left / right;
       case "**":
         return left ** right;
+      default:
+        throw new Error(`Unsupported operator ${this.operator}`);
     }
   }
 }
 
 export class UnaryOperation extends AstNode {
-  constructor(public operator: "+" | "-", public child: AstNode) {
+  constructor(public operator: Operator, public child: AstNode) {
     super();
   }
 
@@ -43,6 +47,8 @@ export class UnaryOperation extends AstNode {
         return value;
       case "-":
         return value * -1;
+      default:
+        throw new Error(`Unsupported operator ${this.operator}`);
     }
   }
 }

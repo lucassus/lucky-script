@@ -1,24 +1,11 @@
-export type TokenType =
-  | "+"
-  | "-"
-  | "*"
-  | "/"
-  | "**"
-  | "("
-  | ")"
-  | "number"
-  | "eof";
-
-export class Token {
-  constructor(
-    public position: number,
-    public type: TokenType,
-    public value?: number
-  ) {}
-}
+import { Token, TokenType } from "./Token";
 
 const isDigit = (symbol: string): boolean => {
-  return /^\d$/.test(symbol);
+  return /^[0-9]$/.test(symbol);
+};
+
+const isCharacter = (symbol: string): boolean => {
+  return /^[a-z]$/.test(symbol);
 };
 
 export class Tokenizer {
@@ -76,6 +63,10 @@ export class Tokenizer {
           return this.tokenizeNumber();
         }
 
+        if (isCharacter(this.currentSymbol)) {
+          return this.tokenizeIdentifier();
+        }
+
         throw Error(
           `Unrecognized character ${this.currentSymbol} at ${this.position}`
         );
@@ -103,17 +94,29 @@ export class Tokenizer {
 
   private tokenizeNumber(): Token {
     const position = this.position;
-    let raw = this.currentSymbol!;
+    let text = this.currentSymbol!;
 
     while (this.nextSymbol !== undefined && isDigit(this.nextSymbol)) {
       this.advance();
-      raw += this.currentSymbol!;
+      text += this.currentSymbol!;
     }
 
-    return new Token(position, "number", parseFloat(raw));
+    return new Token(position, "number", parseFloat(text));
   }
 
-  private createToken(type: TokenType, value?: number): Token {
+  private tokenizeIdentifier(): Token {
+    const position = this.position;
+    let text = this.currentSymbol!;
+
+    while (this.nextSymbol !== undefined && isCharacter(this.nextSymbol)) {
+      this.advance();
+      text += this.currentSymbol!;
+    }
+
+    return new Token(position, "identifier", text);
+  }
+
+  private createToken(type: TokenType, value?: string | number): Token {
     return new Token(this.position, type, value);
   }
 }
