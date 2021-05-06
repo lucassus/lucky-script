@@ -29,28 +29,27 @@ export class Tokenizer {
     while (!this.isEnd()) {
       const rest = this.expression.slice(this.position);
 
-      for (const [matcher, rule] of this.rules) {
-        if (typeof matcher === "string") {
-          const text = matcher;
-          if (rest.startsWith(text)) {
-            if (rule) {
-              tokens.push(rule(text));
-            }
+      for (const [pattern, rule] of this.rules) {
+        let matchedText: undefined | string;
 
-            this.position += text.length;
-            break;
+        if (typeof pattern === "string") {
+          if (rest.startsWith(pattern)) {
+            matchedText = pattern;
           }
         } else {
-          const result = rest.match(matcher);
+          const result = rest.match(pattern);
           if (result) {
-            const text = result[0];
-            if (rule) {
-              tokens.push(rule(text));
-            }
-
-            this.position += text.length;
-            break;
+            matchedText = result[0];
           }
+        }
+
+        if (matchedText) {
+          if (rule) {
+            tokens.push(rule(matchedText));
+          }
+
+          this.position += matchedText.length;
+          break;
         }
       }
 
@@ -62,8 +61,8 @@ export class Tokenizer {
     return tokens;
   }
 
-  private addRule(matcher: string | RegExp, rule?: Rule): void {
-    this.rules.push([matcher, rule]);
+  private addRule(pattern: string | RegExp, rule?: Rule): void {
+    this.rules.push([pattern, rule]);
   }
 
   private createToken(type: TokenType, value?: string | number): Token {
