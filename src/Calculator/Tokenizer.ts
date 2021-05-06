@@ -1,4 +1,5 @@
-import { Token, TokenType } from "./Token";
+import { Token } from "./Token";
+import { TokenType } from "./TokenType";
 
 type Pattern = string | RegExp;
 type Rule = (match: string) => undefined | Token;
@@ -23,7 +24,7 @@ export class Tokenizer {
     this.rule(")", () => this.accept(")"));
 
     // Literals
-    this.rule(/^\d+(.\d+)?/, (match) =>
+    this.rule(/^\d+(\.\d+)?/, (match) =>
       this.accept("number", parseFloat(match))
     );
     this.rule(/^\w+/, (match) => this.accept("identifier", match));
@@ -57,7 +58,9 @@ export class Tokenizer {
 
       if (noMatchFound) {
         throw new Error(
-          `Unrecognized character ${this.expression[this.position]}`
+          `Unrecognized character '${this.expression[this.position]}' at ${
+            this.position
+          }`
         );
       }
     }

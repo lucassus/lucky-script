@@ -1,7 +1,4 @@
-export type Operator = "+" | "-" | "*" | "/" | "**";
-export type Delimiter = "(" | ")";
-export type Literal = "number" | "identifier";
-export type TokenType = Operator | Delimiter | Literal | "eof";
+import { TokenType } from "./TokenType";
 
 export class Token {
   constructor(

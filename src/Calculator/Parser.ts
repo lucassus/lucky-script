@@ -5,7 +5,8 @@ import {
   UnaryOperation,
   VariableAccess,
 } from "./Expression";
-import { Token, TokenType } from "./Token";
+import { Token } from "./Token";
+import { TokenType } from "./TokenType";
 
 export class Parser {
   private position = 0;
@@ -13,7 +14,10 @@ export class Parser {
   constructor(private tokens: Token[]) {}
 
   parse(): Expression {
-    return this.expression();
+    const expression = this.expression();
+    this.consume("eof");
+
+    return expression;
   }
 
   // term ((PLUS | MINUS) term)*
@@ -92,7 +96,7 @@ export class Parser {
     }
 
     throw new Error(
-      `Unexpected token ${this.currentToken.type} at position ${this.currentToken.position}.`
+      `Unexpected '${this.currentToken.type}' at position ${this.currentToken.position}.`
     );
   }
 
@@ -112,7 +116,7 @@ export class Parser {
   private consume(tokenType: TokenType): void {
     if (this.currentToken.type !== tokenType) {
       throw new Error(
-        `Expected ${tokenType} but got ${this.currentToken.type} at position ${this.currentToken.position}.`
+        `Expected '${tokenType}' but got '${this.currentToken.type}' at position ${this.currentToken.position}.`
       );
     }
 

@@ -19,14 +19,6 @@ export class Interpreter {
   }
 
   private visitExpression(expression: Expression): number {
-    if (expression instanceof NumberLiteral) {
-      return this.visitNumberLiteral(expression);
-    }
-
-    if (expression instanceof VariableAccess) {
-      return this.visitVariableAccess(expression);
-    }
-
     if (expression instanceof BinaryOperation) {
       return this.visitBinaryOperation(expression);
     }
@@ -35,22 +27,15 @@ export class Interpreter {
       return this.visitUnaryOperation(expression);
     }
 
-    return 0;
-  }
-
-  private visitNumberLiteral(expression: NumberLiteral) {
-    return expression.value;
-  }
-
-  private visitVariableAccess(expression: VariableAccess): number {
-    const name = expression.name;
-    const value = this.symbolTable[name];
-
-    if (value === undefined) {
-      throw new Error(`Undefined variable ${name}`);
+    if (expression instanceof VariableAccess) {
+      return this.visitVariableAccess(expression);
     }
 
-    return value;
+    if (expression instanceof NumberLiteral) {
+      return this.visitNumberLiteral(expression);
+    }
+
+    return 0;
   }
 
   private visitBinaryOperation(expression: BinaryOperation): number {
@@ -64,8 +49,13 @@ export class Interpreter {
         return left + right;
       case "*":
         return left * right;
-      case "/":
+      case "/": {
+        if (right === 0) {
+          throw new Error("Division by zero");
+        }
+
         return left / right;
+      }
       case "**":
         return left ** right;
       default:
@@ -84,5 +74,20 @@ export class Interpreter {
       default:
         throw new Error(`Unsupported unary operator ${expression.operator}`);
     }
+  }
+
+  private visitVariableAccess(expression: VariableAccess): number {
+    const name = expression.name;
+    const value = this.symbolTable[name];
+
+    if (value === undefined) {
+      throw new Error(`Undefined variable ${name}`);
+    }
+
+    return value;
+  }
+
+  private visitNumberLiteral(expression: NumberLiteral) {
+    return expression.value;
   }
 }

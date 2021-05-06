@@ -19,4 +19,12 @@ describe("Interpreter", () => {
 
     expect(interpreter.evaluate()).toBe(6);
   });
+
+  it("raises an error on division by zero", () => {
+    const tokens = new Tokenizer("1/0").tokenize();
+    const expression = new Parser(tokens).parse();
+    const interpreter = new Interpreter(expression);
+
+    expect(() => interpreter.evaluate()).toThrow("Division by zero");
+  });
 });
