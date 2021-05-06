@@ -19,7 +19,9 @@ describe("Tokenizer", () => {
     ]);
   });
 
-  it.skip("raises error on unrecognized character", () => {
-    expect(() => new Tokenizer("123 %").tokenize()).toThrow();
+  it("raises error on unrecognized character", () => {
+    expect(() => new Tokenizer("123 % 123").tokenize()).toThrow(
+      "Unrecognized character '%'"
+    );
   });
 });

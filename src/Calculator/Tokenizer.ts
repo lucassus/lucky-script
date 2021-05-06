@@ -1,51 +1,45 @@
 import { Token, TokenType } from "./Token";
 
-type Rule = (value: string) => Token;
+type Pattern = string | RegExp;
+type Rule = (match: string) => undefined | Token;
 
 export class Tokenizer {
   private position = -1;
 
-  private rules: [string | RegExp, undefined | Rule][] = [];
+  private rules: [Pattern, Rule][] = [];
 
   constructor(private expression: string) {
-    this.addRule(/^\s+/);
-    this.addRule("(", () => this.createToken("("));
-    this.addRule(")", () => this.createToken(")"));
-    this.addRule("+", () => this.createToken("+"));
-    this.addRule("-", () => this.createToken("-"));
-    this.addRule("**", () => this.createToken("**"));
-    this.addRule("*", () => this.createToken("*"));
-    this.addRule("/", () => this.createToken("/"));
-    this.addRule(/^\d+/, (value) =>
-      this.createToken("number", parseFloat(value))
-    );
-    this.addRule(/^\w+/, (value) => this.createToken("identifier", value));
+    this.rule(/^\s+/, () => this.skip());
+    this.rule("(", () => this.accept("("));
+    this.rule(")", () => this.accept(")"));
+    this.rule("+", () => this.accept("+"));
+    this.rule("-", () => this.accept("-"));
+    this.rule("**", () => this.accept("**"));
+    this.rule("*", () => this.accept("*"));
+    this.rule("/", () => this.accept("/"));
+    this.rule(/^\d+/, (match) => this.accept("number", parseFloat(match)));
+    this.rule(/^\w+/, (match) => this.accept("identifier", match));
   }
 
   tokenize(): Token[] {
+    this.position = 0;
+
     const tokens: Token[] = [];
 
-    this.position = 0;
     while (!this.isEnd()) {
       const rest = this.expression.slice(this.position);
 
-      for (const [pattern, rule] of this.rules) {
-        let matchedText: undefined | string;
+      let noMatchFound = true;
 
-        if (typeof pattern === "string") {
-          if (rest.startsWith(pattern)) {
-            matchedText = pattern;
-          }
-        } else {
-          const result = rest.match(pattern);
-          if (result) {
-            matchedText = result[0];
-          }
-        }
+      for (const [pattern, rule] of this.rules) {
+        const matchedText = this.test(pattern, rest);
 
         if (matchedText) {
-          if (rule) {
-            tokens.push(rule(matchedText));
+          noMatchFound = false;
+
+          const token = rule && rule(matchedText);
+          if (token) {
+            tokens.push(token);
           }
 
           this.position += matchedText.length;
@@ -53,7 +47,11 @@ export class Tokenizer {
         }
       }
 
-      // throw new Error(`Unrecognized character ${rest}!`);
+      if (noMatchFound) {
+        throw new Error(
+          `Unrecognized character ${this.expression[this.position]}`
+        );
+      }
     }
 
     tokens.push(new Token(this.position, "eof"));
@@ -61,15 +59,34 @@ export class Tokenizer {
     return tokens;
   }
 
-  private addRule(pattern: string | RegExp, rule?: Rule): void {
-    this.rules.push([pattern, rule]);
-  }
+  private test(pattern: Pattern, text: string): string | undefined {
+    if (typeof pattern === "string") {
+      if (text.startsWith(pattern)) {
+        return pattern;
+      }
+    } else {
+      const match = text.match(pattern);
+      if (match) {
+        return match[0];
+      }
+    }
 
-  private createToken(type: TokenType, value?: string | number): Token {
-    return new Token(this.position, type, value);
+    return undefined;
   }
 
   private isEnd(): boolean {
     return this.position >= this.expression.length;
+  }
+
+  private rule(pattern: Pattern, rule: Rule): void {
+    this.rules.push([pattern, rule]);
+  }
+
+  private accept(type: TokenType, value?: string | number): Token {
+    return new Token(this.position, type, value);
+  }
+
+  private skip() {
+    return undefined;
   }
 }
