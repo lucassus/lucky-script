@@ -13,6 +13,7 @@ export class Tokenizer {
     this.rule(/^\s+/, () => this.skip());
 
     // Operators
+
     this.rule("+", () => this.accept("+"));
     this.rule("-", () => this.accept("-"));
     this.rule("**", () => this.accept("**"));
@@ -20,13 +21,16 @@ export class Tokenizer {
     this.rule("/", () => this.accept("/"));
 
     // Delimiters
+
     this.rule("(", () => this.accept("("));
     this.rule(")", () => this.accept(")"));
 
     // Literals
+
     this.rule(/^\d+(\.\d+)?/, (match) =>
       this.accept("number", parseFloat(match))
     );
+
     this.rule(/^\w+/, (match) => this.accept("identifier", match));
   }
 
