@@ -10,14 +10,22 @@ export class Tokenizer {
 
   constructor(private expression: string) {
     this.rule(/^\s+/, () => this.skip());
-    this.rule("(", () => this.accept("("));
-    this.rule(")", () => this.accept(")"));
+
+    // Operators
     this.rule("+", () => this.accept("+"));
     this.rule("-", () => this.accept("-"));
     this.rule("**", () => this.accept("**"));
     this.rule("*", () => this.accept("*"));
     this.rule("/", () => this.accept("/"));
-    this.rule(/^\d+/, (match) => this.accept("number", parseFloat(match)));
+
+    // Delimiters
+    this.rule("(", () => this.accept("("));
+    this.rule(")", () => this.accept(")"));
+
+    // Literals
+    this.rule(/^\d+(.\d+)?/, (match) =>
+      this.accept("number", parseFloat(match))
+    );
     this.rule(/^\w+/, (match) => this.accept("identifier", match));
   }
 

@@ -1,13 +1,18 @@
-import { BinaryOperation, NumberLiteral, UnaryOperation } from "./Ast";
+import {
+  BinaryOperation,
+  NumberLiteral,
+  UnaryOperation,
+  VariableAccess,
+} from "./Expression";
 import { Parser } from "./Parser";
 import { Tokenizer } from "./Tokenizer";
 
 describe("Parser", () => {
   it("generates a valid AST", () => {
-    const tokens = new Tokenizer("(1 + 2) * 3 - -4 ** 5").tokenize();
-    const ast = new Parser(tokens).parse();
+    const tokens = new Tokenizer("(1 + 2) * 3 - -foo ** 5").tokenize();
+    const expression = new Parser(tokens).parse();
 
-    expect(ast).toEqual(
+    expect(expression).toEqual(
       new BinaryOperation(
         new BinaryOperation(
           new BinaryOperation(new NumberLiteral(1), "+", new NumberLiteral(2)),
@@ -17,16 +22,14 @@ describe("Parser", () => {
         "-",
         new UnaryOperation(
           "-",
-          new BinaryOperation(new NumberLiteral(4), "**", new NumberLiteral(5))
+          new BinaryOperation(
+            new VariableAccess("foo"),
+            "**",
+            new NumberLiteral(5)
+          )
         )
       )
     );
-  });
-
-  it("evaluates", () => {
-    const tokens = new Tokenizer("1 + 2 * 3").tokenize();
-    const ast = new Parser(tokens).parse();
-    expect(ast.evaluate()).toBe(7);
   });
 
   it("has nice errors reporting", () => {

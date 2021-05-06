@@ -1,4 +1,10 @@
-import { AstNode, BinaryOperation, NumberLiteral, UnaryOperation } from "./Ast";
+import {
+  Expression,
+  BinaryOperation,
+  NumberLiteral,
+  UnaryOperation,
+  VariableAccess,
+} from "./Expression";
 import { Token, TokenType } from "./Token";
 
 export class Parser {
@@ -6,12 +12,12 @@ export class Parser {
 
   constructor(private tokens: Token[]) {}
 
-  parse(): AstNode {
+  parse(): Expression {
     return this.expression();
   }
 
   // term ((PLUS | MINUS) term)*
-  private expression(): AstNode {
+  private expression(): Expression {
     let left = this.term();
 
     while (this.currentToken.type === "+" || this.currentToken.type === "-") {
@@ -25,7 +31,7 @@ export class Parser {
   }
 
   // factor ((MULTIPLY | DIVIDE) factor)*
-  private term(): AstNode {
+  private term(): Expression {
     let left = this.factor();
 
     while (this.currentToken.type === "*" || this.currentToken.type === "/") {
@@ -40,7 +46,7 @@ export class Parser {
 
   // : (PLUS | MINUS) factor
   // | power
-  private factor(): AstNode {
+  private factor(): Expression {
     if (this.currentToken.type === "+" || this.currentToken.type === "-") {
       const operator = this.currentToken.type;
       this.consume(operator);
@@ -52,7 +58,7 @@ export class Parser {
   }
 
   // primary (POWER factor)*
-  private power(): AstNode {
+  private power(): Expression {
     let left = this.primary();
 
     while (this.currentToken.type === "**") {
@@ -64,13 +70,21 @@ export class Parser {
   }
 
   // : NUMBER
+  // | IDENTIFIER
   // | group
-  private primary(): AstNode {
+  private primary(): Expression {
     if (this.currentToken.type === "number") {
       const value = this.currentToken.value as number;
       this.consume("number");
 
       return new NumberLiteral(value);
+    }
+
+    if (this.currentToken.type === "identifier") {
+      const name = this.currentToken.value as string;
+      this.consume("identifier");
+
+      return new VariableAccess(name);
     }
 
     if (this.currentToken.type === "(") {
@@ -83,7 +97,7 @@ export class Parser {
   }
 
   // "(" expression ")"
-  private group(): AstNode {
+  private group(): Expression {
     this.consume("(");
     const expression = this.expression();
     this.consume(")");

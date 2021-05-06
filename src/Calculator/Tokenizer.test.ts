@@ -3,7 +3,7 @@ import { Tokenizer } from "./Tokenizer";
 
 describe("Tokenizer", () => {
   it("tokenizes the expression", () => {
-    const tokens = new Tokenizer("(1 + 12) * foo ** 1234").tokenize();
+    const tokens = new Tokenizer("(1 + 12) * foo ** 12.34").tokenize();
 
     expect(tokens).toEqual([
       new Token(0, "("),
@@ -14,8 +14,8 @@ describe("Tokenizer", () => {
       new Token(9, "*"),
       new Token(11, "identifier", "foo"),
       new Token(15, "**"),
-      new Token(18, "number", 1234),
-      new Token(22, "eof"),
+      new Token(18, "number", 12.34),
+      new Token(23, "eof"),
     ]);
   });
 
