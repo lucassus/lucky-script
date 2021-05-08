@@ -16,18 +16,17 @@ export class SymbolTable {
   }
 
   lookup(key: string): LuckyObject {
-    const scope = this.findTheClosestScopeThatDefines(key) || this;
-    return scope.getLocal(key);
-  }
-
-  private getLocal(key: string): LuckyObject {
     const value = this.locals.get(key);
 
-    if (value === undefined) {
-      throw new NameError(key);
+    if (value) {
+      return value;
     }
 
-    return value;
+    if (this.parent) {
+      return this.parent.lookup(key);
+    }
+
+    throw new NameError(key);
   }
 
   createChild(): SymbolTable {
