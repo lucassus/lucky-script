@@ -10,16 +10,9 @@ import {
 } from "./Token";
 
 const anyLocation = expect.objectContaining<Location>({
-  start: {
-    position: expect.any(Number),
-    line: expect.any(Number),
-    column: expect.any(Number),
-  },
-  end: {
-    position: expect.any(Number),
-    line: expect.any(Number),
-    column: expect.any(Number),
-  },
+  position: expect.any(Number),
+  line: expect.any(Number),
+  column: expect.any(Number),
 });
 
 describe("Lexer", () => {
@@ -246,83 +239,48 @@ describe("Lexer", () => {
   });
 
   it("sets valid locations for tokens", () => {
-    const lexer = new Lexer("foo\n123 + 4\n\nbar");
+    const lexer = new Lexer("foo\n123 ** 4\n\nbar");
 
     let token = lexer.nextToken();
     expect(token.value).toBe("foo");
     expect(token.location).toEqual<Location>({
-      start: {
-        position: 0,
-        line: 0,
-        column: 0,
-      },
-      end: {
-        position: 2,
-        line: 0,
-        column: 2,
-      },
+      position: 0,
+      line: 0,
+      column: 0,
     });
 
     token = lexer.nextToken();
     expect(token.type).toBe(Delimiter.NewLine);
     expect(token.location).toEqual<Location>({
-      start: {
-        position: 3,
-        line: 0,
-        column: 3,
-      },
-      end: {
-        position: 3,
-        line: 0,
-        column: 3,
-      },
+      position: 3,
+      line: 0,
+      column: 3,
     });
 
     token = lexer.nextToken();
     expect(token.type).toBe(Literal.Number);
     expect(token.value).toBe("123");
     expect(token.location).toEqual<Location>({
-      start: {
-        position: 4,
-        line: 1,
-        column: 0,
-      },
-      end: {
-        position: 6,
-        line: 1,
-        column: 2,
-      },
+      position: 4,
+      line: 1,
+      column: 0,
     });
 
     token = lexer.nextToken();
-    expect(token.type).toBe(Operator.Plus);
+    expect(token.type).toBe(Operator.Power);
     expect(token.location).toEqual<Location>({
-      start: {
-        position: 8,
-        line: 1,
-        column: 4,
-      },
-      end: {
-        position: 8,
-        line: 1,
-        column: 4,
-      },
+      position: 8,
+      line: 1,
+      column: 4,
     });
 
     token = lexer.nextToken();
     expect(token.type).toBe(Literal.Number);
     expect(token.value).toBe("4");
     expect(token.location).toEqual<Location>({
-      start: {
-        position: 10,
-        line: 1,
-        column: 6,
-      },
-      end: {
-        position: 10,
-        line: 1,
-        column: 6,
-      },
+      position: 11,
+      line: 1,
+      column: 7,
     });
 
     lexer.nextToken();
@@ -332,31 +290,17 @@ describe("Lexer", () => {
     expect(token.type).toBe(Literal.Identifier);
     expect(token.value).toBe("bar");
     expect(token.location).toEqual<Location>({
-      start: {
-        position: 13,
-        line: 3,
-        column: 0,
-      },
-      end: {
-        position: 15,
-        line: 3,
-        column: 2,
-      },
+      position: 14,
+      line: 3,
+      column: 0,
     });
 
     token = lexer.nextToken();
     expect(token.type).toBe(Delimiter.End);
     expect(token.location).toEqual<Location>({
-      start: {
-        position: 16,
-        line: 3,
-        column: 3,
-      },
-      end: {
-        position: 16,
-        line: 3,
-        column: 3,
-      },
+      position: 17,
+      line: 3,
+      column: 3,
     });
   });
 });

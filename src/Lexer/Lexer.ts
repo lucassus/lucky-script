@@ -17,7 +17,6 @@ import {
   Literal,
   Location,
   Operator,
-  Position,
   Token,
   TokenType,
 } from "./Token";
@@ -140,14 +139,14 @@ export class Lexer {
   }
 
   private recognizeNumber(): Token {
-    const startPosition = this.getPosition();
+    const startPosition = this.getLocation();
     const value = this.recognizeWith(new NumeralRecognizer());
 
     return this.createToken(Literal.Number, startPosition, value);
   }
 
   private recognizeKeywordOrIdentifier(): Token {
-    const startPosition = this.getPosition();
+    const startPosition = this.getLocation();
     const value = this.recognizeWith(new IdentifierRecognizer());
     const tokenType = Keyword.fromString(value) || Literal.Identifier;
 
@@ -174,7 +173,7 @@ export class Lexer {
     return value;
   }
 
-  private getPosition(): Position {
+  private getLocation(): Location {
     return {
       position: this.position,
       line: this.line,
@@ -184,14 +183,10 @@ export class Lexer {
 
   private createToken(
     type: TokenType,
-    startPosition?: Position,
+    startLocation?: Location,
     value?: string
   ): Token {
-    const location: Location = {
-      start: startPosition ? startPosition : this.getPosition(),
-      end: this.getPosition(),
-    };
-
+    const location = startLocation ? startLocation : this.getLocation();
     return new Token(type, location, value);
   }
 }
