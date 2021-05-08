@@ -139,20 +139,20 @@ export class Lexer {
   }
 
   private recognizeNumber(): Token {
-    const startPosition = this.getLocation();
+    const startLocation = this.getLocation();
     const value = this.recognizeWith(new NumeralRecognizer());
 
-    return this.createToken(Literal.Number, startPosition, value);
+    return this.createToken(Literal.Number, startLocation, value);
   }
 
   private recognizeKeywordOrIdentifier(): Token {
-    const startPosition = this.getLocation();
+    const startLocation = this.getLocation();
     const value = this.recognizeWith(new IdentifierRecognizer());
     const tokenType = Keyword.fromString(value) || Literal.Identifier;
 
     return this.createToken(
       tokenType,
-      startPosition,
+      startLocation,
       tokenType === Literal.Identifier ? value : undefined
     );
   }
