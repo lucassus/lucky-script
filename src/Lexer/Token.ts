@@ -48,11 +48,6 @@ export class Delimiter extends TokenType {
 }
 
 export interface Location {
-  readonly start: Position;
-  readonly end: Position;
-}
-
-export interface Position {
   readonly position: number;
   readonly line: number;
   readonly column: number;
