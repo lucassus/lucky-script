@@ -22,9 +22,9 @@ import {
 } from "./Token";
 
 export class Lexer {
+  private position = -1;
   private line = 0;
   private column = -1;
-  private position = -1;
 
   constructor(private readonly input: string) {}
 
