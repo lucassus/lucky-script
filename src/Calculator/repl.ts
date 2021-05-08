@@ -13,13 +13,15 @@ const scanner = readline.createInterface({
   prompt: PROMPT,
 });
 
-scanner.prompt();
-
 const symbolTable: SymbolTable = {
   one: 1,
   two: 2,
   three: 3,
 };
+
+console.log("Predefined variables:", symbolTable);
+
+scanner.prompt();
 
 scanner.on("line", (line) => {
   const input = line.trim();
