@@ -149,9 +149,9 @@ describe("Lexer", () => {
 
     expect(lexer.nextToken()).toEqual(
       new Token(tokenType, {
-          position: 0,
-          line: 0,
-          column: 0
+        position: 0,
+        line: 0,
+        column: 0,
       })
     );
   });
