@@ -1,3 +1,4 @@
-export { LuckyObject } from "./LuckyObject";
-export { LuckyNumber } from "./LuckyNumber";
+export { LuckyBoolean } from "./LuckyBoolean";
 export { LuckyFunction } from "./LuckyFunction";
+export { LuckyNumber } from "./LuckyNumber";
+export { LuckyObject } from "./LuckyObject";

@@ -25,6 +25,13 @@ parser = Lark.open("lucky_script.lark", rel_to=__file__, start="program")
         "foo(123)",
         "foo(1, 2, 1+2+3+4)",
         "x = 123",
+        "if(123) {}",
+        "if(x < 1) {}",
+        "if(x <= 1) {}",
+        "if(x == 1) {}",
+        "if(x > 1) {}",
+        "if(x >= 1) {}",
+        "if(x < 1 < 2) {}",
         "return 1234",
     ),
 )
@@ -83,6 +90,10 @@ def test_lucky_script():
       return function (y) {
         return x + y * z
       }
+    }
+    
+    if (x < 0) {
+      x = 0
     }
 
     curry(123)

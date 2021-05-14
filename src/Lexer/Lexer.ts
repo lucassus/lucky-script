@@ -25,8 +25,11 @@ export class Lexer {
   private position = -1;
   private line = 0;
   private column = -1;
+  private startLocation: Location;
 
-  constructor(private readonly input: string) {}
+  constructor(private readonly input: string) {
+    this.startLocation = this.getCurrentLocation();
+  }
 
   *tokenize(): Generator<Token> {
     while (true) {
@@ -48,6 +51,8 @@ export class Lexer {
     if (isBeginningOfComment(this.currentSymbol)) {
       this.skipComment();
     }
+
+    this.startLocation = this.getCurrentLocation();
 
     if (this.currentSymbol === undefined) {
       return this.createToken(Delimiter.End);
@@ -77,20 +82,24 @@ export class Lexer {
         return this.createToken(Operator.Plus);
       case "-":
         return this.createToken(Operator.Minus);
-      case "*": {
-        if (this.nextSymbol === "*") {
-          const token = this.createToken(Operator.Power);
-          this.advance();
-
-          return token;
-        }
-
-        return this.createToken(Operator.Multiply);
-      }
+      case "*":
+        return this.createToken(
+          this.nextSymbolMatches("*") ? Operator.Power : Operator.Multiply
+        );
       case "/":
         return this.createToken(Operator.Divide);
+      case "<":
+        return this.createToken(
+          this.nextSymbolMatches("=") ? Operator.Lte : Operator.Lt
+        );
       case "=":
-        return this.createToken(Operator.Assigment);
+        return this.createToken(
+          this.nextSymbolMatches("=") ? Operator.Eq : Operator.Assigment
+        );
+      case ">":
+        return this.createToken(
+          this.nextSymbolMatches("=") ? Operator.Gte : Operator.Gt
+        );
 
       // Literals
 
@@ -127,6 +136,15 @@ export class Lexer {
     return this.input[this.position + 1];
   }
 
+  private nextSymbolMatches(symbol: string): boolean {
+    if (this.nextSymbol === symbol) {
+      this.advance();
+      return true;
+    }
+
+    return false;
+  }
+
   private skipWhitespaces(): void {
     while (isWhitespace(this.currentSymbol)) {
       this.advance();
@@ -139,20 +157,16 @@ export class Lexer {
   }
 
   private recognizeNumber(): Token {
-    const startLocation = this.getLocation();
     const value = this.recognizeWith(new NumeralRecognizer());
-
-    return this.createToken(Literal.Number, startLocation, value);
+    return this.createToken(Literal.Number, value);
   }
 
   private recognizeKeywordOrIdentifier(): Token {
-    const startLocation = this.getLocation();
     const value = this.recognizeWith(new IdentifierRecognizer());
     const tokenType = Keyword.fromString(value) || Literal.Identifier;
 
     return this.createToken(
       tokenType,
-      startLocation,
       tokenType === Literal.Identifier ? value : undefined
     );
   }
@@ -173,7 +187,7 @@ export class Lexer {
     return value;
   }
 
-  private getLocation(): Location {
+  private getCurrentLocation(): Location {
     return {
       position: this.position,
       line: this.line,
@@ -181,12 +195,7 @@ export class Lexer {
     };
   }
 
-  private createToken(
-    type: TokenType,
-    startLocation?: Location,
-    value?: string
-  ): Token {
-    const location = startLocation ? startLocation : this.getLocation();
-    return new Token(type, location, value);
+  private createToken(type: TokenType, value?: string): Token {
+    return new Token(type, this.startLocation, value);
   }
 }

@@ -1,4 +1,5 @@
 import { RuntimeError } from "../errors";
+import { LuckyBoolean } from "./LuckyBoolean";
 
 export abstract class LuckyObject {
   add(value: LuckyObject): LuckyObject {
@@ -20,6 +21,28 @@ export abstract class LuckyObject {
   pow(value: LuckyObject): LuckyObject {
     this.throwIllegalOperationError();
   }
+
+  lt(right: LuckyObject): LuckyBoolean {
+    this.throwIllegalOperationError();
+  }
+
+  lte(right: LuckyObject): LuckyBoolean {
+    this.throwIllegalOperationError();
+  }
+
+  eq(right: LuckyObject): LuckyBoolean {
+    this.throwIllegalOperationError();
+  }
+
+  gte(right: LuckyObject): LuckyBoolean {
+    this.throwIllegalOperationError();
+  }
+
+  gt(right: LuckyObject): LuckyBoolean {
+    this.throwIllegalOperationError();
+  }
+
+  abstract toBoolean(): LuckyBoolean;
 
   protected throwIllegalOperationError(): never {
     throw new RuntimeError("Illegal operation");

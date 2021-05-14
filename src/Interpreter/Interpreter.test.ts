@@ -4,7 +4,7 @@ import { Interpreter } from "./Interpreter";
 import { LuckyNumber } from "./objects";
 import { SymbolTable } from "./SymbolTable";
 
-function run(script: string, symbolTable?: SymbolTable): undefined | number {
+function run(script: string, symbolTable?: SymbolTable) {
   const ast = parse(script);
   const interpreter = new Interpreter(ast, symbolTable);
 
@@ -23,23 +23,48 @@ describe("Interpreter", () => {
     expect(run(script)).toEqual(value);
   });
 
-  it.each`
-    script                       | expected
-    ${"(1 + 2) * 3 - -(1 + .5)"} | ${10.5}
-    ${"2 * 2**3"}                | ${16}
-    ${"2 * 2**3"}                | ${16}
-    ${"-2**3"}                   | ${-8}
-    ${"-2**4"}                   | ${-16}
-    ${"(-2)**4"}                 | ${16}
-  `(
-    "evaluates arithmetic expression $script to $expected",
-    ({ script, expected }) => {
-      expect(run(script)).toBe(expected);
-    }
-  );
+  describe("arithmetic expressions", () => {
+    it.each`
+      script                       | expected
+      ${"(1 + 2) * 3 - -(1 + .5)"} | ${10.5}
+      ${"2 * 2**3"}                | ${16}
+      ${"2 * 2**3"}                | ${16}
+      ${"-2**3"}                   | ${-8}
+      ${"-2**4"}                   | ${-16}
+      ${"(-2)**4"}                 | ${16}
+    `(
+      "evaluates arithmetic expression $script to $expected",
+      ({ script, expected }) => {
+        expect(run(script)).toBe(expected);
+      }
+    );
 
-  it("raises an error on division by zero", () => {
-    expect(() => run("2 / 0")).toThrow(ZeroDivisionError);
+    it("raises an error on division by zero", () => {
+      expect(() => run("2 / 0")).toThrow(ZeroDivisionError);
+    });
+  });
+
+  describe("comparisons", () => {
+    it.each`
+      input          | expected
+      ${"1 < 2"}     | ${true}
+      ${"1 < 2 - 1"} | ${false}
+      ${"2 * 2 < 1"} | ${false}
+      ${"1 <= 1"}    | ${true}
+      ${"1 < 1"}     | ${false}
+      ${"2 == 2"}    | ${true}
+      ${"2 > 2"}     | ${false}
+      ${"2 >= 2"}    | ${true}
+    `("interprets comparisons, like $input", ({ input, expected }) => {
+      expect(run(input)).toBe(expected);
+    });
+
+    it("raises an error on invalid comparison", () => {
+      const runScript = () => run("1 < 2 < 3");
+
+      expect(runScript).toThrow(RuntimeError);
+      expect(runScript).toThrow("Illegal operation");
+    });
   });
 
   describe("variables handling", () => {
@@ -248,9 +273,7 @@ describe("Interpreter", () => {
 
     it("raises an error when return is given outside a function body", () => {
       const runScript = () => run("return 123");
-
       expect(runScript).toThrow(RuntimeError);
-      expect(runScript).toThrow("Unsupported AST node type ReturnStatement");
     });
 
     it("raises an error on illegal unary operation", () => {
@@ -367,6 +390,22 @@ describe("Interpreter", () => {
 
       expect(symbolTable.lookup("x")).toEqual(new LuckyNumber(1));
       expect(symbolTable.lookup("y")).toEqual(new LuckyNumber(4));
+    });
+  });
+
+  describe("if statements", () => {
+    it("interprets a simple if statement", () => {
+      const symbolTable = new SymbolTable();
+      const script = `
+        x = 0
+        
+        if (x < 1) {
+          x = 1
+        }
+      `;
+
+      run(script, symbolTable);
+      expect(symbolTable.lookup("x")).toEqual(new LuckyNumber(1));
     });
   });
 });
