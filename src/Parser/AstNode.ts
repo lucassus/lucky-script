@@ -74,7 +74,6 @@ export class FunctionDeclaration extends Statement {
 export class IfStatement extends Statement {
   constructor(
     public readonly condition: Expression,
-    // TODO: Introduce a block?
     public readonly thenBranch: Statement[]
   ) {
     super();
