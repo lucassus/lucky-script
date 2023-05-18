@@ -91,7 +91,7 @@ def test_lucky_script():
         return x + y * z
       }
     }
-    
+
     if (x < 0) {
       x = 0
     }
