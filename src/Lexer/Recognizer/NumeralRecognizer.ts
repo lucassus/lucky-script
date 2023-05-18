@@ -1,6 +1,6 @@
-import { Digits, Dot, NonZeroDigits, Separator, ZeroDigit } from "../symbols";
 import { Recognizer } from "./Recognizer";
 import { Case } from "./state/Case";
+import { Digits, Dot, NonZeroDigits, Separator, ZeroDigit } from "../symbols";
 
 const beginNumber = new Case(0, false);
 const zero = new Case(1, true);

@@ -1,8 +1,9 @@
-import { parse } from "../testingUtils";
 import {
   BinaryOperation,
+  Expression,
   FunctionCall,
   FunctionDeclaration,
+  IfStatement,
   Numeral,
   Program,
   ReturnStatement,
@@ -11,6 +12,7 @@ import {
   VariableAssigment,
 } from "./AstNode";
 import { SyntaxError } from "./errors";
+import { parse } from "../testingUtils";
 
 describe("Parser", () => {
   it("parses empty input", () => {
@@ -373,6 +375,23 @@ describe("Parser", () => {
         ])
       );
     });
+  });
+
+  it("parses if statement", () => {
+    const ast = parse(`
+      if (x < 1) {
+        x = 1
+      }
+    `);
+
+    expect(ast).toEqual(
+      new Program([
+        new IfStatement(
+          new BinaryOperation(new VariableAccess("x"), "<", new Numeral("1")),
+          [new VariableAssigment("x", new Numeral("1"))]
+        ),
+      ])
+    );
   });
 
   describe("several statements in a single line", () => {

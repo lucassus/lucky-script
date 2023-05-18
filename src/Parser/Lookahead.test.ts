@@ -10,7 +10,6 @@ describe("Lookahead", () => {
     }
   }
 
-  // TODO: Refactor this test to be more descriptive
   it("wraps the generator", () => {
     const lookahead = new Lookahead(makeGenerator());
     expect(lookahead.current).toEqual("first");

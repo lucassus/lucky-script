@@ -1,17 +1,10 @@
 import {
-  Delimiter,
-  Keyword,
-  Literal,
-  Operator,
-  Token,
-  TokenType,
-} from "../Lexer";
-import {
   BinaryOperation,
   BinaryOperator,
   Expression,
   FunctionCall,
   FunctionDeclaration,
+  IfStatement,
   Numeral,
   Program,
   ReturnStatement,
@@ -23,6 +16,14 @@ import {
 } from "./AstNode";
 import { SyntaxError } from "./errors";
 import { Lookahead } from "./Lookahead";
+import {
+  Delimiter,
+  Keyword,
+  Literal,
+  Operator,
+  Token,
+  TokenType,
+} from "../Lexer";
 
 export class Parser {
   private lexer: Lookahead<Token>;
@@ -49,7 +50,7 @@ export class Parser {
       statements.push(this.statement());
 
       while (this.currentToken.type != end) {
-        this.match(Delimiter.NewLine);
+        this.consume(Delimiter.NewLine);
         this.discardNewLines();
 
         if (this.currentToken.type !== end) {
@@ -63,13 +64,17 @@ export class Parser {
 
   private discardNewLines(): void {
     while (this.currentToken.type === Delimiter.NewLine) {
-      this.match(Delimiter.NewLine);
+      this.consume(Delimiter.NewLine);
     }
   }
 
   private statement(): Statement {
     if (this.currentToken.type === Keyword.Function) {
       return this.functionDeclaration();
+    }
+
+    if (this.currentToken.type === Keyword.If) {
+      return this.ifStatement();
     }
 
     if (this.currentToken.type === Keyword.Return) {
@@ -83,42 +88,56 @@ export class Parser {
     return this.expression();
   }
 
+  // : assigment
+  // | anonymous_func
+  // | comparison
   private expression(): Expression {
     if (
       this.currentToken.type === Literal.Identifier &&
       this.nextToken.type === Operator.Assigment
     ) {
-      return this.variableAssigment();
+      return this.assigment();
     }
 
     if (this.currentToken.type === Keyword.Function) {
-      return this.anonymousFunctionDeclaration();
+      return this.anonymousFunction();
     }
 
+    return this.comparison();
+  }
+
+  // arith_expression (("<=" | "<" | "==" | ">" | ">=") arith_expression)*
+  private comparison(): Expression {
+    return this.binaryOperation(
+      this.arithmeticExpression,
+      [Operator.Lte, Operator.Lt, Operator.Eq, Operator.Gt, Operator.Gte],
+      this.arithmeticExpression
+    );
+  }
+
+  private arithmeticExpression(): Expression {
     return this.binaryOperation(this.term, [Operator.Plus, Operator.Minus]);
   }
 
   // "function" IDENTIFIER "(" func_args ")" block
   private functionDeclaration(): FunctionDeclaration {
-    this.match(Keyword.Function);
+    this.consume(Keyword.Function);
+    const name = this.consume(Literal.Identifier).value;
 
-    const name = this.currentToken.value;
-    this.match(Literal.Identifier);
-
-    this.match(Delimiter.LeftBracket);
+    this.consume(Delimiter.LeftBracket);
     const parameters = this.functionParameters();
-    this.match(Delimiter.RightBracket);
+    this.consume(Delimiter.RightBracket);
 
     return new FunctionDeclaration(name, parameters, this.block());
   }
 
   // "function" "(" func_parameters ")" block
-  private anonymousFunctionDeclaration(): Expression {
-    this.match(Keyword.Function);
+  private anonymousFunction(): Expression {
+    this.consume(Keyword.Function);
 
-    this.match(Delimiter.LeftBracket);
+    this.consume(Delimiter.LeftBracket);
     const parameters = this.functionParameters();
-    this.match(Delimiter.RightBracket);
+    this.consume(Delimiter.RightBracket);
 
     return new FunctionDeclaration(undefined, parameters, this.block());
   }
@@ -129,47 +148,54 @@ export class Parser {
       return [];
     }
 
-    const args: string[] = [this.currentToken.value!];
-    this.match(Literal.Identifier);
+    const args: string[] = [this.consume(Literal.Identifier).value!];
 
     while (this.currentToken.type === Delimiter.Comma) {
-      this.match(Delimiter.Comma);
-
-      args.push(this.currentToken.value!);
-      this.match(Literal.Identifier);
+      this.consume(Delimiter.Comma);
+      args.push(this.consume(Literal.Identifier).value!);
     }
 
     return args;
   }
 
+  // "if" "(" expression ")" block
+  private ifStatement(): IfStatement {
+    this.consume(Keyword.If);
+
+    this.consume(Delimiter.LeftBracket);
+    const condition = this.expression();
+    this.consume(Delimiter.RightBracket);
+
+    return new IfStatement(condition, this.block());
+  }
+
   private returnStatement(): ReturnStatement {
-    this.match(Keyword.Return);
+    this.consume(Keyword.Return);
     return new ReturnStatement(this.expression());
   }
 
   private block(): Statement[] {
     if (this.nextToken.type === Delimiter.RightBrace) {
-      this.match(Delimiter.LeftBrace);
-      this.match(Delimiter.RightBrace);
+      this.consume(Delimiter.LeftBrace);
+      this.consume(Delimiter.RightBrace);
 
       return [];
     }
 
-    this.match(Delimiter.LeftBrace);
+    this.consume(Delimiter.LeftBrace);
     const statements = this.statements(Delimiter.RightBrace);
-    this.match(Delimiter.RightBrace);
+    this.consume(Delimiter.RightBrace);
 
     return statements;
   }
 
   // IDENTIFIER "(" func_call_args ")"
   private functionCall(): Expression {
-    const name = this.currentToken.value!;
-    this.match(Literal.Identifier);
+    const name = this.consume(Literal.Identifier).value!;
 
-    this.match(Delimiter.LeftBracket);
+    this.consume(Delimiter.LeftBracket);
     const args = this.functionCallArguments();
-    this.match(Delimiter.RightBracket);
+    this.consume(Delimiter.RightBracket);
 
     return new FunctionCall(name, args);
   }
@@ -183,20 +209,19 @@ export class Parser {
     const args = [this.expression()];
 
     while (this.currentToken.type === Delimiter.Comma) {
-      this.match(Delimiter.Comma);
+      this.consume(Delimiter.Comma);
       args.push(this.expression());
     }
 
     return args;
   }
 
-  private variableAssigment(): Expression {
-    const variableName = this.currentToken.value!;
+  // IDENTIFIER "=" expression
+  private assigment(): Expression {
+    const name = this.consume(Literal.Identifier).value!;
+    this.consume(Operator.Assigment);
 
-    this.match(Literal.Identifier);
-    this.match(Operator.Assigment);
-
-    return new VariableAssigment(variableName, this.expression());
+    return new VariableAssigment(name, this.expression());
   }
 
   private term(): Expression {
@@ -210,7 +235,7 @@ export class Parser {
     const tokenType = this.currentToken.type;
 
     if ([Operator.Plus, Operator.Minus].includes(tokenType)) {
-      this.match(tokenType);
+      this.consume(tokenType);
       return new UnaryOperation(tokenType.name as UnaryOperator, this.factor());
     }
 
@@ -225,7 +250,7 @@ export class Parser {
     const { currentToken } = this;
 
     if (currentToken.type === Literal.Number) {
-      this.match(Literal.Number);
+      this.consume(Literal.Number);
       return new Numeral(currentToken.value!);
     }
 
@@ -237,8 +262,8 @@ export class Parser {
     }
 
     if (currentToken.type === Literal.Identifier) {
-      this.match(Literal.Identifier);
-      return new VariableAccess(currentToken.value!);
+      const name = this.consume(Literal.Identifier).value!;
+      return new VariableAccess(name);
     }
 
     if (currentToken.type === Delimiter.LeftBracket) {
@@ -249,9 +274,9 @@ export class Parser {
   }
 
   private group(): Expression {
-    this.match(Delimiter.LeftBracket);
+    this.consume(Delimiter.LeftBracket);
     const expression = this.expression();
-    this.match(Delimiter.RightBracket);
+    this.consume(Delimiter.RightBracket);
 
     return expression;
   }
@@ -265,7 +290,7 @@ export class Parser {
 
     while (operators.includes(this.currentToken.type)) {
       const tokenType = this.currentToken.type;
-      this.match(tokenType);
+      this.consume(tokenType);
 
       const right = (rightBranch || leftBranch).apply(this);
       left = new BinaryOperation(left, tokenType.name as BinaryOperator, right);
@@ -274,14 +299,17 @@ export class Parser {
     return left;
   }
 
-  private match(tokenType: TokenType): void {
+  private consume(tokenType: TokenType): Token {
     if (this.currentToken.type !== tokenType) {
       throw new SyntaxError(
         `Expected ${tokenType} but got ${this.currentToken.type}.`
       );
     }
 
+    const token = this.currentToken;
     this.lexer.advance();
+
+    return token;
   }
 
   private get currentToken(): Token {

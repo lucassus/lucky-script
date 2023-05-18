@@ -1,15 +1,21 @@
+import { Return, RuntimeError } from "./errors";
+import {
+  LuckyFunction,
+  LuckyNumber,
+  LuckyObject,
+  LuckyBoolean,
+} from "./objects";
+import { SymbolTable } from "./SymbolTable";
 import { AstNode, BinaryOperation, Numeral, UnaryOperation } from "../Parser";
 import {
   FunctionCall,
   FunctionDeclaration,
+  IfStatement,
   Program,
   ReturnStatement,
   VariableAccess,
   VariableAssigment,
 } from "../Parser/AstNode";
-import { RuntimeError } from "./errors";
-import { LuckyFunction, LuckyNumber, LuckyObject } from "./objects";
-import { SymbolTable } from "./SymbolTable";
 
 export class Interpreter {
   constructor(
@@ -17,10 +23,13 @@ export class Interpreter {
     private scope = new SymbolTable()
   ) {}
 
-  run(): undefined | number {
+  run(): undefined | boolean | number {
     const luckyObject = this.visit(this.node);
 
-    if (luckyObject instanceof LuckyNumber) {
+    if (
+      luckyObject instanceof LuckyNumber ||
+      luckyObject instanceof LuckyBoolean
+    ) {
       return luckyObject.value;
     }
   }
@@ -56,6 +65,14 @@ export class Interpreter {
 
     if (node instanceof VariableAccess) {
       return this.visitVariableAccess(node);
+    }
+
+    if (node instanceof IfStatement) {
+      return this.visitIfStatement(node);
+    }
+
+    if (node instanceof ReturnStatement) {
+      throw new Return(this.visit(node.expression));
     }
 
     throw new RuntimeError(
@@ -114,11 +131,15 @@ export class Interpreter {
 
     return this.withScope(fnScope, () => {
       for (const statement of luckyFunction.statements) {
-        if (statement instanceof ReturnStatement) {
-          return this.visit(statement.expression);
-        }
+        try {
+          this.visit(statement);
+        } catch (error) {
+          if (error instanceof Return) {
+            return error.result;
+          }
 
-        this.visit(statement);
+          throw error;
+        }
       }
 
       return new LuckyNumber(0);
@@ -150,6 +171,16 @@ export class Interpreter {
         return left.div(right);
       case "**":
         return left.pow(right);
+      case "<":
+        return left.lt(right);
+      case "<=":
+        return left.lte(right);
+      case "==":
+        return left.eq(right);
+      case ">=":
+        return left.gte(right);
+      case ">":
+        return left.gt(right);
       default:
         throw new RuntimeError(`Unsupported operator ${node.operator}`);
     }
@@ -185,5 +216,20 @@ export class Interpreter {
 
   private visitVariableAccess(node: VariableAccess): LuckyObject {
     return this.scope.lookup(node.name);
+  }
+
+  private visitIfStatement(node: IfStatement) {
+    const testResult = this.visit(node.condition);
+
+    // TODO: It should create a new scope
+    if (testResult.toBoolean() === LuckyBoolean.True) {
+      for (const statement of node.thenBranch) {
+        this.visit(statement);
+      }
+    }
+
+    // TODO: A workaround, if statement, like the other statement, should not return a value
+    // TODO: Introduce Nothing keyword
+    return new LuckyNumber(0);
   }
 }

@@ -2,19 +2,26 @@ program            : statements
 
 statements         : _NEWLINE* statement? (_NEWLINE+ statement?)*
 
-statement          : func
+statement          : func_declaration
+                   | if_statement
                    | return_statement
                    | expression
 
+if_statement       : "if" "(" expression ")" block
+
 return_statement   : "return" expression
 
-expression         : variable_assigment
+expression         : assigment
                    | anonymous_func
-                   | term (("+" | "-") term)*
+                   | comparison
 
-variable_assigment : IDENTIFIER "=" expression
+comparison         : arith_expression (("<=" | "<" | "==" | ">" | ">=") arith_expression)*
 
-func               : "function" IDENTIFIER "(" func_parameters ")" block
+arith_expression   : term (("+" | "-") term)*
+
+assigment          : IDENTIFIER "=" expression
+
+func_declaration   : "function" IDENTIFIER "(" func_parameters ")" block
 
 anonymous_func     : "function" "(" func_parameters ")" block
 

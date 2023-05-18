@@ -13,12 +13,19 @@ export class Literal extends TokenType {
 }
 
 export class Operator extends TokenType {
+  static Assigment = new Operator("=");
+
   static Plus = new Operator("+");
   static Minus = new Operator("-");
   static Multiply = new Operator("*");
   static Divide = new Operator("/");
   static Power = new Operator("**");
-  static Assigment = new Operator("=");
+
+  static Lt = new Operator("<");
+  static Lte = new Operator("<=");
+  static Eq = new Operator("==");
+  static Gt = new Operator(">");
+  static Gte = new Operator(">=");
 }
 
 export class Keyword extends TokenType {
@@ -30,6 +37,7 @@ export class Keyword extends TokenType {
   }
 
   static Function = new Keyword("function");
+  static If = new Keyword("if");
   static Return = new Keyword("return");
 
   static fromString(string: string): undefined | Keyword {

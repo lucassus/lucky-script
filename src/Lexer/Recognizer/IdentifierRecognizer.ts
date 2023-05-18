@@ -1,6 +1,6 @@
-import { Digits, Letters } from "../symbols";
 import { Recognizer } from "./Recognizer";
 import { Case } from "./state/Case";
+import { Digits, Letters } from "../symbols";
 
 const beginIdentifier = new Case(0, false);
 const identifier = new Case(1, true);

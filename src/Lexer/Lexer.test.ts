@@ -131,18 +131,29 @@ describe("Lexer", () => {
     });
   });
 
-  describe("arithmetic operators", () => {
-    it.each`
-      operator | tokenType
-      ${"+"}   | ${Operator.Plus}
-      ${"-"}   | ${Operator.Minus}
-      ${"*"}   | ${Operator.Multiply}
-      ${"/"}   | ${Operator.Divide}
-      ${"**"}  | ${Operator.Power}
-    `("recognizes $operator operator", ({ operator, tokenType }) => {
-      const lexer = new Lexer(operator);
-      expect(lexer.nextToken()).toEqual(new Token(tokenType, anyLocation));
-    });
+  it.each`
+    operator | tokenType
+    ${"+"}   | ${Operator.Plus}
+    ${"-"}   | ${Operator.Minus}
+    ${"*"}   | ${Operator.Multiply}
+    ${"/"}   | ${Operator.Divide}
+    ${"**"}  | ${Operator.Power}
+    ${"<"}   | ${Operator.Lt}
+    ${"<="}  | ${Operator.Lte}
+    ${"="}   | ${Operator.Assigment}
+    ${"=="}  | ${Operator.Eq}
+    ${">"}   | ${Operator.Gt}
+    ${">="}  | ${Operator.Gte}
+  `("recognizes operator $operator", ({ operator, tokenType }) => {
+    const lexer = new Lexer(operator);
+
+    expect(lexer.nextToken()).toEqual(
+      new Token(tokenType, {
+        position: 0,
+        line: 0,
+        column: 0,
+      })
+    );
   });
 
   it("recognizes a simple expression", () => {
@@ -228,6 +239,26 @@ describe("Lexer", () => {
       new Token(Literal.Number, anyLocation, "1"),
       new Token(Operator.Plus, anyLocation),
       new Token(Literal.Number, anyLocation, "2"),
+      new Token(Delimiter.RightBrace, anyLocation),
+      new Token(Delimiter.End, anyLocation),
+    ]);
+  });
+
+  it("recognizes if expressions", () => {
+    const lexer = new Lexer("if (x < 1) { return 123 }");
+    const tokens = [...lexer.tokenize()];
+
+    expect(tokens.length).toBe(11);
+    expect(tokens).toEqual([
+      new Token(Keyword.If, anyLocation),
+      new Token(Delimiter.LeftBracket, anyLocation),
+      new Token(Literal.Identifier, anyLocation, "x"),
+      new Token(Operator.Lt, anyLocation),
+      new Token(Literal.Number, anyLocation, "1"),
+      new Token(Delimiter.RightBracket, anyLocation),
+      new Token(Delimiter.LeftBrace, anyLocation),
+      new Token(Keyword.Return, anyLocation),
+      new Token(Literal.Number, anyLocation, "123"),
       new Token(Delimiter.RightBrace, anyLocation),
       new Token(Delimiter.End, anyLocation),
     ]);
