@@ -1,12 +1,4 @@
 import {
-  Delimiter,
-  Keyword,
-  Literal,
-  Operator,
-  Token,
-  TokenType,
-} from "../Lexer";
-import {
   BinaryOperation,
   BinaryOperator,
   Expression,
@@ -24,6 +16,14 @@ import {
 } from "./AstNode";
 import { SyntaxError } from "./errors";
 import { Lookahead } from "./Lookahead";
+import {
+  Delimiter,
+  Keyword,
+  Literal,
+  Operator,
+  Token,
+  TokenType,
+} from "../Lexer";
 
 export class Parser {
   private lexer: Lookahead<Token>;

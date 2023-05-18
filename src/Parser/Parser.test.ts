@@ -1,4 +1,3 @@
-import { parse } from "../testingUtils";
 import {
   BinaryOperation,
   Expression,
@@ -13,6 +12,7 @@ import {
   VariableAssigment,
 } from "./AstNode";
 import { SyntaxError } from "./errors";
+import { parse } from "../testingUtils";
 
 describe("Parser", () => {
   it("parses empty input", () => {

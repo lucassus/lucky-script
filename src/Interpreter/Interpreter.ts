@@ -1,3 +1,11 @@
+import { Return, RuntimeError } from "./errors";
+import {
+  LuckyFunction,
+  LuckyNumber,
+  LuckyObject,
+  LuckyBoolean,
+} from "./objects";
+import { SymbolTable } from "./SymbolTable";
 import { AstNode, BinaryOperation, Numeral, UnaryOperation } from "../Parser";
 import {
   FunctionCall,
@@ -8,14 +16,6 @@ import {
   VariableAccess,
   VariableAssigment,
 } from "../Parser/AstNode";
-import { Return, RuntimeError } from "./errors";
-import {
-  LuckyFunction,
-  LuckyNumber,
-  LuckyObject,
-  LuckyBoolean,
-} from "./objects";
-import { SymbolTable } from "./SymbolTable";
 
 export class Interpreter {
   constructor(

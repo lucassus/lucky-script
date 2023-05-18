@@ -1,8 +1,8 @@
-import { parse } from "../testingUtils";
 import { NameError, RuntimeError, ZeroDivisionError } from "./errors";
 import { Interpreter } from "./Interpreter";
 import { LuckyNumber } from "./objects";
 import { SymbolTable } from "./SymbolTable";
+import { parse } from "../testingUtils";
 
 function run(script: string, symbolTable?: SymbolTable) {
   const ast = parse(script);

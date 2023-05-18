@@ -1,6 +1,6 @@
-import { ZeroDivisionError } from "../errors";
 import { LuckyBoolean } from "./LuckyBoolean";
 import { LuckyObject } from "./LuckyObject";
+import { ZeroDivisionError } from "../errors";
 
 export class LuckyNumber extends LuckyObject {
   constructor(public readonly value: number) {
