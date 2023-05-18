@@ -325,7 +325,7 @@ describe("Interpreter", () => {
         a = 1
         
         function foo() {
-          a = 2 # Should replace value of on the parent scope
+          a = 2 # Should replace value in the parent scope
           b = 1 # Should be accessible only in the current scope
           
           function bar() {
