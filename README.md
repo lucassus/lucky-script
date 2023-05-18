@@ -1,6 +1,29 @@
 # My Own Simple Programming Language
 
-Basic usage:
+## Basic usage
+
+1. `yarn install`
+2. `yarn lint` and `yarn test`
+3. `ts-node src/repl.ts` to start the REPL
+
+```
+➜ ts-node src/repl.ts
+> 1 + 2 * 3 ** 5.2
+606.4252366531416
+
+> function add(a, b) { return a + b }
+undefined
+> add(1, 2)
+3
+
+> function asdf
+SyntaxError: Expected '(' delimiter but got 'End' delimiter.
+
+> function foo() asdf
+SyntaxError: Expected '{' delimiter but got 'Identifier' literal.
+```
+
+## Functions
 
 ```
 function add(a, b) {
@@ -10,7 +33,7 @@ function add(a, b) {
 add(1, 2) * 2 - 1  # Evaluates to 5
 ```
 
-It supports basic if statements and the recursion:
+## It supports basic if statements and the recursion:
 
 ```
 function fib(n) {
@@ -22,14 +45,14 @@ function fib(n) {
 }
 ```
 
-Height order functions are also supported:
+## Height order functions are also supported:
 
 ```
-foo = function () { 
+foo = function() { 
   x = 1
   
   # Yes! It's a function that returns another function ;)
-  return function () {
+  return function() {
     return x + 2
   }
 }
@@ -38,7 +61,7 @@ bar = foo()
 bar()
 ```
 
-Scopes:
+## Variables scopes and closures
 
 ```
 a = 1
@@ -58,7 +81,7 @@ function foo() {
 d = foo()
 ```
 
-Dynamic scopes:
+## Dynamic scopes
 
 ```
 a = 1
@@ -76,7 +99,3 @@ a = 2
 secondResult = add() 
 # => 3
 ```
-
-## Resources
-
-* https://deniskyashif.com/2019/02/17/implementing-a-regular-expression-engine
