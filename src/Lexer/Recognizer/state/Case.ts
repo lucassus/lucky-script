@@ -3,7 +3,10 @@ import { State } from "./State";
 export class Case implements State {
   private readonly transitions = new Map<string, State>();
 
-  constructor(public readonly name: number, public readonly isFinal: boolean) {}
+  constructor(
+    public readonly name: number,
+    public readonly isFinal: boolean,
+  ) {}
 
   on(...symbols: string[]) {
     return {

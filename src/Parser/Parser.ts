@@ -5,6 +5,7 @@ import {
   FunctionCall,
   FunctionDeclaration,
   IfStatement,
+  NothingLiteral,
   Numeral,
   Program,
   ReturnStatement,
@@ -106,12 +107,19 @@ export class Parser {
     return this.comparison();
   }
 
-  // arith_expression (("<=" | "<" | "==" | ">" | ">=") arith_expression)*
+  // arith_expression (("<=" | "<" | "==" | "!=" | ">" | ">=") arith_expression)*
   private comparison(): Expression {
     return this.binaryOperation(
       this.arithmeticExpression,
-      [Operator.Lte, Operator.Lt, Operator.Eq, Operator.Gt, Operator.Gte],
-      this.arithmeticExpression
+      [
+        Operator.Lte,
+        Operator.Lt,
+        Operator.Eq,
+        Operator.Neq,
+        Operator.Gt,
+        Operator.Gte,
+      ],
+      this.arithmeticExpression,
     );
   }
 
@@ -158,7 +166,7 @@ export class Parser {
     return args;
   }
 
-  // "if" "(" expression ")" block
+  // "if" "(" expression ")" block ("else" (if_statement | block))?
   private ifStatement(): IfStatement {
     this.consume(Keyword.If);
 
@@ -166,7 +174,32 @@ export class Parser {
     const condition = this.expression();
     this.consume(Delimiter.RightBracket);
 
-    return new IfStatement(condition, this.block());
+    const thenBranch = this.block();
+    const elseBranch = this.tryParseElseBranch();
+
+    return new IfStatement(condition, thenBranch, elseBranch);
+  }
+
+  private tryParseElseBranch(): Statement[] | undefined {
+    if (this.currentToken.type === Keyword.Else) {
+      return this.elseBody();
+    }
+    if (
+      this.currentToken.type === Delimiter.NewLine &&
+      this.nextToken.type === Keyword.Else
+    ) {
+      this.consume(Delimiter.NewLine);
+      return this.elseBody();
+    }
+    return undefined;
+  }
+
+  private elseBody(): Statement[] {
+    this.consume(Keyword.Else);
+    if (this.currentToken.type === Keyword.If) {
+      return [this.ifStatement()];
+    }
+    return this.block();
   }
 
   private returnStatement(): ReturnStatement {
@@ -254,6 +287,11 @@ export class Parser {
       return new Numeral(currentToken.value!);
     }
 
+    if (currentToken.type === Keyword.Nothing) {
+      this.consume(Keyword.Nothing);
+      return new NothingLiteral();
+    }
+
     if (
       this.currentToken.type === Literal.Identifier &&
       this.nextToken.type === Delimiter.LeftBracket
@@ -284,7 +322,7 @@ export class Parser {
   private binaryOperation(
     leftBranch: () => Expression,
     operators: Operator[],
-    rightBranch?: () => Expression
+    rightBranch?: () => Expression,
   ): Expression {
     let left = leftBranch.apply(this);
 
@@ -302,7 +340,7 @@ export class Parser {
   private consume(tokenType: TokenType): Token {
     if (this.currentToken.type !== tokenType) {
       throw new SyntaxError(
-        `Expected ${tokenType} but got ${this.currentToken.type}.`
+        `Expected ${tokenType} but got ${this.currentToken.type}.`,
       );
     }
 

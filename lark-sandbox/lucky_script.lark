@@ -7,7 +7,7 @@ statement          : func_declaration
                    | return_statement
                    | expression
 
-if_statement       : "if" "(" expression ")" block
+if_statement       : "if" "(" expression ")" block ("else" (if_statement | block))?
 
 return_statement   : "return" expression
 
@@ -15,7 +15,7 @@ expression         : assigment
                    | anonymous_func
                    | comparison
 
-comparison         : arith_expression (("<=" | "<" | "==" | ">" | ">=") arith_expression)*
+comparison         : arith_expression (("<=" | "<" | "==" | "!=" | ">" | ">=") arith_expression)*
 
 arith_expression   : term (("+" | "-") term)*
 
@@ -37,6 +37,7 @@ factor             : ("+" | "-") factor
 power              : atom ("**" factor)*
 
 atom               : NUMBER
+                   | "nothing"
                    | func_call
                    | IDENTIFIER
                    | "(" expression ")"

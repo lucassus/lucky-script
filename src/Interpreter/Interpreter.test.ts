@@ -36,7 +36,7 @@ describe("Interpreter", () => {
       "evaluates arithmetic expression $script to $expected",
       ({ script, expected }) => {
         expect(run(script)).toBe(expected);
-      }
+      },
     );
 
     it("raises an error on division by zero", () => {
@@ -53,6 +53,8 @@ describe("Interpreter", () => {
       ${"1 <= 1"}    | ${true}
       ${"1 < 1"}     | ${false}
       ${"2 == 2"}    | ${true}
+      ${"1 != 2"}    | ${true}
+      ${"2 != 2"}    | ${false}
       ${"2 > 2"}     | ${false}
       ${"2 >= 2"}    | ${true}
     `("interprets comparisons, like $input", ({ input, expected }) => {
@@ -118,7 +120,7 @@ describe("Interpreter", () => {
   });
 
   it("interprets empty set of statements", () => {
-    expect(run("")).toBe(0);
+    expect(run("")).toBe(undefined);
   });
 
   describe("functions", () => {
@@ -183,7 +185,7 @@ describe("Interpreter", () => {
 
           expect(runScript).toThrow(RuntimeError);
           expect(runScript).toThrow("Function add takes exactly 2 parameters");
-        }
+        },
       );
 
       it("raises an error when anonymous function is called with invalid number of arguments", () => {
@@ -194,7 +196,7 @@ describe("Interpreter", () => {
         `;
 
         expect(() => run(script)).toThrow(
-          new RuntimeError("Function foo takes exactly 2 parameters")
+          new RuntimeError("Function foo takes exactly 2 parameters"),
         );
       });
     });
@@ -217,13 +219,13 @@ describe("Interpreter", () => {
       expect(run(script)).toBe(3);
     });
 
-    it("returns 0 when the return statement is not present", () => {
+    it("returns nothing when the return statement is not present", () => {
       const script = `
         function foo() { 123 }
         foo()
     `;
 
-      expect(run(script)).toBe(0);
+      expect(run(script)).toBe(undefined);
     });
 
     it("interprets nested function declaration", () => {
@@ -303,7 +305,7 @@ describe("Interpreter", () => {
 
       expect(runScript).toThrow(RuntimeError);
       expect(runScript).toThrow(
-        "The given identifier 'notAFunction' is not callable"
+        "The given identifier 'notAFunction' is not callable",
       );
     });
 
@@ -398,7 +400,7 @@ describe("Interpreter", () => {
       const symbolTable = new SymbolTable();
       const script = `
         x = 0
-        
+
         if (x < 1) {
           x = 1
         }
@@ -406,6 +408,143 @@ describe("Interpreter", () => {
 
       run(script, symbolTable);
       expect(symbolTable.lookup("x")).toEqual(new LuckyNumber(1));
+    });
+
+    it("does not leak variables declared inside if-block to outer scope", () => {
+      const script = `
+        x = 1
+        if (x < 2) {
+          y = 99
+        }
+        y
+      `;
+
+      expect(() => run(script)).toThrow("Identifier y is not defined");
+    });
+
+    it("executes else branch when condition is false", () => {
+      const symbolTable = new SymbolTable();
+      const script = `
+        x = 5
+
+        if (x < 1) {
+          x = 1
+        } else {
+          x = 99
+        }
+      `;
+
+      run(script, symbolTable);
+      expect(symbolTable.lookup("x")).toEqual(new LuckyNumber(99));
+    });
+
+    it("skips else branch when condition is true", () => {
+      const symbolTable = new SymbolTable();
+      const script = `
+        x = 0
+
+        if (x < 1) {
+          x = 1
+        } else {
+          x = 99
+        }
+      `;
+
+      run(script, symbolTable);
+      expect(symbolTable.lookup("x")).toEqual(new LuckyNumber(1));
+    });
+
+    it("supports else on next line", () => {
+      const symbolTable = new SymbolTable();
+      const script = `
+        x = 5
+
+        if (x < 1) {
+          x = 1
+        }
+        else {
+          x = 99
+        }
+      `;
+
+      run(script, symbolTable);
+      expect(symbolTable.lookup("x")).toEqual(new LuckyNumber(99));
+    });
+
+    it("supports else-if chain", () => {
+      const symbolTable = new SymbolTable();
+      const script = `
+        x = 5
+
+        if (x < 1) {
+          x = 1
+        } else if (x < 10) {
+          x = 10
+        } else {
+          x = 99
+        }
+      `;
+
+      run(script, symbolTable);
+      expect(symbolTable.lookup("x")).toEqual(new LuckyNumber(10));
+    });
+
+    it("does not leak variables declared inside else-block to outer scope", () => {
+      const script = `
+        x = 5
+        if (x < 1) {
+          y = 1
+        } else {
+          y = 99
+        }
+        y
+      `;
+
+      expect(() => run(script)).toThrow("Identifier y is not defined");
+    });
+  });
+
+  describe("nothing literal", () => {
+    it("evaluates the nothing literal", () => {
+      expect(run("nothing")).toBe(undefined);
+    });
+
+    it("considers nothing equal to nothing", () => {
+      expect(run("nothing == nothing")).toBe(true);
+    });
+
+    it("considers nothing not equal to a number", () => {
+      expect(run("nothing == 0")).toBe(false);
+      expect(run("nothing != 0")).toBe(true);
+    });
+
+    it("treats nothing as falsy in if statement", () => {
+      const symbolTable = new SymbolTable();
+      const script = `
+        x = 1
+        if (nothing) {
+          x = 2
+        }
+      `;
+
+      run(script, symbolTable);
+      expect(symbolTable.lookup("x")).toEqual(new LuckyNumber(1));
+    });
+
+    it("rejects arithmetic with nothing", () => {
+      expect(() => run("nothing + 1")).toThrow("Illegal operation");
+    });
+
+    it("allows assigning nothing to a variable", () => {
+      expect(run("x = nothing")).toBe(undefined);
+    });
+
+    it("allows returning nothing from a function", () => {
+      const script = `
+        function foo() { return nothing }
+        foo()
+      `;
+      expect(run(script)).toBe(undefined);
     });
   });
 });

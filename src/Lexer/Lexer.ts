@@ -84,21 +84,26 @@ export class Lexer {
         return this.createToken(Operator.Minus);
       case "*":
         return this.createToken(
-          this.nextSymbolMatches("*") ? Operator.Power : Operator.Multiply
+          this.nextSymbolMatches("*") ? Operator.Power : Operator.Multiply,
         );
       case "/":
         return this.createToken(Operator.Divide);
       case "<":
         return this.createToken(
-          this.nextSymbolMatches("=") ? Operator.Lte : Operator.Lt
+          this.nextSymbolMatches("=") ? Operator.Lte : Operator.Lt,
         );
       case "=":
         return this.createToken(
-          this.nextSymbolMatches("=") ? Operator.Eq : Operator.Assigment
+          this.nextSymbolMatches("=") ? Operator.Eq : Operator.Assigment,
         );
+      case "!":
+        if (!this.nextSymbolMatches("=")) {
+          throw new IllegalSymbolError(this.currentSymbol, this.position);
+        }
+        return this.createToken(Operator.Neq);
       case ">":
         return this.createToken(
-          this.nextSymbolMatches("=") ? Operator.Gte : Operator.Gt
+          this.nextSymbolMatches("=") ? Operator.Gte : Operator.Gt,
         );
 
       // Literals
@@ -167,7 +172,7 @@ export class Lexer {
 
     return this.createToken(
       tokenType,
-      tokenType === Literal.Identifier ? value : undefined
+      tokenType === Literal.Identifier ? value : undefined,
     );
   }
 

@@ -1,8 +1,9 @@
 import * as readline from "readline";
 
+import { ControlFlow } from "./Interpreter/ControlFlow";
 import { Interpreter } from "./Interpreter";
 import { SymbolTable } from "./Interpreter/SymbolTable";
-import { Lexer, IllegalSymbolError } from "./Lexer";
+import { IllegalSymbolError, Lexer } from "./Lexer";
 import { Parser } from "./Parser";
 
 const PROMPT = "> ";
@@ -24,8 +25,15 @@ scanner.on("line", (line) => {
     const lexer = new Lexer(input).tokenize();
     const ast = new Parser(lexer).parse();
     const result = new Interpreter(ast, symbolTable).run();
-    console.log(result);
+    console.log(result === undefined ? "nothing" : result);
   } catch (error) {
+    if (error instanceof ControlFlow) {
+      console.error(
+        "Control flow escaped function scope — this is a bug in the interpreter",
+      );
+      return;
+    }
+
     if (error instanceof IllegalSymbolError) {
       console.log(`${" ".repeat(PROMPT.length + error.position)}^`);
     }

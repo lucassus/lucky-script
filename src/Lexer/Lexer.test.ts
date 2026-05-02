@@ -1,12 +1,12 @@
 import { IllegalSymbolError } from "./errors";
 import { Lexer } from "./Lexer";
 import {
-  Token,
-  Location,
   Delimiter,
   Keyword,
   Literal,
+  Location,
   Operator,
+  Token,
 } from "./Token";
 
 const anyLocation = expect.objectContaining<Location>({
@@ -100,7 +100,7 @@ describe("Lexer", () => {
     `("recognizes integer numeral, like $input", ({ input }) => {
       const lexer = new Lexer(input);
       expect(lexer.nextToken()).toEqual(
-        new Token(Literal.Number, anyLocation, input)
+        new Token(Literal.Number, anyLocation, input),
       );
     });
 
@@ -114,7 +114,7 @@ describe("Lexer", () => {
     `("recognizes decimal numerals, like $input", ({ input }) => {
       const lexer = new Lexer(input);
       expect(lexer.nextToken()).toEqual(
-        new Token(Literal.Number, anyLocation, input)
+        new Token(Literal.Number, anyLocation, input),
       );
     });
 
@@ -152,7 +152,7 @@ describe("Lexer", () => {
         position: 0,
         line: 0,
         column: 0,
-      })
+      }),
     );
   });
 
@@ -205,7 +205,7 @@ describe("Lexer", () => {
 
       expect(tokens.length).toBe(4);
       expect(tokens[0]).toEqual(
-        new Token(Literal.Identifier, anyLocation, input)
+        new Token(Literal.Identifier, anyLocation, input),
       );
       expect(tokens[1]).toEqual(new Token(Operator.Assigment, anyLocation));
     });
@@ -240,6 +240,16 @@ describe("Lexer", () => {
       new Token(Operator.Plus, anyLocation),
       new Token(Literal.Number, anyLocation, "2"),
       new Token(Delimiter.RightBrace, anyLocation),
+      new Token(Delimiter.End, anyLocation),
+    ]);
+  });
+
+  it("recognizes the nothing keyword", () => {
+    const lexer = new Lexer("nothing");
+    const tokens = [...lexer.tokenize()];
+
+    expect(tokens).toEqual([
+      new Token(Keyword.Nothing, anyLocation),
       new Token(Delimiter.End, anyLocation),
     ]);
   });

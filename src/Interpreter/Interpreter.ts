@@ -1,9 +1,11 @@
-import { Return, RuntimeError } from "./errors";
+import { Return } from "./ControlFlow";
+import { RuntimeError } from "./errors";
 import {
+  LuckyBoolean,
   LuckyFunction,
+  LuckyNothing,
   LuckyNumber,
   LuckyObject,
-  LuckyBoolean,
 } from "./objects";
 import { SymbolTable } from "./SymbolTable";
 import { AstNode, BinaryOperation, Numeral, UnaryOperation } from "../Parser";
@@ -11,6 +13,7 @@ import {
   FunctionCall,
   FunctionDeclaration,
   IfStatement,
+  NothingLiteral,
   Program,
   ReturnStatement,
   VariableAccess,
@@ -20,7 +23,7 @@ import {
 export class Interpreter {
   constructor(
     public readonly node: AstNode,
-    private scope = new SymbolTable()
+    private scope = new SymbolTable(),
   ) {}
 
   run(): undefined | boolean | number {
@@ -59,6 +62,10 @@ export class Interpreter {
       return this.visitNumeral(node);
     }
 
+    if (node instanceof NothingLiteral) {
+      return LuckyNothing.Instance;
+    }
+
     if (node instanceof VariableAssigment) {
       return this.visitVariableAssigment(node);
     }
@@ -76,16 +83,23 @@ export class Interpreter {
     }
 
     throw new RuntimeError(
-      `Unsupported AST node type ${node.constructor.name}`
+      `Unsupported AST node type ${node.constructor.name}`,
     );
   }
 
   private visitProgram(program: Program): LuckyObject {
-    let result: LuckyObject = new LuckyNumber(0);
+    let result: LuckyObject = LuckyNothing.Instance;
 
-    program.statements.forEach((statements) => {
-      result = this.visit(statements);
-    });
+    try {
+      program.statements.forEach((statements) => {
+        result = this.visit(statements);
+      });
+    } catch (error) {
+      if (error instanceof Return) {
+        throw new RuntimeError("Return statement outside function body");
+      }
+      throw error;
+    }
 
     return result;
   }
@@ -97,7 +111,7 @@ export class Interpreter {
       this.scope,
       name,
       node.parameters,
-      node.statements
+      node.statements,
     );
 
     if (name) {
@@ -118,7 +132,7 @@ export class Interpreter {
 
     if (luckyFunction.arity !== functionCall.args.length) {
       throw new RuntimeError(
-        `Function ${name} takes exactly ${luckyFunction.arity} parameters`
+        `Function ${name} takes exactly ${luckyFunction.arity} parameters`,
       );
     }
 
@@ -142,7 +156,7 @@ export class Interpreter {
         }
       }
 
-      return new LuckyNumber(0);
+      return LuckyNothing.Instance;
     });
   }
 
@@ -177,6 +191,8 @@ export class Interpreter {
         return left.lte(right);
       case "==":
         return left.eq(right);
+      case "!=":
+        return left.neq(right);
       case ">=":
         return left.gte(right);
       case ">":
@@ -207,7 +223,6 @@ export class Interpreter {
   }
 
   private visitVariableAssigment(node: VariableAssigment): LuckyObject {
-    // TODO: Consider adding `this.visitExpression(code.value)`
     const value = this.visit(node.value);
     this.scope.set(node.name, value);
 
@@ -221,15 +236,22 @@ export class Interpreter {
   private visitIfStatement(node: IfStatement) {
     const testResult = this.visit(node.condition);
 
-    // TODO: It should create a new scope
     if (testResult.toBoolean() === LuckyBoolean.True) {
-      for (const statement of node.thenBranch) {
-        this.visit(statement);
-      }
+      this.withScope(this.scope.createChild(), () => {
+        for (const statement of node.thenBranch) {
+          this.visit(statement);
+        }
+        return LuckyNothing.Instance;
+      });
+    } else if (node.elseBranch) {
+      this.withScope(this.scope.createChild(), () => {
+        for (const statement of node.elseBranch!) {
+          this.visit(statement);
+        }
+        return LuckyNothing.Instance;
+      });
     }
 
-    // TODO: A workaround, if statement, like the other statement, should not return a value
-    // TODO: Introduce Nothing keyword
-    return new LuckyNumber(0);
+    return LuckyNothing.Instance;
   }
 }
