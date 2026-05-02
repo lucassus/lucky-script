@@ -1,4 +1,5 @@
-import { Return, RuntimeError } from "./errors";
+import { Return } from "./ControlFlow";
+import { RuntimeError } from "./errors";
 import {
   LuckyBoolean,
   LuckyFunction,
@@ -83,9 +84,16 @@ export class Interpreter {
   private visitProgram(program: Program): LuckyObject {
     let result: LuckyObject = new LuckyNumber(0);
 
-    program.statements.forEach((statements) => {
-      result = this.visit(statements);
-    });
+    try {
+      program.statements.forEach((statements) => {
+        result = this.visit(statements);
+      });
+    } catch (error) {
+      if (error instanceof Return) {
+        throw new RuntimeError("Return statement outside function body");
+      }
+      throw error;
+    }
 
     return result;
   }
