@@ -3,6 +3,7 @@ import {
   FunctionCall,
   FunctionDeclaration,
   IfStatement,
+  NothingLiteral,
   Numeral,
   Program,
   ReturnStatement,
@@ -374,6 +375,12 @@ describe("Parser", () => {
         ]),
       );
     });
+  });
+
+  it("parses the nothing literal", () => {
+    const ast = parse("nothing");
+
+    expect(ast).toEqual(new Program([new NothingLiteral()]));
   });
 
   it("parses if statement", () => {

@@ -3,6 +3,7 @@ import { RuntimeError } from "./errors";
 import {
   LuckyBoolean,
   LuckyFunction,
+  LuckyNothing,
   LuckyNumber,
   LuckyObject,
 } from "./objects";
@@ -12,6 +13,7 @@ import {
   FunctionCall,
   FunctionDeclaration,
   IfStatement,
+  NothingLiteral,
   Program,
   ReturnStatement,
   VariableAccess,
@@ -60,6 +62,10 @@ export class Interpreter {
       return this.visitNumeral(node);
     }
 
+    if (node instanceof NothingLiteral) {
+      return LuckyNothing.Instance;
+    }
+
     if (node instanceof VariableAssigment) {
       return this.visitVariableAssigment(node);
     }
@@ -82,7 +88,7 @@ export class Interpreter {
   }
 
   private visitProgram(program: Program): LuckyObject {
-    let result: LuckyObject = new LuckyNumber(0);
+    let result: LuckyObject = LuckyNothing.Instance;
 
     try {
       program.statements.forEach((statements) => {
@@ -150,7 +156,7 @@ export class Interpreter {
         }
       }
 
-      return new LuckyNumber(0);
+      return LuckyNothing.Instance;
     });
   }
 
@@ -236,12 +242,10 @@ export class Interpreter {
         for (const statement of node.thenBranch) {
           this.visit(statement);
         }
-        return new LuckyNumber(0);
+        return LuckyNothing.Instance;
       });
     }
 
-    // TODO: A workaround, if statement, like the other statement, should not return a value
-    // TODO: Introduce Nothing keyword
-    return new LuckyNumber(0);
+    return LuckyNothing.Instance;
   }
 }

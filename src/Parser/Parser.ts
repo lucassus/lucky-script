@@ -5,6 +5,7 @@ import {
   FunctionCall,
   FunctionDeclaration,
   IfStatement,
+  NothingLiteral,
   Numeral,
   Program,
   ReturnStatement,
@@ -259,6 +260,11 @@ export class Parser {
     if (currentToken.type === Literal.Number) {
       this.consume(Literal.Number);
       return new Numeral(currentToken.value!);
+    }
+
+    if (currentToken.type === Keyword.Nothing) {
+      this.consume(Keyword.Nothing);
+      return new NothingLiteral();
     }
 
     if (

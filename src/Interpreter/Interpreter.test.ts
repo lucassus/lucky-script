@@ -120,7 +120,7 @@ describe("Interpreter", () => {
   });
 
   it("interprets empty set of statements", () => {
-    expect(run("")).toBe(0);
+    expect(run("")).toBe(undefined);
   });
 
   describe("functions", () => {
@@ -219,13 +219,13 @@ describe("Interpreter", () => {
       expect(run(script)).toBe(3);
     });
 
-    it("returns 0 when the return statement is not present", () => {
+    it("returns nothing when the return statement is not present", () => {
       const script = `
         function foo() { 123 }
         foo()
     `;
 
-      expect(run(script)).toBe(0);
+      expect(run(script)).toBe(undefined);
     });
 
     it("interprets nested function declaration", () => {
@@ -420,6 +420,50 @@ describe("Interpreter", () => {
       `;
 
       expect(() => run(script)).toThrow("Identifier y is not defined");
+    });
+  });
+
+  describe("nothing literal", () => {
+    it("evaluates the nothing literal", () => {
+      expect(run("nothing")).toBe(undefined);
+    });
+
+    it("considers nothing equal to nothing", () => {
+      expect(run("nothing == nothing")).toBe(true);
+    });
+
+    it("considers nothing not equal to a number", () => {
+      expect(run("nothing == 0")).toBe(false);
+      expect(run("nothing != 0")).toBe(true);
+    });
+
+    it("treats nothing as falsy in if statement", () => {
+      const symbolTable = new SymbolTable();
+      const script = `
+        x = 1
+        if (nothing) {
+          x = 2
+        }
+      `;
+
+      run(script, symbolTable);
+      expect(symbolTable.lookup("x")).toEqual(new LuckyNumber(1));
+    });
+
+    it("rejects arithmetic with nothing", () => {
+      expect(() => run("nothing + 1")).toThrow("Illegal operation");
+    });
+
+    it("allows assigning nothing to a variable", () => {
+      expect(run("x = nothing")).toBe(undefined);
+    });
+
+    it("allows returning nothing from a function", () => {
+      const script = `
+        function foo() { return nothing }
+        foo()
+      `;
+      expect(run(script)).toBe(undefined);
     });
   });
 });

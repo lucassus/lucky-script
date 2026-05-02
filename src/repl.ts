@@ -25,7 +25,7 @@ scanner.on("line", (line) => {
     const lexer = new Lexer(input).tokenize();
     const ast = new Parser(lexer).parse();
     const result = new Interpreter(ast, symbolTable).run();
-    console.log(result);
+    console.log(result === undefined ? "nothing" : result);
   } catch (error) {
     if (error instanceof ControlFlow) {
       console.error(

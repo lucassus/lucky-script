@@ -16,6 +16,8 @@ export class Numeral extends Expression {
   }
 }
 
+export class NothingLiteral extends Expression {}
+
 export type BinaryOperator =
   | "+"
   | "-"

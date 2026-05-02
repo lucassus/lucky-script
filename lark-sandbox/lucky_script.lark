@@ -37,6 +37,7 @@ factor             : ("+" | "-") factor
 power              : atom ("**" factor)*
 
 atom               : NUMBER
+                   | "nothing"
                    | func_call
                    | IDENTIFIER
                    | "(" expression ")"

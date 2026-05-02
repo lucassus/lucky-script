@@ -244,6 +244,16 @@ describe("Lexer", () => {
     ]);
   });
 
+  it("recognizes the nothing keyword", () => {
+    const lexer = new Lexer("nothing");
+    const tokens = [...lexer.tokenize()];
+
+    expect(tokens).toEqual([
+      new Token(Keyword.Nothing, anyLocation),
+      new Token(Delimiter.End, anyLocation),
+    ]);
+  });
+
   it("recognizes if expressions", () => {
     const lexer = new Lexer("if (x < 1) { return 123 }");
     const tokens = [...lexer.tokenize()];
