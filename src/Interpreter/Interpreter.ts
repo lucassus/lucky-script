@@ -231,11 +231,13 @@ export class Interpreter {
   private visitIfStatement(node: IfStatement) {
     const testResult = this.visit(node.condition);
 
-    // TODO: It should create a new scope
     if (testResult.toBoolean() === LuckyBoolean.True) {
-      for (const statement of node.thenBranch) {
-        this.visit(statement);
-      }
+      this.withScope(this.scope.createChild(), () => {
+        for (const statement of node.thenBranch) {
+          this.visit(statement);
+        }
+        return new LuckyNumber(0);
+      });
     }
 
     // TODO: A workaround, if statement, like the other statement, should not return a value

@@ -400,7 +400,7 @@ describe("Interpreter", () => {
       const symbolTable = new SymbolTable();
       const script = `
         x = 0
-        
+
         if (x < 1) {
           x = 1
         }
@@ -408,6 +408,18 @@ describe("Interpreter", () => {
 
       run(script, symbolTable);
       expect(symbolTable.lookup("x")).toEqual(new LuckyNumber(1));
+    });
+
+    it("does not leak variables declared inside if-block to outer scope", () => {
+      const script = `
+        x = 1
+        if (x < 2) {
+          y = 99
+        }
+        y
+      `;
+
+      expect(() => run(script)).toThrow("Identifier y is not defined");
     });
   });
 });
