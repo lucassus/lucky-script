@@ -34,6 +34,10 @@ export abstract class LuckyObject {
     this.throwIllegalOperationError();
   }
 
+  neq(right: LuckyObject): LuckyBoolean {
+    return LuckyBoolean.fromNative(!this.eq(right).value);
+  }
+
   gte(_right: LuckyObject): LuckyBoolean {
     this.throwIllegalOperationError();
   }

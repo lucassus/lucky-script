@@ -96,6 +96,11 @@ export class Lexer {
         return this.createToken(
           this.nextSymbolMatches("=") ? Operator.Eq : Operator.Assigment,
         );
+      case "!":
+        if (!this.nextSymbolMatches("=")) {
+          throw new IllegalSymbolError(this.currentSymbol, this.position);
+        }
+        return this.createToken(Operator.Neq);
       case ">":
         return this.createToken(
           this.nextSymbolMatches("=") ? Operator.Gte : Operator.Gt,

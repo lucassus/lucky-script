@@ -15,7 +15,7 @@ expression         : assigment
                    | anonymous_func
                    | comparison
 
-comparison         : arith_expression (("<=" | "<" | "==" | ">" | ">=") arith_expression)*
+comparison         : arith_expression (("<=" | "<" | "==" | "!=" | ">" | ">=") arith_expression)*
 
 arith_expression   : term (("+" | "-") term)*
 

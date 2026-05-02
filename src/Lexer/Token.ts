@@ -23,6 +23,7 @@ export class Operator extends TokenType {
   static Lt = new Operator("<");
   static Lte = new Operator("<=");
   static Eq = new Operator("==");
+  static Neq = new Operator("!=");
   static Gt = new Operator(">");
   static Gte = new Operator(">=");
 }

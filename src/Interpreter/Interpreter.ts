@@ -185,6 +185,8 @@ export class Interpreter {
         return left.lte(right);
       case "==":
         return left.eq(right);
+      case "!=":
+        return left.neq(right);
       case ">=":
         return left.gte(right);
       case ">":

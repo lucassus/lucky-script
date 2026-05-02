@@ -106,11 +106,18 @@ export class Parser {
     return this.comparison();
   }
 
-  // arith_expression (("<=" | "<" | "==" | ">" | ">=") arith_expression)*
+  // arith_expression (("<=" | "<" | "==" | "!=" | ">" | ">=") arith_expression)*
   private comparison(): Expression {
     return this.binaryOperation(
       this.arithmeticExpression,
-      [Operator.Lte, Operator.Lt, Operator.Eq, Operator.Gt, Operator.Gte],
+      [
+        Operator.Lte,
+        Operator.Lt,
+        Operator.Eq,
+        Operator.Neq,
+        Operator.Gt,
+        Operator.Gte,
+      ],
       this.arithmeticExpression,
     );
   }

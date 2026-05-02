@@ -29,6 +29,7 @@ parser = Lark.open("lucky_script.lark", rel_to=__file__, start="program")
         "if(x < 1) {}",
         "if(x <= 1) {}",
         "if(x == 1) {}",
+        "if(x != 1) {}",
         "if(x > 1) {}",
         "if(x >= 1) {}",
         "if(x < 1 < 2) {}",
