@@ -1,8 +1,0 @@
-lark
-black
-flake8
-isort
-pydot
-pytest
-pytest-cov
-pytest-watch
