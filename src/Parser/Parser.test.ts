@@ -400,6 +400,79 @@ describe("Parser", () => {
     );
   });
 
+  it("parses if-else statement", () => {
+    const ast = parse(`
+      if (x < 1) {
+        x = 1
+      } else {
+        x = 2
+      }
+    `);
+
+    expect(ast).toEqual(
+      new Program([
+        new IfStatement(
+          new BinaryOperation(new VariableAccess("x"), "<", new Numeral("1")),
+          [new VariableAssigment("x", new Numeral("1"))],
+          [new VariableAssigment("x", new Numeral("2"))],
+        ),
+      ]),
+    );
+  });
+
+  it("parses if-else statement with else on next line", () => {
+    const ast = parse(`
+      if (x < 1) {
+        x = 1
+      }
+      else {
+        x = 2
+      }
+    `);
+
+    expect(ast).toEqual(
+      new Program([
+        new IfStatement(
+          new BinaryOperation(new VariableAccess("x"), "<", new Numeral("1")),
+          [new VariableAssigment("x", new Numeral("1"))],
+          [new VariableAssigment("x", new Numeral("2"))],
+        ),
+      ]),
+    );
+  });
+
+  it("parses else-if chain", () => {
+    const ast = parse(`
+      if (x < 1) {
+        x = 1
+      } else if (x < 2) {
+        x = 2
+      } else {
+        x = 3
+      }
+    `);
+
+    expect(ast).toEqual(
+      new Program([
+        new IfStatement(
+          new BinaryOperation(new VariableAccess("x"), "<", new Numeral("1")),
+          [new VariableAssigment("x", new Numeral("1"))],
+          [
+            new IfStatement(
+              new BinaryOperation(
+                new VariableAccess("x"),
+                "<",
+                new Numeral("2"),
+              ),
+              [new VariableAssigment("x", new Numeral("2"))],
+              [new VariableAssigment("x", new Numeral("3"))],
+            ),
+          ],
+        ),
+      ]),
+    );
+  });
+
   describe("several statements in a single line", () => {
     it("parses when statements are separated", () => {
       const ast = parse("1+2;3+4");

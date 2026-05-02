@@ -81,6 +81,7 @@ export class IfStatement extends Statement {
   constructor(
     public readonly condition: Expression,
     public readonly thenBranch: Statement[],
+    public readonly elseBranch?: Statement[],
   ) {
     super();
   }

@@ -38,6 +38,7 @@ export class Keyword extends TokenType {
 
   static Function = new Keyword("function");
   static If = new Keyword("if");
+  static Else = new Keyword("else");
   static Return = new Keyword("return");
   static Nothing = new Keyword("nothing");
 

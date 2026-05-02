@@ -421,6 +421,87 @@ describe("Interpreter", () => {
 
       expect(() => run(script)).toThrow("Identifier y is not defined");
     });
+
+    it("executes else branch when condition is false", () => {
+      const symbolTable = new SymbolTable();
+      const script = `
+        x = 5
+
+        if (x < 1) {
+          x = 1
+        } else {
+          x = 99
+        }
+      `;
+
+      run(script, symbolTable);
+      expect(symbolTable.lookup("x")).toEqual(new LuckyNumber(99));
+    });
+
+    it("skips else branch when condition is true", () => {
+      const symbolTable = new SymbolTable();
+      const script = `
+        x = 0
+
+        if (x < 1) {
+          x = 1
+        } else {
+          x = 99
+        }
+      `;
+
+      run(script, symbolTable);
+      expect(symbolTable.lookup("x")).toEqual(new LuckyNumber(1));
+    });
+
+    it("supports else on next line", () => {
+      const symbolTable = new SymbolTable();
+      const script = `
+        x = 5
+
+        if (x < 1) {
+          x = 1
+        }
+        else {
+          x = 99
+        }
+      `;
+
+      run(script, symbolTable);
+      expect(symbolTable.lookup("x")).toEqual(new LuckyNumber(99));
+    });
+
+    it("supports else-if chain", () => {
+      const symbolTable = new SymbolTable();
+      const script = `
+        x = 5
+
+        if (x < 1) {
+          x = 1
+        } else if (x < 10) {
+          x = 10
+        } else {
+          x = 99
+        }
+      `;
+
+      run(script, symbolTable);
+      expect(symbolTable.lookup("x")).toEqual(new LuckyNumber(10));
+    });
+
+    it("does not leak variables declared inside else-block to outer scope", () => {
+      const script = `
+        x = 5
+        if (x < 1) {
+          y = 1
+        } else {
+          y = 99
+        }
+        y
+      `;
+
+      expect(() => run(script)).toThrow("Identifier y is not defined");
+    });
   });
 
   describe("nothing literal", () => {

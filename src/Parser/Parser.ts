@@ -166,7 +166,7 @@ export class Parser {
     return args;
   }
 
-  // "if" "(" expression ")" block
+  // "if" "(" expression ")" block ("else" (if_statement | block))?
   private ifStatement(): IfStatement {
     this.consume(Keyword.If);
 
@@ -174,7 +174,32 @@ export class Parser {
     const condition = this.expression();
     this.consume(Delimiter.RightBracket);
 
-    return new IfStatement(condition, this.block());
+    const thenBranch = this.block();
+    const elseBranch = this.tryParseElseBranch();
+
+    return new IfStatement(condition, thenBranch, elseBranch);
+  }
+
+  private tryParseElseBranch(): Statement[] | undefined {
+    if (this.currentToken.type === Keyword.Else) {
+      return this.elseBody();
+    }
+    if (
+      this.currentToken.type === Delimiter.NewLine &&
+      this.nextToken.type === Keyword.Else
+    ) {
+      this.consume(Delimiter.NewLine);
+      return this.elseBody();
+    }
+    return undefined;
+  }
+
+  private elseBody(): Statement[] {
+    this.consume(Keyword.Else);
+    if (this.currentToken.type === Keyword.If) {
+      return [this.ifStatement()];
+    }
+    return this.block();
   }
 
   private returnStatement(): ReturnStatement {

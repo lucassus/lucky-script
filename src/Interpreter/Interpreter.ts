@@ -243,6 +243,13 @@ export class Interpreter {
         }
         return LuckyNothing.Instance;
       });
+    } else if (node.elseBranch) {
+      this.withScope(this.scope.createChild(), () => {
+        for (const statement of node.elseBranch!) {
+          this.visit(statement);
+        }
+        return LuckyNothing.Instance;
+      });
     }
 
     return LuckyNothing.Instance;
