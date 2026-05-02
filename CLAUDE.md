@@ -14,6 +14,10 @@ yarn build          # compile to dist/
 ts-node src/repl.ts # interactive REPL
 ```
 
+## Quality
+
+After any code change, run `yarn lint` and `yarn test`. Fix all failures before finishing.
+
 ## Architecture
 
 Three-stage pipeline: **Lexer → Parser → Interpreter**
