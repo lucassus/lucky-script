@@ -1,5 +1,5 @@
 import { NameError } from "./errors";
-import { LuckyNumber } from "./objects";
+import { LuckyBoolean, LuckyNumber } from "./objects";
 import { SymbolTable } from "./SymbolTable";
 
 describe("SymbolTable", () => {
@@ -107,6 +107,15 @@ describe("SymbolTable", () => {
 
         expect(() => child.lookup("x")).toThrow(NameError);
         expect(() => child.lookup("x")).toThrow("Identifier x is not defined");
+      });
+    });
+
+    describe("when the variable holds a falsy-valued object", () => {
+      it("returns the value without throwing", () => {
+        const scope = new SymbolTable();
+        scope.set("x", LuckyBoolean.False);
+
+        expect(scope.lookup("x")).toBe(LuckyBoolean.False);
       });
     });
   });

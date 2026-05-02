@@ -27,11 +27,11 @@ export class SymbolTable {
   private getLocal(key: string): LuckyObject {
     const value = this.locals.get(key);
 
-    if (value) {
-      return value;
+    if (value === undefined) {
+      throw new NameError(key);
     }
 
-    throw new NameError(key);
+    return value;
   }
 
   private findTheClosestScopeThatDefines(key: string): undefined | SymbolTable {
