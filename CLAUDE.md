@@ -25,7 +25,7 @@ Tokenizes source text. `Lexer.tokenize()` is a generator yielding `Token` object
 Recursive descent. `Parser.parse()` → `Program` (AST root). Uses `Lookahead<Token>` wrapper for one-token lookahead. AST node types live in `AstNode.ts`. Operator precedence: comparison < arithmetic < term (*/÷) < factor (unary) < power (`**`).
 
 ### Interpreter (`src/Interpreter/`)
-Tree-walking visitor. `Interpreter.run()` takes an `AstNode` (typically `Program`) and returns a primitive value. All runtime values are `LuckyObject` subclasses (`LuckyNumber`, `LuckyBoolean`, `LuckyFunction`; `LuckyString` is in progress). Operations (+, -, etc.) dispatch via methods on `LuckyObject`.
+Tree-walking visitor. `Interpreter.run()` takes an `AstNode` (typically `Program`) and returns a primitive value. All runtime values are `LuckyObject` subclasses (`LuckyNumber`, `LuckyBoolean`, `LuckyFunction`). Operations (+, -, etc.) dispatch via methods on `LuckyObject`.
 
 **Scope**: `SymbolTable` is a linked-list of scopes. `set()` walks up to find the nearest scope that already defines the variable (dynamic/lexical hybrid); `setLocal()` forces creation in current scope. Functions capture their declaration scope (`LuckyFunction.scope`), creating child scopes on each call.
 
