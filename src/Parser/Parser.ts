@@ -111,7 +111,7 @@ export class Parser {
     return this.binaryOperation(
       this.arithmeticExpression,
       [Operator.Lte, Operator.Lt, Operator.Eq, Operator.Gt, Operator.Gte],
-      this.arithmeticExpression
+      this.arithmeticExpression,
     );
   }
 
@@ -284,7 +284,7 @@ export class Parser {
   private binaryOperation(
     leftBranch: () => Expression,
     operators: Operator[],
-    rightBranch?: () => Expression
+    rightBranch?: () => Expression,
   ): Expression {
     let left = leftBranch.apply(this);
 
@@ -302,7 +302,7 @@ export class Parser {
   private consume(tokenType: TokenType): Token {
     if (this.currentToken.type !== tokenType) {
       throw new SyntaxError(
-        `Expected ${tokenType} but got ${this.currentToken.type}.`
+        `Expected ${tokenType} but got ${this.currentToken.type}.`,
       );
     }
 

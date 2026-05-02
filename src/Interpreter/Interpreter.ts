@@ -1,9 +1,9 @@
 import { Return, RuntimeError } from "./errors";
 import {
+  LuckyBoolean,
   LuckyFunction,
   LuckyNumber,
   LuckyObject,
-  LuckyBoolean,
 } from "./objects";
 import { SymbolTable } from "./SymbolTable";
 import { AstNode, BinaryOperation, Numeral, UnaryOperation } from "../Parser";
@@ -20,7 +20,7 @@ import {
 export class Interpreter {
   constructor(
     public readonly node: AstNode,
-    private scope = new SymbolTable()
+    private scope = new SymbolTable(),
   ) {}
 
   run(): undefined | boolean | number {
@@ -76,7 +76,7 @@ export class Interpreter {
     }
 
     throw new RuntimeError(
-      `Unsupported AST node type ${node.constructor.name}`
+      `Unsupported AST node type ${node.constructor.name}`,
     );
   }
 
@@ -97,7 +97,7 @@ export class Interpreter {
       this.scope,
       name,
       node.parameters,
-      node.statements
+      node.statements,
     );
 
     if (name) {
@@ -118,7 +118,7 @@ export class Interpreter {
 
     if (luckyFunction.arity !== functionCall.args.length) {
       throw new RuntimeError(
-        `Function ${name} takes exactly ${luckyFunction.arity} parameters`
+        `Function ${name} takes exactly ${luckyFunction.arity} parameters`,
       );
     }
 

@@ -36,7 +36,7 @@ describe("Interpreter", () => {
       "evaluates arithmetic expression $script to $expected",
       ({ script, expected }) => {
         expect(run(script)).toBe(expected);
-      }
+      },
     );
 
     it("raises an error on division by zero", () => {
@@ -183,7 +183,7 @@ describe("Interpreter", () => {
 
           expect(runScript).toThrow(RuntimeError);
           expect(runScript).toThrow("Function add takes exactly 2 parameters");
-        }
+        },
       );
 
       it("raises an error when anonymous function is called with invalid number of arguments", () => {
@@ -194,7 +194,7 @@ describe("Interpreter", () => {
         `;
 
         expect(() => run(script)).toThrow(
-          new RuntimeError("Function foo takes exactly 2 parameters")
+          new RuntimeError("Function foo takes exactly 2 parameters"),
         );
       });
     });
@@ -303,7 +303,7 @@ describe("Interpreter", () => {
 
       expect(runScript).toThrow(RuntimeError);
       expect(runScript).toThrow(
-        "The given identifier 'notAFunction' is not callable"
+        "The given identifier 'notAFunction' is not callable",
       );
     });
 

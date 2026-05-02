@@ -2,7 +2,7 @@ import * as readline from "readline";
 
 import { Interpreter } from "./Interpreter";
 import { SymbolTable } from "./Interpreter/SymbolTable";
-import { Lexer, IllegalSymbolError } from "./Lexer";
+import { IllegalSymbolError, Lexer } from "./Lexer";
 import { Parser } from "./Parser";
 
 const PROMPT = "> ";

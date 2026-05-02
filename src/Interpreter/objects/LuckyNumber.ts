@@ -69,7 +69,7 @@ export class LuckyNumber extends LuckyObject {
   }
 
   private ensureLuckyNumber(
-    object: LuckyObject
+    object: LuckyObject,
   ): asserts object is LuckyNumber {
     if (!(object instanceof LuckyNumber)) {
       this.throwIllegalOperationError();

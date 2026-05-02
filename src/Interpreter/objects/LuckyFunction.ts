@@ -8,7 +8,7 @@ export class LuckyFunction extends LuckyObject {
     public readonly scope: SymbolTable,
     public readonly name: string | undefined,
     public readonly parameters: string[],
-    public readonly statements: Statement[]
+    public readonly statements: Statement[],
   ) {
     super();
   }

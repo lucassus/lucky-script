@@ -2,43 +2,43 @@ import { LuckyBoolean } from "./LuckyBoolean";
 import { RuntimeError } from "../errors";
 
 export abstract class LuckyObject {
-  add(value: LuckyObject): LuckyObject {
+  add(_value: LuckyObject): LuckyObject {
     this.throwIllegalOperationError();
   }
 
-  sub(value: LuckyObject): LuckyObject {
+  sub(_value: LuckyObject): LuckyObject {
     this.throwIllegalOperationError();
   }
 
-  mul(value: LuckyObject): LuckyObject {
+  mul(_value: LuckyObject): LuckyObject {
     this.throwIllegalOperationError();
   }
 
-  div(value: LuckyObject): LuckyObject {
+  div(_value: LuckyObject): LuckyObject {
     this.throwIllegalOperationError();
   }
 
-  pow(value: LuckyObject): LuckyObject {
+  pow(_value: LuckyObject): LuckyObject {
     this.throwIllegalOperationError();
   }
 
-  lt(right: LuckyObject): LuckyBoolean {
+  lt(_right: LuckyObject): LuckyBoolean {
     this.throwIllegalOperationError();
   }
 
-  lte(right: LuckyObject): LuckyBoolean {
+  lte(_right: LuckyObject): LuckyBoolean {
     this.throwIllegalOperationError();
   }
 
-  eq(right: LuckyObject): LuckyBoolean {
+  eq(_right: LuckyObject): LuckyBoolean {
     this.throwIllegalOperationError();
   }
 
-  gte(right: LuckyObject): LuckyBoolean {
+  gte(_right: LuckyObject): LuckyBoolean {
     this.throwIllegalOperationError();
   }
 
-  gt(right: LuckyObject): LuckyBoolean {
+  gt(_right: LuckyObject): LuckyBoolean {
     this.throwIllegalOperationError();
   }
 

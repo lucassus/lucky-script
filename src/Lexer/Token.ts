@@ -1,5 +1,4 @@
 export abstract class TokenType {
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
   protected constructor(public readonly name: string) {}
 
   toString() {
@@ -65,6 +64,6 @@ export class Token {
   constructor(
     public readonly type: TokenType,
     public readonly location: Location,
-    public readonly value?: string
+    public readonly value?: string,
   ) {}
 }

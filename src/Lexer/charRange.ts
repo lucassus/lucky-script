@@ -9,6 +9,6 @@ export function charRange(from: string, to: string): string[] {
   const toCharCode = to.charCodeAt(0);
 
   return [...range(fromCharCode, toCharCode)].map((code) =>
-    String.fromCharCode(code)
+    String.fromCharCode(code),
   );
 }

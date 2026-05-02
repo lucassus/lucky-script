@@ -32,7 +32,7 @@ export class BinaryOperation extends Expression {
   constructor(
     public readonly left: Expression,
     public readonly operator: BinaryOperator,
-    public readonly right: Expression
+    public readonly right: Expression,
   ) {
     super();
   }
@@ -43,14 +43,17 @@ export type UnaryOperator = "+" | "-";
 export class UnaryOperation extends Expression {
   constructor(
     public readonly operator: UnaryOperator,
-    public readonly child: Expression
+    public readonly child: Expression,
   ) {
     super();
   }
 }
 
 export class VariableAssigment extends Expression {
-  constructor(public readonly name: string, public readonly value: Expression) {
+  constructor(
+    public readonly name: string,
+    public readonly value: Expression,
+  ) {
     super();
   }
 }
@@ -65,7 +68,7 @@ export class FunctionDeclaration extends Statement {
   constructor(
     public readonly name: undefined | string,
     public readonly parameters: string[],
-    public readonly statements: Statement[]
+    public readonly statements: Statement[],
   ) {
     super();
   }
@@ -74,7 +77,7 @@ export class FunctionDeclaration extends Statement {
 export class IfStatement extends Statement {
   constructor(
     public readonly condition: Expression,
-    public readonly thenBranch: Statement[]
+    public readonly thenBranch: Statement[],
   ) {
     super();
   }
@@ -89,7 +92,7 @@ export class ReturnStatement extends Statement {
 export class FunctionCall extends Expression {
   constructor(
     public readonly name: string,
-    public readonly args: Expression[]
+    public readonly args: Expression[],
   ) {
     super();
   }
