@@ -394,6 +394,36 @@ describe("Parser", () => {
     });
   });
 
+  describe("not operator", () => {
+    it("parses not true", () => {
+      expect(parse("not true")).toEqual(
+        new Program([new UnaryOperation("not", new BooleanLiteral(true))]),
+      );
+    });
+
+    it("parses double not (right-associative)", () => {
+      expect(parse("not not false")).toEqual(
+        new Program([
+          new UnaryOperation(
+            "not",
+            new UnaryOperation("not", new BooleanLiteral(false)),
+          ),
+        ]),
+      );
+    });
+
+    it("comparison binds tighter than not: not 1 == 1 parses as not (1 == 1)", () => {
+      expect(parse("not 1 == 1")).toEqual(
+        new Program([
+          new UnaryOperation(
+            "not",
+            new BinaryOperation(new Numeral("1"), "==", new Numeral("1")),
+          ),
+        ]),
+      );
+    });
+  });
+
   it("parses if statement", () => {
     const ast = parse(`
       if (x < 1) {
