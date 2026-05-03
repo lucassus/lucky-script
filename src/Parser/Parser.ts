@@ -92,7 +92,7 @@ export class Parser {
 
   // : assigment
   // | anonymous_func
-  // | not_expression
+  // | or_expression
   private expression(): Expression {
     if (
       this.currentToken.type === Literal.Identifier &&
@@ -105,7 +105,7 @@ export class Parser {
       return this.anonymousFunction();
     }
 
-    return this.notExpression();
+    return this.orExpression();
   }
 
   // arith_expression (("<=" | "<" | "==" | "!=" | ">" | ">=") arith_expression)*
@@ -130,6 +130,14 @@ export class Parser {
       return new UnaryOperation("not", this.notExpression());
     }
     return this.comparison();
+  }
+
+  private orExpression(): Expression {
+    return this.binaryOperation(this.andExpression, [Keyword.Or]);
+  }
+
+  private andExpression(): Expression {
+    return this.binaryOperation(this.notExpression, [Keyword.And]);
   }
 
   private arithmeticExpression(): Expression {
@@ -340,7 +348,7 @@ export class Parser {
 
   private binaryOperation(
     leftBranch: () => Expression,
-    operators: Operator[],
+    operators: TokenType[],
     rightBranch?: () => Expression,
   ): Expression {
     let left = leftBranch.apply(this);

@@ -514,6 +514,88 @@ describe("Parser", () => {
     );
   });
 
+  describe("and / or operators", () => {
+    it("parses and", () => {
+      expect(parse("true and false")).toEqual(
+        new Program([
+          new BinaryOperation(
+            new BooleanLiteral(true),
+            "and",
+            new BooleanLiteral(false),
+          ),
+        ]),
+      );
+    });
+
+    it("parses or", () => {
+      expect(parse("true or false")).toEqual(
+        new Program([
+          new BinaryOperation(
+            new BooleanLiteral(true),
+            "or",
+            new BooleanLiteral(false),
+          ),
+        ]),
+      );
+    });
+
+    it("and has higher precedence than or: a or b and c = a or (b and c)", () => {
+      expect(parse("a or b and c")).toEqual(
+        new Program([
+          new BinaryOperation(
+            new VariableAccess("a"),
+            "or",
+            new BinaryOperation(
+              new VariableAccess("b"),
+              "and",
+              new VariableAccess("c"),
+            ),
+          ),
+        ]),
+      );
+    });
+
+    it("not has higher precedence than and: not a and b = (not a) and b", () => {
+      expect(parse("not a and b")).toEqual(
+        new Program([
+          new BinaryOperation(
+            new UnaryOperation("not", new VariableAccess("a")),
+            "and",
+            new VariableAccess("b"),
+          ),
+        ]),
+      );
+    });
+
+    it("brackets override precedence: a and (b or c)", () => {
+      expect(parse("a and (b or c)")).toEqual(
+        new Program([
+          new BinaryOperation(
+            new VariableAccess("a"),
+            "and",
+            new BinaryOperation(
+              new VariableAccess("b"),
+              "or",
+              new VariableAccess("c"),
+            ),
+          ),
+        ]),
+      );
+    });
+
+    it("comparison binds tighter than and: true and x > 0 = true and (x > 0)", () => {
+      expect(parse("true and x > 0")).toEqual(
+        new Program([
+          new BinaryOperation(
+            new BooleanLiteral(true),
+            "and",
+            new BinaryOperation(new VariableAccess("x"), ">", new Numeral("0")),
+          ),
+        ]),
+      );
+    });
+  });
+
   describe("several statements in a single line", () => {
     it("parses when statements are separated", () => {
       const ast = parse("1+2;3+4");
