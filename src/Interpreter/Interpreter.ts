@@ -176,6 +176,20 @@ export class Interpreter {
   }
 
   private visitBinaryOperation(node: BinaryOperation): LuckyObject {
+    if (node.operator === "and") {
+      const left = this.visit(node.left);
+      return left.toBoolean() === LuckyBoolean.False
+        ? LuckyBoolean.False
+        : this.visit(node.right).toBoolean();
+    }
+
+    if (node.operator === "or") {
+      const left = this.visit(node.left);
+      return left.toBoolean() === LuckyBoolean.True
+        ? LuckyBoolean.True
+        : this.visit(node.right).toBoolean();
+    }
+
     const left = this.visit(node.left);
     const right = this.visit(node.right);
 

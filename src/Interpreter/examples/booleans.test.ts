@@ -30,3 +30,39 @@ describe("not operator", () => {
     expect(run(script)).toBe(expected);
   });
 });
+
+describe("and operator", () => {
+  it.each`
+    script              | expected
+    ${"true and true"}  | ${true}
+    ${"true and false"} | ${false}
+    ${"false and true"} | ${false}
+    ${"1 and 2"}        | ${true}
+    ${"0 and true"}     | ${false}
+  `("evaluates $script to $expected", ({ script, expected }) => {
+    expect(run(script)).toBe(expected);
+  });
+
+  it("short-circuits: right side not evaluated when left is false", () => {
+    // undeclaredFn() would throw RuntimeError if called
+    expect(run("false and undeclaredFn()")).toBe(false);
+  });
+});
+
+describe("or operator", () => {
+  it.each`
+    script                       | expected
+    ${"false or true"}           | ${true}
+    ${"false or false"}          | ${false}
+    ${"0 or false"}              | ${false}
+    ${"true and false == false"} | ${true}
+    ${"-1 or 0"}                 | ${true}
+  `("evaluates $script to $expected", ({ script, expected }) => {
+    expect(run(script)).toBe(expected);
+  });
+
+  it("short-circuits: right side not evaluated when left is true", () => {
+    // undeclaredFn() would throw RuntimeError if called
+    expect(run("true or undeclaredFn()")).toBe(true);
+  });
+});
