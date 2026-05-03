@@ -7,7 +7,7 @@
 
 ## Overview
 
-Add `and`, `or`, `not` operators and `true`/`false` literals to Lucky Script. This is Feature 1 from the roadmap — required before `while` loops can express meaningful conditions.
+Add `and`, `or`, `not` operators and `true`/`false` literals to Lucky Script. Required before `while` loops can express meaningful conditions.
 
 ---
 
@@ -44,6 +44,28 @@ export class BooleanLiteral extends Expression {
   }
 }
 ```
+
+---
+
+## Operator Precedence
+
+From lowest to highest among boolean + comparison operators:
+
+| Level | Operator | Associativity |
+|-------|----------|---------------|
+| 1 (lowest) | `or` | left |
+| 2 | `and` | left |
+| 3 | `not` | right (unary) |
+| 4 | `<` `<=` `==` `!=` `>` `>=` | left |
+| 5+ | arithmetic, power, unary `+`/`-` | (unchanged) |
+
+Consequences:
+- `a or b and c` → `a or (b and c)` — `and` binds tighter
+- `not a and b` → `(not a) and b` — `not` binds tighter than `and`
+- `not a or b` → `(not a) or b`
+- `not (a and b)` — requires explicit brackets
+
+**Brackets** already work — the existing `group()` rule in `atom()` handles `(expr)` with no changes needed.
 
 ---
 
