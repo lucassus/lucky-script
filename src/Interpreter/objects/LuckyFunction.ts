@@ -18,6 +18,6 @@ export class LuckyFunction extends LuckyObject {
   }
 
   toBoolean(): LuckyBoolean {
-    this.throwIllegalOperationError();
+    return LuckyBoolean.True;
   }
 }

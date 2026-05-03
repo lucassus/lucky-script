@@ -77,6 +77,6 @@ export class LuckyNumber extends LuckyObject {
   }
 
   toBoolean(): LuckyBoolean {
-    this.throwIllegalOperationError();
+    return LuckyBoolean.fromNative(this.value !== 0);
   }
 }
