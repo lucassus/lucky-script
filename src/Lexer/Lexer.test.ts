@@ -274,6 +274,18 @@ describe("Lexer", () => {
     ]);
   });
 
+  it.each`
+    input      | keyword
+    ${"true"}  | ${Keyword.True}
+    ${"false"} | ${Keyword.False}
+    ${"and"}   | ${Keyword.And}
+    ${"or"}    | ${Keyword.Or}
+    ${"not"}   | ${Keyword.Not}
+  `("tokenizes '$input' as a keyword", ({ input, keyword }) => {
+    const tokens = [...new Lexer(input).tokenize()];
+    expect(tokens[0]).toEqual(new Token(keyword, anyLocation));
+  });
+
   it("throws IllegalSymbolError when unexpected symbol is given", () => {
     const lexer = new Lexer("1 @");
     expect(() => [...lexer.tokenize()]).toThrow(new IllegalSymbolError("@", 2));

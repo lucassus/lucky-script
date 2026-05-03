@@ -18,6 +18,12 @@ export class Numeral extends Expression {
 
 export class NothingLiteral extends Expression {}
 
+export class BooleanLiteral extends Expression {
+  constructor(public readonly value: boolean) {
+    super();
+  }
+}
+
 export type BinaryOperator =
   | "+"
   | "-"
@@ -29,7 +35,9 @@ export type BinaryOperator =
   | "=="
   | "!="
   | ">="
-  | ">";
+  | ">"
+  | "and"
+  | "or";
 
 export class BinaryOperation extends Expression {
   constructor(
@@ -41,7 +49,7 @@ export class BinaryOperation extends Expression {
   }
 }
 
-export type UnaryOperator = "+" | "-";
+export type UnaryOperator = "+" | "-" | "not";
 
 export class UnaryOperation extends Expression {
   constructor(

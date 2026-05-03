@@ -1,2 +1,8 @@
 export { Parser } from "./Parser";
-export { AstNode, Numeral, BinaryOperation, UnaryOperation } from "./AstNode";
+export {
+  AstNode,
+  BooleanLiteral,
+  BinaryOperation,
+  Numeral,
+  UnaryOperation,
+} from "./AstNode";
