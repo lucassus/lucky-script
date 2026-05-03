@@ -215,6 +215,10 @@ export class Interpreter {
         return value;
       case "-":
         return value.mul(new LuckyNumber(-1));
+      case "not":
+        return LuckyBoolean.fromNative(
+          value.toBoolean() === LuckyBoolean.False,
+        );
       default:
         throw new RuntimeError(`Unsupported unary operator ${node.operator}`);
     }

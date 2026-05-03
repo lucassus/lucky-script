@@ -17,3 +17,16 @@ describe("Boolean literals", () => {
     expect(run(script)).toBe(expected);
   });
 });
+
+describe("not operator", () => {
+  it.each`
+    script         | expected
+    ${"not true"}  | ${false}
+    ${"not false"} | ${true}
+    ${"not 0"}     | ${true}
+    ${"not 1"}     | ${false}
+    ${"not -1"}    | ${false}
+  `("evaluates $script to $expected", ({ script, expected }) => {
+    expect(run(script)).toBe(expected);
+  });
+});
