@@ -1,5 +1,6 @@
 import {
   BinaryOperation,
+  BooleanLiteral,
   FunctionCall,
   FunctionDeclaration,
   IfStatement,
@@ -381,6 +382,16 @@ describe("Parser", () => {
     const ast = parse("nothing");
 
     expect(ast).toEqual(new Program([new NothingLiteral()]));
+  });
+
+  describe("boolean literals", () => {
+    it("parses true", () => {
+      expect(parse("true")).toEqual(new Program([new BooleanLiteral(true)]));
+    });
+
+    it("parses false", () => {
+      expect(parse("false")).toEqual(new Program([new BooleanLiteral(false)]));
+    });
   });
 
   it("parses if statement", () => {

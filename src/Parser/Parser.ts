@@ -1,6 +1,7 @@
 import {
   BinaryOperation,
   BinaryOperator,
+  BooleanLiteral,
   Expression,
   FunctionCall,
   FunctionDeclaration,
@@ -290,6 +291,16 @@ export class Parser {
     if (currentToken.type === Keyword.Nothing) {
       this.consume(Keyword.Nothing);
       return new NothingLiteral();
+    }
+
+    if (currentToken.type === Keyword.True) {
+      this.consume(Keyword.True);
+      return new BooleanLiteral(true);
+    }
+
+    if (currentToken.type === Keyword.False) {
+      this.consume(Keyword.False);
+      return new BooleanLiteral(false);
     }
 
     if (
