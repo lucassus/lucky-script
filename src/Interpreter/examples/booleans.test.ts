@@ -49,14 +49,19 @@ describe("and operator", () => {
   });
 });
 
+describe("operator precedence", () => {
+  it("and binds tighter than or: true and false == false", () => {
+    expect(run("true and false == false")).toBe(true);
+  });
+});
+
 describe("or operator", () => {
   it.each`
-    script                       | expected
-    ${"false or true"}           | ${true}
-    ${"false or false"}          | ${false}
-    ${"0 or false"}              | ${false}
-    ${"true and false == false"} | ${true}
-    ${"-1 or 0"}                 | ${true}
+    script              | expected
+    ${"false or true"}  | ${true}
+    ${"false or false"} | ${false}
+    ${"0 or false"}     | ${false}
+    ${"-1 or 0"}        | ${true}
   `("evaluates $script to $expected", ({ script, expected }) => {
     expect(run(script)).toBe(expected);
   });
