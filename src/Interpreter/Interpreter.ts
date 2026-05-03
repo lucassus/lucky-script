@@ -10,6 +10,7 @@ import {
 import { SymbolTable } from "./SymbolTable";
 import { AstNode, BinaryOperation, Numeral, UnaryOperation } from "../Parser";
 import {
+  BooleanLiteral,
   FunctionCall,
   FunctionDeclaration,
   IfStatement,
@@ -64,6 +65,10 @@ export class Interpreter {
 
     if (node instanceof NothingLiteral) {
       return LuckyNothing.Instance;
+    }
+
+    if (node instanceof BooleanLiteral) {
+      return this.visitBooleanLiteral(node);
     }
 
     if (node instanceof VariableAssigment) {
@@ -220,6 +225,10 @@ export class Interpreter {
     const value = parseFloat(raw);
 
     return new LuckyNumber(value);
+  }
+
+  private visitBooleanLiteral(node: BooleanLiteral): LuckyBoolean {
+    return LuckyBoolean.fromNative(node.value);
   }
 
   private visitVariableAssigment(node: VariableAssigment): LuckyObject {
