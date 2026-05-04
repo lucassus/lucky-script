@@ -9,7 +9,7 @@ Agreed design for the next evolution of the language (Python/Ruby feel).
 `end` keyword closes all blocks. No `{}` braces. No `do` prefix required.
 
 ```
-def add(a, b)
+fn add(a, b)
   a + b
 end
 
@@ -26,11 +26,13 @@ end
 
 ## Functions
 
-Named: `def name(params) ... end`
+`fn` for both named and anonymous functions.
+
+Named: `fn name(params) ... end`
 Anonymous: `fn(params) body end` — assignable, passable, multiline
 
 ```
-def double(x)
+fn double(x)
   x * 2
 end
 
@@ -50,7 +52,7 @@ numbers.map(fn(x) x * 2 end)
 Last expression in a function body is returned automatically. Explicit `return` still valid for early exit.
 
 ```
-def add(a, b)
+fn add(a, b)
   a + b        # returned implicitly
 end
 ```
@@ -68,7 +70,7 @@ end
 ```
 x = 1
 
-def foo()
+fn foo()
   local y = 2   # new local
   x = 99        # reassigns outer x
 end
@@ -243,3 +245,7 @@ end
 - User-defined classes / objects
 - `p(x)` debug inspect
 - Multiline strings
+
+## Rejected Ideas
+
+- **List comprehension syntax** — `.map`/`.filter`/`.reduce` with `fn` covers the same ground without extra grammar. Two ways to do the same thing is worse than one clean way.
