@@ -37,6 +37,7 @@ factor             : ("+" | "-") factor
 power              : atom ("**" factor)*
 
 atom               : NUMBER
+                   | STRING
                    | "nothing"
                    | func_call
                    | IDENTIFIER
@@ -50,5 +51,6 @@ func_call_args     : (expression ("," expression)*)?
 %import common.NEWLINE -> _NEWLINE
 %import common.CNAME -> IDENTIFIER
 %import common.NUMBER
+%import common.ESCAPED_STRING -> STRING
 
 %ignore WS_INLINE

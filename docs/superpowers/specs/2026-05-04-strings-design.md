@@ -149,6 +149,8 @@ Single-pass regex is required: sequential replacements would corrupt `"\\n"` (ba
 | `src/Interpreter/objects/LuckyString.ts` | New file |
 | `src/Interpreter/objects/index.ts` | Export `LuckyString` |
 | `src/Interpreter/Interpreter.ts` | Add `visitStringLiteral` + `visit()` branch |
+| `lark-sandbox/lucky_script.lark` | Add `STRING` terminal + `atom` branch |
+| `lark-sandbox/lucky_script_test.py` | Add valid string syntax cases + integration |
 
 ## Testing
 
