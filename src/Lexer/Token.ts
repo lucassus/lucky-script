@@ -9,6 +9,7 @@ export abstract class TokenType {
 export class Literal extends TokenType {
   static Number = new Literal("Number");
   static Identifier = new Literal("Identifier");
+  static String = new Literal("String");
 }
 
 export class Operator extends TokenType {
