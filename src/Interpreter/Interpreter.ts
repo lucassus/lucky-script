@@ -6,6 +6,7 @@ import {
   LuckyNothing,
   LuckyNumber,
   LuckyObject,
+  LuckyString,
 } from "./objects";
 import { SymbolTable } from "./SymbolTable";
 import { AstNode, BinaryOperation, Numeral, UnaryOperation } from "../Parser";
@@ -17,6 +18,7 @@ import {
   NothingLiteral,
   Program,
   ReturnStatement,
+  StringLiteral,
   VariableAccess,
   VariableAssigment,
 } from "../Parser/AstNode";
@@ -27,13 +29,18 @@ export class Interpreter {
     private scope = new SymbolTable(),
   ) {}
 
-  run(): undefined | boolean | number {
+  run(): undefined | boolean | number | string {
     const luckyObject = this.visit(this.node);
 
-    if (
-      luckyObject instanceof LuckyNumber ||
-      luckyObject instanceof LuckyBoolean
-    ) {
+    if (luckyObject instanceof LuckyNumber) {
+      return luckyObject.value;
+    }
+
+    if (luckyObject instanceof LuckyBoolean) {
+      return luckyObject.value;
+    }
+
+    if (luckyObject instanceof LuckyString) {
       return luckyObject.value;
     }
   }
@@ -69,6 +76,10 @@ export class Interpreter {
 
     if (node instanceof BooleanLiteral) {
       return this.visitBooleanLiteral(node);
+    }
+
+    if (node instanceof StringLiteral) {
+      return this.visitStringLiteral(node);
     }
 
     if (node instanceof VariableAssigment) {
@@ -247,6 +258,14 @@ export class Interpreter {
 
   private visitBooleanLiteral(node: BooleanLiteral): LuckyBoolean {
     return LuckyBoolean.fromNative(node.value);
+  }
+
+  private visitStringLiteral(node: StringLiteral): LuckyString {
+    const raw = node.value.slice(1, -1);
+    const decoded = raw.replace(/\\(["\\n])/g, (_, c) =>
+      c === "n" ? "\n" : c,
+    );
+    return new LuckyString(decoded);
   }
 
   private visitVariableAssigment(node: VariableAssigment): LuckyObject {

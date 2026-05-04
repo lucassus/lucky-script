@@ -2,7 +2,7 @@ import { Lexer } from "../../Lexer";
 import { Parser } from "../../Parser";
 import { Interpreter } from "../Interpreter";
 
-function run(script: string): undefined | boolean | number {
+function run(script: string): undefined | boolean | number | string {
   const tokens = new Lexer(script).tokenize();
   const ast = new Parser(tokens).parse();
   return new Interpreter(ast).run();
@@ -69,5 +69,52 @@ describe("or operator", () => {
   it("short-circuits: right side not evaluated when left is true", () => {
     // undeclaredFn() would throw RuntimeError if called
     expect(run("true or undeclaredFn()")).toBe(true);
+  });
+});
+
+describe("if statement with boolean condition", () => {
+  it.each`
+    condition  | expected
+    ${"true"}  | ${1}
+    ${"false"} | ${0}
+  `(
+    "executes then-branch when condition is $condition",
+    ({ condition, expected }) => {
+      expect(
+        run(`
+        result = 0
+        if (${condition}) {
+          result = 1
+        }
+        result
+      `),
+      ).toBe(expected);
+    },
+  );
+
+  it("executes else-branch when condition is false", () => {
+    expect(
+      run(`
+        result = 0
+        if (false) {
+          result = 1
+        } else {
+          result = 2
+        }
+        result
+      `),
+    ).toBe(2);
+  });
+
+  it("uses boolean expression as condition", () => {
+    expect(
+      run(`
+        result = 0
+        if (1 > 0 and true) {
+          result = 1
+        }
+        result
+      `),
+    ).toBe(1);
   });
 });
