@@ -8,6 +8,7 @@ import {
   Numeral,
   Program,
   ReturnStatement,
+  StringLiteral,
   UnaryOperation,
   VariableAccess,
   VariableAssigment,
@@ -593,6 +594,29 @@ describe("Parser", () => {
           ),
         ]),
       );
+    });
+  });
+
+  describe("string literals", () => {
+    it("parses a string literal into a StringLiteral node", () => {
+      const ast = parse('"hello"') as Program;
+      expect(ast.statements[0]).toBeInstanceOf(StringLiteral);
+      expect((ast.statements[0] as StringLiteral).value).toBe('"hello"');
+    });
+
+    it("parses an empty string", () => {
+      const ast = parse('""') as Program;
+      expect(ast.statements[0]).toBeInstanceOf(StringLiteral);
+      expect((ast.statements[0] as StringLiteral).value).toBe('""');
+    });
+
+    it("parses string concatenation as BinaryOperation", () => {
+      const ast = parse('"a" + "b"') as Program;
+      const node = ast.statements[0] as BinaryOperation;
+      expect(node).toBeInstanceOf(BinaryOperation);
+      expect(node.operator).toBe("+");
+      expect(node.left).toBeInstanceOf(StringLiteral);
+      expect(node.right).toBeInstanceOf(StringLiteral);
     });
   });
 

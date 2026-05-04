@@ -24,6 +24,12 @@ export class BooleanLiteral extends Expression {
   }
 }
 
+export class StringLiteral extends Expression {
+  constructor(public readonly value: string) {
+    super();
+  }
+}
+
 export type BinaryOperator =
   | "+"
   | "-"

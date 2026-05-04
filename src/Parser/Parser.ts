@@ -11,6 +11,7 @@ import {
   Program,
   ReturnStatement,
   Statement,
+  StringLiteral,
   UnaryOperation,
   UnaryOperator,
   VariableAccess,
@@ -302,6 +303,11 @@ export class Parser {
     if (currentToken.type === Literal.Number) {
       this.consume(Literal.Number);
       return new Numeral(currentToken.value!);
+    }
+
+    if (currentToken.type === Literal.String) {
+      this.consume(Literal.String);
+      return new StringLiteral(currentToken.value!);
     }
 
     if (currentToken.type === Keyword.Nothing) {
