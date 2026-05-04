@@ -187,6 +187,7 @@ export class Interpreter {
   }
 
   private visitBinaryOperation(node: BinaryOperation): LuckyObject {
+    // Short-circuit: false and <anything> is always false.
     if (node.operator === "and") {
       const left = this.visit(node.left);
       return left.toBoolean() === LuckyBoolean.False
@@ -194,6 +195,7 @@ export class Interpreter {
         : this.visit(node.right).toBoolean();
     }
 
+    // Short-circuit: true or <anything> is always true.
     if (node.operator === "or") {
       const left = this.visit(node.left);
       return left.toBoolean() === LuckyBoolean.True
