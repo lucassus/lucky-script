@@ -13,6 +13,13 @@ return_statement   : "return" expression
 
 expression         : assigment
                    | anonymous_func
+                   | or_expr
+
+or_expr            : and_expr ("or" and_expr)*
+
+and_expr           : not_expr ("and" not_expr)*
+
+not_expr           : "not" not_expr
                    | comparison
 
 comparison         : arith_expression (("<=" | "<" | "==" | "!=" | ">" | ">=") arith_expression)*
@@ -38,6 +45,8 @@ power              : atom ("**" factor)*
 
 atom               : NUMBER
                    | STRING
+                   | "true"
+                   | "false"
                    | "nothing"
                    | func_call
                    | IDENTIFIER

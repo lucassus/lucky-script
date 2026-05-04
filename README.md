@@ -7,6 +7,10 @@ Lucky Script is a dynamically-scoped scripting language built from scratch in Ty
 - Dynamic scoping
 - `if` / `else` / `else if` control flow
 - Arithmetic, comparison, and unary operators
+- Boolean operators: `and`, `or`, `not` (with short-circuit evaluation)
+- Boolean literals: `true`, `false`
+- String literals with escape sequences (`\"`, `\\`, `\n`)
+- String concatenation (`+`) and equality comparison (`==`, `!=`)
 - `nothing` (null) value
 - Number literals: integers, floats, underscore separators (`1_000_000`)
 
@@ -132,12 +136,51 @@ Comparison: `<`, `<=`, `==`, `!=`, `>=`, `>`
 
 Unary: `-x`, `+x`
 
+Boolean: `and`, `or`, `not`
+
 ```
 1 + 2 * 3 ** 2   # => 19
 -5 + 3           # => -2
 1 < 2            # => truthy
 1 == 1           # => truthy
 1 != 2           # => truthy
+```
+
+## Booleans
+
+```
+true and false   # => false
+true or false    # => true
+not true         # => false
+not 0            # => true (0 is falsy, any other number is truthy)
+
+# Short-circuit evaluation
+false and expensiveFn()  # expensiveFn() is never called
+true or expensiveFn()    # expensiveFn() is never called
+
+# and binds tighter than or
+true or false and false  # => true  (parsed as: true or (false and false))
+```
+
+## Strings
+
+```
+greeting = "hello"
+name = "world"
+greeting + " " + name   # => "hello world"
+
+"" == ""                # => true
+"foo" != "bar"          # => true
+
+# Escape sequences
+"say \"hi\""            # => say "hi"
+"line1\nline2"          # => line1
+                        #    line2
+"back\\slash"           # => back\slash
+
+# Truthiness: empty string is falsy, non-empty is truthy
+if ("") { ... }         # skipped
+if ("hello") { ... }    # runs
 ```
 
 ## Nothing
@@ -163,9 +206,7 @@ x = y = 1
 
 ## Planned features
 
-- `and` / `or` / `not` operators
 - `print` built-in function
 - `while` loop
-- Strings (`"hello"`)
 - Lists (`[1, 2, 3]`)
 - `for-each` loop
