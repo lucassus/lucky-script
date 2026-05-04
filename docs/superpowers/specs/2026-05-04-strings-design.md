@@ -129,15 +129,12 @@ export class LuckyString extends LuckyObject {
 ```typescript
 private visitStringLiteral(node: StringLiteral): LuckyString {
   const raw = node.value.slice(1, -1); // strip surrounding quotes
-  const decoded = raw
-    .replace(/\\"/g, '"')
-    .replace(/\\\\/g, '\\')
-    .replace(/\\n/g, '\n');
+  const decoded = raw.replace(/\\(["\\n])/g, (_, c) => c === 'n' ? '\n' : c);
   return new LuckyString(decoded);
 }
 ```
 
-Escape replacements run in order: `\\` before `\n`/`\"` to avoid double-processing. Add the `instanceof StringLiteral` branch in `visit()`.
+Single-pass regex is required: sequential replacements would corrupt `"\\n"` (backslash + `n`) by first collapsing `\\` to `\`, then converting the resulting `\n` to a newline. Add the `instanceof StringLiteral` branch in `visit()`.
 
 ## Files Touched
 
