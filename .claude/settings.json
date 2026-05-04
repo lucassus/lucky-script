@@ -7,8 +7,5 @@
       "Bash(yarn test *)",
       "Bash(yarn typecheck *)"
     ]
-  },
-  "enabledPlugins": {
-    "superpowers@claude-plugins-official": true
   }
 }
