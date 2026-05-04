@@ -4,6 +4,7 @@ import {
   IdentifierRecognizer,
   NumeralRecognizer,
   Recognizer,
+  StringRecognizer,
 } from "./Recognizer";
 import {
   isBeginningOfComment,
@@ -106,6 +107,9 @@ export class Lexer {
           this.nextSymbolMatches("=") ? Operator.Gte : Operator.Gt,
         );
 
+      case '"':
+        return this.recognizeString();
+
       // Literals
 
       default: {
@@ -164,6 +168,11 @@ export class Lexer {
   private recognizeNumber(): Token {
     const value = this.recognizeWith(new NumeralRecognizer());
     return this.createToken(Literal.Number, value);
+  }
+
+  private recognizeString(): Token {
+    const value = this.recognizeWith(new StringRecognizer());
+    return this.createToken(Literal.String, value);
   }
 
   private recognizeKeywordOrIdentifier(): Token {

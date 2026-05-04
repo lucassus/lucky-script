@@ -6,16 +6,19 @@ import {
   LuckyNothing,
   LuckyNumber,
   LuckyObject,
+  LuckyString,
 } from "./objects";
 import { SymbolTable } from "./SymbolTable";
 import { AstNode, BinaryOperation, Numeral, UnaryOperation } from "../Parser";
 import {
+  BooleanLiteral,
   FunctionCall,
   FunctionDeclaration,
   IfStatement,
   NothingLiteral,
   Program,
   ReturnStatement,
+  StringLiteral,
   VariableAccess,
   VariableAssigment,
 } from "../Parser/AstNode";
@@ -26,13 +29,18 @@ export class Interpreter {
     private scope = new SymbolTable(),
   ) {}
 
-  run(): undefined | boolean | number {
+  run(): undefined | boolean | number | string {
     const luckyObject = this.visit(this.node);
 
-    if (
-      luckyObject instanceof LuckyNumber ||
-      luckyObject instanceof LuckyBoolean
-    ) {
+    if (luckyObject instanceof LuckyNumber) {
+      return luckyObject.value;
+    }
+
+    if (luckyObject instanceof LuckyBoolean) {
+      return luckyObject.value;
+    }
+
+    if (luckyObject instanceof LuckyString) {
       return luckyObject.value;
     }
   }
@@ -64,6 +72,14 @@ export class Interpreter {
 
     if (node instanceof NothingLiteral) {
       return LuckyNothing.Instance;
+    }
+
+    if (node instanceof BooleanLiteral) {
+      return this.visitBooleanLiteral(node);
+    }
+
+    if (node instanceof StringLiteral) {
+      return this.visitStringLiteral(node);
     }
 
     if (node instanceof VariableAssigment) {
@@ -171,6 +187,22 @@ export class Interpreter {
   }
 
   private visitBinaryOperation(node: BinaryOperation): LuckyObject {
+    // Short-circuit: false and <anything> is always false.
+    if (node.operator === "and") {
+      const left = this.visit(node.left);
+      return left.toBoolean() === LuckyBoolean.False
+        ? LuckyBoolean.False
+        : this.visit(node.right).toBoolean();
+    }
+
+    // Short-circuit: true or <anything> is always true.
+    if (node.operator === "or") {
+      const left = this.visit(node.left);
+      return left.toBoolean() === LuckyBoolean.True
+        ? LuckyBoolean.True
+        : this.visit(node.right).toBoolean();
+    }
+
     const left = this.visit(node.left);
     const right = this.visit(node.right);
 
@@ -210,6 +242,10 @@ export class Interpreter {
         return value;
       case "-":
         return value.mul(new LuckyNumber(-1));
+      case "not":
+        return LuckyBoolean.fromNative(
+          value.toBoolean() === LuckyBoolean.False,
+        );
       default:
         throw new RuntimeError(`Unsupported unary operator ${node.operator}`);
     }
@@ -220,6 +256,18 @@ export class Interpreter {
     const value = parseFloat(raw);
 
     return new LuckyNumber(value);
+  }
+
+  private visitBooleanLiteral(node: BooleanLiteral): LuckyBoolean {
+    return LuckyBoolean.fromNative(node.value);
+  }
+
+  private visitStringLiteral(node: StringLiteral): LuckyString {
+    const raw = node.value.slice(1, -1);
+    const decoded = raw.replace(/\\(["\\n])/g, (_, c) =>
+      c === "n" ? "\n" : c,
+    );
+    return new LuckyString(decoded);
   }
 
   private visitVariableAssigment(node: VariableAssigment): LuckyObject {

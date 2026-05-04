@@ -27,8 +27,8 @@ it.each`
     fib(${n})
   `;
 
-  const lexer = new Lexer(script).tokenize();
-  const ast = new Parser(lexer).parse();
+  const tokens = new Lexer(script).tokenize();
+  const ast = new Parser(tokens).parse();
   const result = new Interpreter(ast).run();
 
   expect(result).toBe(expected);

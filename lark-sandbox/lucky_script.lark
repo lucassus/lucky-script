@@ -13,6 +13,13 @@ return_statement   : "return" expression
 
 expression         : assigment
                    | anonymous_func
+                   | or_expr
+
+or_expr            : and_expr ("or" and_expr)*
+
+and_expr           : not_expr ("and" not_expr)*
+
+not_expr           : "not" not_expr
                    | comparison
 
 comparison         : arith_expression (("<=" | "<" | "==" | "!=" | ">" | ">=") arith_expression)*
@@ -37,6 +44,9 @@ factor             : ("+" | "-") factor
 power              : atom ("**" factor)*
 
 atom               : NUMBER
+                   | STRING
+                   | "true"
+                   | "false"
                    | "nothing"
                    | func_call
                    | IDENTIFIER
@@ -50,5 +60,6 @@ func_call_args     : (expression ("," expression)*)?
 %import common.NEWLINE -> _NEWLINE
 %import common.CNAME -> IDENTIFIER
 %import common.NUMBER
+%import common.ESCAPED_STRING -> STRING
 
 %ignore WS_INLINE

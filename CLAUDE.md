@@ -26,7 +26,7 @@ Three-stage pipeline: **Lexer → Parser → Interpreter**
 Tokenizes source text. `Lexer.tokenize()` is a generator yielding `Token` objects. Complex tokens (identifiers, numbers, comments) delegate to `Recognizer` subclasses (`IdentifierRecognizer`, `NumeralRecognizer`, `CommentRecognizer`) that implement a state machine via `State`/`Case`. `Keyword.fromString()` distinguishes keywords from identifiers.
 
 ### Parser (`src/Parser/`)
-Recursive descent. `Parser.parse()` → `Program` (AST root). Uses `Lookahead<Token>` wrapper for one-token lookahead. AST node types live in `AstNode.ts`. Operator precedence: comparison < arithmetic < term (*/÷) < factor (unary) < power (`**`).
+Recursive descent. `Parser.parse()` → `Program` (AST root). Uses `Lookahead<Token>` wrapper for one-token lookahead. AST node types live in `AstNode.ts`. Operator precedence (lowest to highest): or < and < not (unary) < comparison < arithmetic < term (*/÷) < factor (unary +/-) < power (`**`).
 
 ### Interpreter (`src/Interpreter/`)
 Tree-walking visitor. `Interpreter.run()` takes an `AstNode` (typically `Program`) and returns a primitive value. All runtime values are `LuckyObject` subclasses (`LuckyNumber`, `LuckyBoolean`, `LuckyFunction`). Operations (+, -, etc.) dispatch via methods on `LuckyObject`.

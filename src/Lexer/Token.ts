@@ -9,6 +9,7 @@ export abstract class TokenType {
 export class Literal extends TokenType {
   static Number = new Literal("Number");
   static Identifier = new Literal("Identifier");
+  static String = new Literal("String");
 }
 
 export class Operator extends TokenType {
@@ -41,6 +42,11 @@ export class Keyword extends TokenType {
   static Else = new Keyword("else");
   static Return = new Keyword("return");
   static Nothing = new Keyword("nothing");
+  static True = new Keyword("true");
+  static False = new Keyword("false");
+  static And = new Keyword("and");
+  static Or = new Keyword("or");
+  static Not = new Keyword("not");
 
   static fromString(string: string): undefined | Keyword {
     return this.values.find((keyword) => keyword.name === string);

@@ -274,6 +274,54 @@ describe("Lexer", () => {
     ]);
   });
 
+  it.each`
+    input      | keyword
+    ${"true"}  | ${Keyword.True}
+    ${"false"} | ${Keyword.False}
+    ${"and"}   | ${Keyword.And}
+    ${"or"}    | ${Keyword.Or}
+    ${"not"}   | ${Keyword.Not}
+  `("tokenizes '$input' as a keyword", ({ input, keyword }) => {
+    const tokens = [...new Lexer(input).tokenize()];
+    expect(tokens[0]).toEqual(new Token(keyword, anyLocation));
+  });
+
+  describe("string literals", () => {
+    it.each`
+      input        | expectedValue
+      ${'"hello"'} | ${'"hello"'}
+      ${'""'}      | ${'""'}
+      ${'"a b c"'} | ${'"a b c"'}
+    `(
+      "tokenizes $input as Literal.String with raw value",
+      ({ input, expectedValue }) => {
+        const lexer = new Lexer(input);
+        expect(lexer.nextToken()).toEqual(
+          new Token(Literal.String, anyLocation, expectedValue),
+        );
+      },
+    );
+
+    it("preserves escape sequences raw in token value", () => {
+      const lexer = new Lexer('"say \\"hi\\""');
+      expect(lexer.nextToken()).toEqual(
+        new Token(Literal.String, anyLocation, '"say \\"hi\\""'),
+      );
+    });
+
+    it("preserves backslash escape raw in token value", () => {
+      const lexer = new Lexer('"back\\\\slash"');
+      expect(lexer.nextToken()).toEqual(
+        new Token(Literal.String, anyLocation, '"back\\\\slash"'),
+      );
+    });
+
+    it("throws IllegalSymbolError for unterminated string", () => {
+      const lexer = new Lexer('"hello');
+      expect(() => lexer.nextToken()).toThrow(IllegalSymbolError);
+    });
+  });
+
   it("throws IllegalSymbolError when unexpected symbol is given", () => {
     const lexer = new Lexer("1 @");
     expect(() => [...lexer.tokenize()]).toThrow(new IllegalSymbolError("@", 2));

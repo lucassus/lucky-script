@@ -1,6 +1,7 @@
 import {
   BinaryOperation,
   BinaryOperator,
+  BooleanLiteral,
   Expression,
   FunctionCall,
   FunctionDeclaration,
@@ -10,6 +11,7 @@ import {
   Program,
   ReturnStatement,
   Statement,
+  StringLiteral,
   UnaryOperation,
   UnaryOperator,
   VariableAccess,
@@ -91,7 +93,7 @@ export class Parser {
 
   // : assigment
   // | anonymous_func
-  // | comparison
+  // | or_expression
   private expression(): Expression {
     if (
       this.currentToken.type === Literal.Identifier &&
@@ -104,7 +106,7 @@ export class Parser {
       return this.anonymousFunction();
     }
 
-    return this.comparison();
+    return this.orExpression();
   }
 
   // arith_expression (("<=" | "<" | "==" | "!=" | ">" | ">=") arith_expression)*
@@ -121,6 +123,22 @@ export class Parser {
       ],
       this.arithmeticExpression,
     );
+  }
+
+  private notExpression(): Expression {
+    if (this.currentToken.type === Keyword.Not) {
+      this.consume(Keyword.Not);
+      return new UnaryOperation("not", this.notExpression());
+    }
+    return this.comparison();
+  }
+
+  private orExpression(): Expression {
+    return this.binaryOperation(this.andExpression, [Keyword.Or]);
+  }
+
+  private andExpression(): Expression {
+    return this.binaryOperation(this.notExpression, [Keyword.And]);
   }
 
   private arithmeticExpression(): Expression {
@@ -287,9 +305,24 @@ export class Parser {
       return new Numeral(currentToken.value!);
     }
 
+    if (currentToken.type === Literal.String) {
+      this.consume(Literal.String);
+      return new StringLiteral(currentToken.value!);
+    }
+
     if (currentToken.type === Keyword.Nothing) {
       this.consume(Keyword.Nothing);
       return new NothingLiteral();
+    }
+
+    if (currentToken.type === Keyword.True) {
+      this.consume(Keyword.True);
+      return new BooleanLiteral(true);
+    }
+
+    if (currentToken.type === Keyword.False) {
+      this.consume(Keyword.False);
+      return new BooleanLiteral(false);
     }
 
     if (
@@ -321,7 +354,7 @@ export class Parser {
 
   private binaryOperation(
     leftBranch: () => Expression,
-    operators: Operator[],
+    operators: TokenType[],
     rightBranch?: () => Expression,
   ): Expression {
     let left = leftBranch.apply(this);

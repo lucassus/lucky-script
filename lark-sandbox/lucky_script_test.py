@@ -34,6 +34,33 @@ parser = Lark.open("lucky_script.lark", rel_to=__file__, start="program")
         "if(x >= 1) {}",
         "if(x < 1 < 2) {}",
         "return 1234",
+        '"hello"',
+        '""',
+        '"hello" + " world"',
+        '"a" == "b"',
+        '"a" != "b"',
+        r'"say \"hi\""',
+        r'"line1\nline2"',
+        r'"back\\slash"',
+        "true",
+        "false",
+        "not true",
+        "not false",
+        "not 0",
+        "not 1",
+        "not -1",
+        "true and true",
+        "true and false",
+        "false and true",
+        "1 and 2",
+        "0 and true",
+        "false and undeclaredFn()",
+        "false or true",
+        "false or false",
+        "0 or false",
+        "-1 or 0",
+        "true or undeclaredFn()",
+        "true and false == false",
     ),
 )
 def test_lucky_script_valid_syntax(script):
@@ -98,6 +125,9 @@ def test_lucky_script():
     }
 
     curry(123)
+
+    greeting = "hello"
+    message = greeting + " world"
     """
 
     ast = parser.parse(script)

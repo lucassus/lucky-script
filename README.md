@@ -1,5 +1,19 @@
 # My Own Simple Programming Language
 
+Lucky Script is a dynamically-scoped scripting language built from scratch in TypeScript. It has a hand-written lexer, recursive-descent parser, and tree-walking interpreter. Built as a learning project to understand how programming languages work from the ground up.
+
+**Features:**
+- First-class functions and closures
+- Dynamic scoping
+- `if` / `else` / `else if` control flow
+- Arithmetic, comparison, and unary operators
+- Boolean operators: `and`, `or`, `not` (with short-circuit evaluation)
+- Boolean literals: `true`, `false`
+- String literals with escape sequences (`\"`, `\\`, `\n`)
+- String concatenation (`+`) and equality comparison (`==`, `!=`)
+- `nothing` (null) value
+- Number literals: integers, floats, underscore separators (`1_000_000`)
+
 ## Basic usage
 
 1. `yarn install`
@@ -33,6 +47,20 @@ function add(a, b) {
 add(1, 2) * 2 - 1  # Evaluates to 5
 ```
 
+## If / else
+
+```
+function classify(n) {
+  if (n < 0) {
+    return -1
+  } else if (n == 0) {
+    return 0
+  } else {
+    return 1
+  }
+}
+```
+
 ## It supports basic if statements and the recursion:
 
 ```
@@ -45,7 +73,7 @@ function fib(n) {
 }
 ```
 
-## Height order functions are also supported:
+## Higher order functions are also supported:
 
 ```
 foo = function() { 
@@ -99,3 +127,86 @@ a = 2
 secondResult = add() 
 # => 3
 ```
+
+## Operators
+
+Arithmetic: `+`, `-`, `*`, `/`, `**` (exponentiation)
+
+Comparison: `<`, `<=`, `==`, `!=`, `>=`, `>`
+
+Unary: `-x`, `+x`
+
+Boolean: `and`, `or`, `not`
+
+```
+1 + 2 * 3 ** 2   # => 19
+-5 + 3           # => -2
+1 < 2            # => truthy
+1 == 1           # => truthy
+1 != 2           # => truthy
+```
+
+## Booleans
+
+```
+true and false   # => false
+true or false    # => true
+not true         # => false
+not 0            # => true (0 is falsy, any other number is truthy)
+
+# Short-circuit evaluation
+false and expensiveFn()  # expensiveFn() is never called
+true or expensiveFn()    # expensiveFn() is never called
+
+# and binds tighter than or
+true or false and false  # => true  (parsed as: true or (false and false))
+```
+
+## Strings
+
+```
+greeting = "hello"
+name = "world"
+greeting + " " + name   # => "hello world"
+
+"" == ""                # => true
+"foo" != "bar"          # => true
+
+# Escape sequences
+"say \"hi\""            # => say "hi"
+"line1\nline2"          # => line1
+                        #    line2
+"back\\slash"           # => back\slash
+
+# Truthiness: empty string is falsy, non-empty is truthy
+if ("") { ... }         # skipped
+if ("hello") { ... }    # runs
+```
+
+## Nothing
+
+`nothing` is the null value:
+
+```
+x = nothing
+```
+
+## Number literals
+
+```
+1_000_000   # underscores for readability
+0.5         # floats
+```
+
+## Assignment chaining
+
+```
+x = y = 1
+```
+
+## Planned features
+
+- `print` built-in function
+- `while` loop
+- Lists (`[1, 2, 3]`)
+- `for-each` loop

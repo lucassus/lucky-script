@@ -12,6 +12,19 @@ export class LuckyBoolean extends LuckyObject {
     return this;
   }
 
+  eq(object: LuckyObject): LuckyBoolean {
+    this.ensureLuckyBoolean(object);
+    return LuckyBoolean.fromNative(this.value === object.value);
+  }
+
+  private ensureLuckyBoolean(
+    object: LuckyObject,
+  ): asserts object is LuckyBoolean {
+    if (!(object instanceof LuckyBoolean)) {
+      this.throwIllegalOperationError();
+    }
+  }
+
   static fromNative(value: boolean): LuckyBoolean {
     return value ? LuckyBoolean.True : LuckyBoolean.False;
   }

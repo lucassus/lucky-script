@@ -1,5 +1,6 @@
 import {
   BinaryOperation,
+  BooleanLiteral,
   FunctionCall,
   FunctionDeclaration,
   IfStatement,
@@ -7,6 +8,7 @@ import {
   Numeral,
   Program,
   ReturnStatement,
+  StringLiteral,
   UnaryOperation,
   VariableAccess,
   VariableAssigment,
@@ -383,6 +385,46 @@ describe("Parser", () => {
     expect(ast).toEqual(new Program([new NothingLiteral()]));
   });
 
+  describe("boolean literals", () => {
+    it("parses true", () => {
+      expect(parse("true")).toEqual(new Program([new BooleanLiteral(true)]));
+    });
+
+    it("parses false", () => {
+      expect(parse("false")).toEqual(new Program([new BooleanLiteral(false)]));
+    });
+  });
+
+  describe("not operator", () => {
+    it("parses not true", () => {
+      expect(parse("not true")).toEqual(
+        new Program([new UnaryOperation("not", new BooleanLiteral(true))]),
+      );
+    });
+
+    it("parses double not (right-associative)", () => {
+      expect(parse("not not false")).toEqual(
+        new Program([
+          new UnaryOperation(
+            "not",
+            new UnaryOperation("not", new BooleanLiteral(false)),
+          ),
+        ]),
+      );
+    });
+
+    it("comparison binds tighter than not: not 1 == 1 parses as not (1 == 1)", () => {
+      expect(parse("not 1 == 1")).toEqual(
+        new Program([
+          new UnaryOperation(
+            "not",
+            new BinaryOperation(new Numeral("1"), "==", new Numeral("1")),
+          ),
+        ]),
+      );
+    });
+  });
+
   it("parses if statement", () => {
     const ast = parse(`
       if (x < 1) {
@@ -471,6 +513,111 @@ describe("Parser", () => {
         ),
       ]),
     );
+  });
+
+  describe("and / or operators", () => {
+    it("parses and", () => {
+      expect(parse("true and false")).toEqual(
+        new Program([
+          new BinaryOperation(
+            new BooleanLiteral(true),
+            "and",
+            new BooleanLiteral(false),
+          ),
+        ]),
+      );
+    });
+
+    it("parses or", () => {
+      expect(parse("true or false")).toEqual(
+        new Program([
+          new BinaryOperation(
+            new BooleanLiteral(true),
+            "or",
+            new BooleanLiteral(false),
+          ),
+        ]),
+      );
+    });
+
+    it("and has higher precedence than or: a or b and c = a or (b and c)", () => {
+      expect(parse("a or b and c")).toEqual(
+        new Program([
+          new BinaryOperation(
+            new VariableAccess("a"),
+            "or",
+            new BinaryOperation(
+              new VariableAccess("b"),
+              "and",
+              new VariableAccess("c"),
+            ),
+          ),
+        ]),
+      );
+    });
+
+    it("not has higher precedence than and: not a and b = (not a) and b", () => {
+      expect(parse("not a and b")).toEqual(
+        new Program([
+          new BinaryOperation(
+            new UnaryOperation("not", new VariableAccess("a")),
+            "and",
+            new VariableAccess("b"),
+          ),
+        ]),
+      );
+    });
+
+    it("brackets override precedence: a and (b or c)", () => {
+      expect(parse("a and (b or c)")).toEqual(
+        new Program([
+          new BinaryOperation(
+            new VariableAccess("a"),
+            "and",
+            new BinaryOperation(
+              new VariableAccess("b"),
+              "or",
+              new VariableAccess("c"),
+            ),
+          ),
+        ]),
+      );
+    });
+
+    it("comparison binds tighter than and: true and x > 0 = true and (x > 0)", () => {
+      expect(parse("true and x > 0")).toEqual(
+        new Program([
+          new BinaryOperation(
+            new BooleanLiteral(true),
+            "and",
+            new BinaryOperation(new VariableAccess("x"), ">", new Numeral("0")),
+          ),
+        ]),
+      );
+    });
+  });
+
+  describe("string literals", () => {
+    it("parses a string literal into a StringLiteral node", () => {
+      const ast = parse('"hello"') as Program;
+      expect(ast.statements[0]).toBeInstanceOf(StringLiteral);
+      expect((ast.statements[0] as StringLiteral).value).toBe('"hello"');
+    });
+
+    it("parses an empty string", () => {
+      const ast = parse('""') as Program;
+      expect(ast.statements[0]).toBeInstanceOf(StringLiteral);
+      expect((ast.statements[0] as StringLiteral).value).toBe('""');
+    });
+
+    it("parses string concatenation as BinaryOperation", () => {
+      const ast = parse('"a" + "b"') as Program;
+      const node = ast.statements[0] as BinaryOperation;
+      expect(node).toBeInstanceOf(BinaryOperation);
+      expect(node.operator).toBe("+");
+      expect(node.left).toBeInstanceOf(StringLiteral);
+      expect(node.right).toBeInstanceOf(StringLiteral);
+    });
   });
 
   describe("several statements in a single line", () => {
