@@ -56,7 +56,7 @@ Tree-walking visitor. `Interpreter.run()` takes an `AstNode` (typically `Program
 **Return**: implemented by throwing a `Return` error caught in `visitFunctionCall`.
 
 ### Test structure
-Unit tests are colocated with source files (`*.test.ts`). `src/Interpreter/examples/` holds integration tests for complex multi-statement programs (e.g., fibonacci).
+Unit tests are colocated with source files (`*.test.ts`). `src/examples/` holds integration tests for complex multi-statement programs (e.g., fibonacci).
 
 ## Development Lifecycle
 
@@ -85,7 +85,7 @@ For each affected layer, write tests first, then implement. Work in this order:
 
 **Interpreter** (if new runtime behavior is needed)
 1. Add unit tests colocated with the implementation (e.g., `Interpreter.test.ts` or `objects/LuckyFoo.test.ts`)
-2. Add integration tests in `src/Interpreter/examples/` for complex multi-statement scenarios
+2. Add integration tests in `src/examples/` for complex multi-statement scenarios
 3. Implement in `src/Interpreter/`
 4. Run `yarn test -- --testPathPattern=Interpreter`
 

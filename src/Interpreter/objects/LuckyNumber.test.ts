@@ -1,6 +1,16 @@
 import { LuckyBoolean } from "./LuckyBoolean";
 import { LuckyNumber } from "./LuckyNumber";
 
+describe("LuckyNumber.display()", () => {
+  it("returns string representation of integer", () => {
+    expect(new LuckyNumber(42).display()).toBe("42");
+  });
+
+  it("returns string representation of float", () => {
+    expect(new LuckyNumber(3.14).display()).toBe("3.14");
+  });
+});
+
 describe("LuckyNumber.toBoolean()", () => {
   it("returns False for 0", () => {
     expect(new LuckyNumber(0).toBoolean()).toBe(LuckyBoolean.False);

@@ -48,6 +48,8 @@ export abstract class LuckyObject {
 
   abstract toBoolean(): LuckyBoolean;
 
+  abstract display(): string;
+
   protected throwIllegalOperationError(): never {
     throw new RuntimeError("Illegal operation");
   }
