@@ -1,10 +1,10 @@
 # My Own Simple Programming Language
 
-Lucky Script is a dynamically-scoped scripting language built from scratch in TypeScript. It has a hand-written lexer, recursive-descent parser, and tree-walking interpreter. Built as a learning project to understand how programming languages work from the ground up.
+Lucky Script is a scripting language built from scratch in TypeScript. It has a hand-written lexer, recursive-descent parser, and tree-walking interpreter. Built as a learning project to understand how programming languages work from the ground up.
 
 **Features:**
 - First-class functions and closures
-- Dynamic scoping
+- Function-scoped variables with explicit `local` and `outer` binding
 - `if` / `else` / `else if` control flow
 - Arithmetic, comparison, and unary operators
 - Boolean operators: `and`, `or`, `not` (with short-circuit evaluation)
@@ -13,6 +13,7 @@ Lucky Script is a dynamically-scoped scripting language built from scratch in Ty
 - String concatenation (`+`) and equality comparison (`==`, `!=`)
 - `nothing` (null) value
 - Number literals: integers, floats, underscore separators (`1_000_000`)
+- `print` built-in function
 
 ## Basic usage
 
@@ -89,43 +90,62 @@ bar = foo()
 bar()
 ```
 
-## Variables scopes and closures
+## Variable scoping
+
+Only function calls create a new scope. `if`, `else`, and `while` execute in the enclosing scope.
 
 ```
 a = 1
 
 function foo() {
-  a = 2 # Should replace value in the parent scope
-  b = 1 # Should be accessible only in the current scope
-  
-  function bar() {
-    c = 3 # Should be accessible only in the current scope
-    return a + b + c
+  a = 2       # local to foo — does NOT mutate outer a
+  outer a = 2 # explicitly mutates the outer a
+  local b = 3 # explicitly local, shadows any outer binding named b
+}
+```
+
+Reads always walk the full scope chain:
+
+```
+x = 10
+
+function double() {
+  return x * 2  # reads x from the enclosing scope
+}
+
+double()  # => 20
+x = 5
+double()  # => 10
+```
+
+Closures with `outer`:
+
+```
+function makeCounter() {
+  local n = 0
+
+  function inc() {
+    outer n = n + 1
   }
-  
-  return bar()
+
+  function get() {
+    return n
+  }
+
+  inc()
+  inc()
+  return get()
 }
 
-d = foo()
+makeCounter()  # => 2
 ```
 
-## Dynamic scopes
+## Built-ins
 
 ```
-a = 1
-
-function add() {
-  # Currently a is 1, but later its value will be changed
-  
-  return a + 1
-}
-
-firstResult = add() 
-# => 2
-
-a = 2
-secondResult = add() 
-# => 3
+print(42)       # => prints "42"
+print("hello")  # => prints "hello"
+print(true)     # => prints "true"
 ```
 
 ## Operators
@@ -206,7 +226,6 @@ x = y = 1
 
 ## Planned features
 
-- `print` built-in function
 - `while` loop
 - Lists (`[1, 2, 3]`)
 - `for-each` loop

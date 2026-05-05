@@ -59,12 +59,22 @@ describe("print builtin", () => {
     run(`
       called = 0
       function myPrint(x) {
-        called = 1
+        outer called = 1
       }
       print = myPrint
       print(42)
-      called
     `);
     expect(consoleSpy).not.toHaveBeenCalled();
+  });
+
+  it("local print inside a function does not affect print in other functions", () => {
+    run(`
+      function usesLocalPrint() {
+        local print = "shadowed"
+      }
+      usesLocalPrint()
+      print(42)
+    `);
+    expect(consoleSpy).toHaveBeenCalledWith("42");
   });
 });

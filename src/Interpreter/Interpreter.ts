@@ -30,12 +30,8 @@ export class Interpreter {
     public readonly node: AstNode,
     private scope = new SymbolTable(),
   ) {
-    // TODO: builtins live in root scope and can be overwritten by user code
-    // via the standard set() walk-up semantics — improve with a read-only
-    // scope layer in the future.
-    for (const [name, builtin] of Object.entries(BUILTINS)) {
-      this.scope.setLocal(name, builtin);
-    }
+    const frozenBuiltins = SymbolTable.createFrozenBuiltins(BUILTINS);
+    this.scope.setParent(frozenBuiltins);
   }
 
   run(): undefined | boolean | number | string {
@@ -140,7 +136,7 @@ export class Interpreter {
     );
 
     if (name) {
-      this.scope.set(name, luckyFunction);
+      this.scope.setBare(name, luckyFunction);
     }
 
     return luckyFunction;
@@ -171,7 +167,7 @@ export class Interpreter {
       );
     }
 
-    const fnScope = luckyFunction.scope.createChild();
+    const fnScope = luckyFunction.scope.createChild(true);
 
     for (const [index, parameter] of luckyFunction.parameters.entries()) {
       const argument = functionCall.args[index];
@@ -291,7 +287,17 @@ export class Interpreter {
 
   private visitVariableAssigment(node: VariableAssigment): LuckyObject {
     const value = this.visit(node.value);
-    this.scope.set(node.name, value);
+
+    switch (node.mode) {
+      case "local":
+        this.scope.setLocal(node.name, value);
+        break;
+      case "outer":
+        this.scope.setOuter(node.name, value);
+        break;
+      default:
+        this.scope.setBare(node.name, value);
+    }
 
     return value;
   }
@@ -304,19 +310,13 @@ export class Interpreter {
     const testResult = this.visit(node.condition);
 
     if (testResult.toBoolean() === LuckyBoolean.True) {
-      this.withScope(this.scope.createChild(), () => {
-        for (const statement of node.thenBranch) {
-          this.visit(statement);
-        }
-        return LuckyNothing.Instance;
-      });
+      for (const statement of node.thenBranch) {
+        this.visit(statement);
+      }
     } else if (node.elseBranch) {
-      this.withScope(this.scope.createChild(), () => {
-        for (const statement of node.elseBranch!) {
-          this.visit(statement);
-        }
-        return LuckyNothing.Instance;
-      });
+      for (const statement of node.elseBranch) {
+        this.visit(statement);
+      }
     }
 
     return LuckyNothing.Instance;

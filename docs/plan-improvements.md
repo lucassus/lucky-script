@@ -61,18 +61,23 @@ end
 
 ## Scoping
 
-**Lexical scoping.** (Breaking change from current dynamic scoping.)
+**Function-scoped variables.** Only function calls create a new scope; `if`, `else`, `while`, and `for` execute in the enclosing scope.
 
-- `local x = 1` — declares new variable in current scope
-- `x = 1` — reassigns existing variable, walks up scope chain
-- Loop variables (`for item in ...`) are automatically local
+- `x = e` at **top level** — creates or reassigns in the top-level scope.
+- `x = e` **inside a function** — always binds in the current function scope (local by default; does NOT walk up the chain).
+- `local x = e` — explicitly binds in the current scope, shadowing any outer or builtin binding.
+- `outer x = e` — walks past the current function boundary and writes to the nearest enclosing scope that already defines `x`; raises a runtime error if no such binding exists.
+- Reads always walk the full scope chain from innermost to outermost.
+- Builtins (`print`, `type`) live in a frozen root scope and can never be mutated, only shadowed.
+- Loop variables (`for item in ...`) are bound in the enclosing function/top-level scope and persist after the loop.
 
 ```
 x = 1
 
 fn foo()
-  local y = 2   # new local
-  x = 99        # reassigns outer x
+  local y = 2   # new local, shadows nothing here
+  x = 99        # local to foo — does NOT mutate outer x
+  outer x = 99  # explicitly mutates outer x
 end
 ```
 
@@ -184,8 +189,10 @@ names.filter(fn(s) s.length > 3 end)
 ## Variables
 
 ```
-x = 1             # reassign existing or create in top scope
-local x = 1       # declare new in current scope
+x = 1             # at top level: create or reassign in top scope
+                  # inside a function: always local to that function
+local x = 1       # explicitly local to the current scope (shadows outer names)
+outer x = 1       # mutate the nearest enclosing binding past the function boundary
 ```
 
 ---

@@ -51,7 +51,13 @@ Recursive descent. `Parser.parse()` → `Program` (AST root). Uses `Lookahead<To
 ### Interpreter (`src/Interpreter/`)
 Tree-walking visitor. `Interpreter.run()` takes an `AstNode` (typically `Program`) and returns a primitive value. All runtime values are `LuckyObject` subclasses (`LuckyNumber`, `LuckyBoolean`, `LuckyFunction`). Operations (+, -, etc.) dispatch via methods on `LuckyObject`.
 
-**Scope**: `SymbolTable` is a linked-list of scopes. `set()` walks up to find the nearest scope that already defines the variable (dynamic/lexical hybrid); `setLocal()` forces creation in current scope. Functions capture their declaration scope (`LuckyFunction.scope`), creating child scopes on each call.
+**Scope**: `SymbolTable` is a linked-list of scopes. **Function calls are the only scope-creating construct** — `if`/`else`/`while`/`for` execute in the enclosing scope. Each function-call scope is marked with `isFunctionBoundary = true`. Assignment dispatch:
+- `setBare(key, value)` — the bare `x = e` path: inside a function writes to the nearest function-boundary scope (local); at top level writes to the current (top-level) scope.
+- `setLocal(key, value)` — the `local x = e` path: always writes to the current scope.
+- `setOuter(key, value)` — the `outer x = e` path: walks past the current function boundary to find the nearest enclosing non-frozen scope that defines `key`; throws `ScopeError` if not found.
+- Reads (`lookup`) always walk the full chain from innermost to the frozen builtins root.
+
+**Frozen builtins**: `SymbolTable.createFrozenBuiltins(BUILTINS)` creates the root scope (parent of the user top-level scope). Its `setLocal` throws; user code can shadow builtins with `local` inside functions or via bare assignment at the top level.
 
 **Return**: implemented by throwing a `Return` error caught in `visitFunctionCall`.
 
