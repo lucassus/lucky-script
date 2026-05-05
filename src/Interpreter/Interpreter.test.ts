@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { NameError, RuntimeError, ZeroDivisionError } from "./errors";
+import {
+  NameError,
+  RuntimeError,
+  ScopeError,
+  ZeroDivisionError,
+} from "./errors";
 import { Interpreter } from "./Interpreter";
 import { LuckyNumber } from "./objects";
 import { SymbolTable } from "./SymbolTable";
@@ -326,19 +331,19 @@ describe("Interpreter", () => {
       const symbolTable = new SymbolTable();
       const script = `
         a = 1
-        
+
         function foo() {
-          a = 2 # Should replace value in the parent scope
-          b = 1 # Should be accessible only in the current scope
-          
+          outer a = 2
+          b = 1
+
           function bar() {
-            c = 3 # Should be accessible only in the current scope
+            c = 3
             return a + b + c
           }
-          
+
           return bar()
         }
-        
+
         d = foo()
       `;
 
@@ -411,7 +416,7 @@ describe("Interpreter", () => {
       expect(symbolTable.lookup("x")).toEqual(new LuckyNumber(1));
     });
 
-    it("does not leak variables declared inside if-block to outer scope", () => {
+    it("assignments inside if-block are visible in the enclosing scope", () => {
       const script = `
         x = 1
         if (x < 2) {
@@ -420,7 +425,7 @@ describe("Interpreter", () => {
         y
       `;
 
-      expect(() => run(script)).toThrow("Identifier y is not defined");
+      expect(run(script)).toBe(99);
     });
 
     it("executes else branch when condition is false", () => {
@@ -490,7 +495,7 @@ describe("Interpreter", () => {
       expect(symbolTable.lookup("x")).toEqual(new LuckyNumber(10));
     });
 
-    it("does not leak variables declared inside else-block to outer scope", () => {
+    it("assignments inside else-block are visible in the enclosing scope", () => {
       const script = `
         x = 5
         if (x < 1) {
@@ -501,7 +506,7 @@ describe("Interpreter", () => {
         y
       `;
 
-      expect(() => run(script)).toThrow("Identifier y is not defined");
+      expect(run(script)).toBe(99);
     });
   });
 
@@ -546,6 +551,117 @@ describe("Interpreter", () => {
         foo()
       `;
       expect(run(script)).toBe(undefined);
+    });
+  });
+
+  describe("variable scoping rules", () => {
+    it("bare write inside a function does not mutate outer binding", () => {
+      const script = `
+        x = 1
+        function foo() { x = 99 }
+        foo()
+        x
+      `;
+      expect(run(script)).toBe(1);
+    });
+
+    it("bare write inside a function rebinds the local on subsequent writes", () => {
+      const script = `
+        function foo() {
+          x = 1
+          x = 2
+          return x
+        }
+        foo()
+      `;
+      expect(run(script)).toBe(2);
+    });
+
+    it("local shadows an outer variable", () => {
+      const script = `
+        x = 1
+        function foo() { local x = 99 }
+        foo()
+        x
+      `;
+      expect(run(script)).toBe(1);
+    });
+
+    it("local can shadow a builtin inside a function", () => {
+      const script = `
+        function foo() {
+          local print = "shadowed"
+          return print
+        }
+        foo()
+      `;
+      expect(run(script)).toBe("shadowed");
+    });
+
+    it("duplicate local in the same scope rebinds silently", () => {
+      const script = `
+        function foo() {
+          local x = 1
+          local x = 2
+          return x
+        }
+        foo()
+      `;
+      expect(run(script)).toBe(2);
+    });
+
+    it("outer mutates the top-level binding", () => {
+      const script = `
+        x = 1
+        function foo() { outer x = 99 }
+        foo()
+        x
+      `;
+      expect(run(script)).toBe(99);
+    });
+
+    it("outer raises ScopeError when no enclosing binding exists", () => {
+      expect(() => run("function foo() { outer y = 1 }\nfoo()")).toThrow(
+        ScopeError,
+      );
+    });
+
+    it("if and while bodies do not introduce a new scope", () => {
+      const script = `
+        x = 0
+        if (x == 0) { y = 7 }
+        y
+      `;
+      expect(run(script)).toBe(7);
+    });
+
+    it("reads still walk the full scope chain", () => {
+      const script = `
+        x = 1
+        function foo() { return x }
+        foo()
+      `;
+      expect(run(script)).toBe(1);
+    });
+
+    it("builtins cannot be mutated via outer", () => {
+      expect(() =>
+        run(`function foo() { outer print = "nope" }\nfoo()`),
+      ).toThrow(ScopeError);
+    });
+
+    it("read before a later local declaration sees the outer binding", () => {
+      const symbolTable = new SymbolTable();
+      const script = `
+        x = 1
+        function foo() {
+          result = x
+          local x = 2
+          return result
+        }
+        foo()
+      `;
+      expect(run(script, symbolTable)).toBe(1);
     });
   });
 });

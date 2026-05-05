@@ -84,11 +84,33 @@ export class Parser {
       return this.returnStatement();
     }
 
+    if (this.currentToken.type === Keyword.Local) {
+      return this.localAssignment();
+    }
+
+    if (this.currentToken.type === Keyword.Outer) {
+      return this.outerAssignment();
+    }
+
     if (this.currentToken.type === Delimiter.LeftBrace) {
       return this.block();
     }
 
     return this.expression();
+  }
+
+  private localAssignment(): VariableAssigment {
+    this.consume(Keyword.Local);
+    const name = this.consume(Literal.Identifier).value!;
+    this.consume(Operator.Assigment);
+    return new VariableAssigment(name, this.expression(), "local");
+  }
+
+  private outerAssignment(): VariableAssigment {
+    this.consume(Keyword.Outer);
+    const name = this.consume(Literal.Identifier).value!;
+    this.consume(Operator.Assigment);
+    return new VariableAssigment(name, this.expression(), "outer");
   }
 
   // : assigment

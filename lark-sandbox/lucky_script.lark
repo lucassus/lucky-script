@@ -5,7 +5,13 @@ statements         : _NEWLINE* statement? (_NEWLINE+ statement?)*
 statement          : func_declaration
                    | if_statement
                    | return_statement
+                   | local_assignment
+                   | outer_assignment
                    | expression
+
+local_assignment   : "local" IDENTIFIER "=" expression
+
+outer_assignment   : "outer" IDENTIFIER "=" expression
 
 if_statement       : "if" "(" expression ")" block ("else" (if_statement | block))?
 

@@ -47,6 +47,8 @@ export class Keyword extends TokenType {
   static And = new Keyword("and");
   static Or = new Keyword("or");
   static Not = new Keyword("not");
+  static Local = new Keyword("local");
+  static Outer = new Keyword("outer");
 
   static fromString(string: string): undefined | Keyword {
     return this.values.find((keyword) => keyword.name === string);

@@ -282,9 +282,37 @@ describe("Lexer", () => {
     ${"and"}   | ${Keyword.And}
     ${"or"}    | ${Keyword.Or}
     ${"not"}   | ${Keyword.Not}
+    ${"local"} | ${Keyword.Local}
+    ${"outer"} | ${Keyword.Outer}
   `("tokenizes '$input' as a keyword", ({ input, keyword }) => {
     const tokens = [...new Lexer(input).tokenize()];
     expect(tokens[0]).toEqual(new Token(keyword, anyLocation));
+  });
+
+  it("tokenizes local assignment", () => {
+    const lexer = new Lexer("local x = 1");
+    const tokens = [...lexer.tokenize()];
+
+    expect(tokens).toEqual([
+      new Token(Keyword.Local, anyLocation),
+      new Token(Literal.Identifier, anyLocation, "x"),
+      new Token(Operator.Assigment, anyLocation),
+      new Token(Literal.Number, anyLocation, "1"),
+      new Token(Delimiter.End, anyLocation),
+    ]);
+  });
+
+  it("tokenizes outer assignment", () => {
+    const lexer = new Lexer("outer x = 1");
+    const tokens = [...lexer.tokenize()];
+
+    expect(tokens).toEqual([
+      new Token(Keyword.Outer, anyLocation),
+      new Token(Literal.Identifier, anyLocation, "x"),
+      new Token(Operator.Assigment, anyLocation),
+      new Token(Literal.Number, anyLocation, "1"),
+      new Token(Delimiter.End, anyLocation),
+    ]);
   });
 
   describe("string literals", () => {

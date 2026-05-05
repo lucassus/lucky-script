@@ -18,3 +18,10 @@ export class ZeroDivisionError extends RuntimeError {
     Object.setPrototypeOf(this, ZeroDivisionError.prototype);
   }
 }
+
+export class ScopeError extends RuntimeError {
+  constructor(name: string) {
+    super(`No enclosing binding found for '${name}'`);
+    Object.setPrototypeOf(this, ScopeError.prototype);
+  }
+}

@@ -112,7 +112,7 @@ We want write semantics that match the Python/Ruby feel the rest of the language
 
 - **Read-then-local asymmetry** → Without a resolver, a function that reads `x` before declaring `local x` will read the outer `x` for the read and create a fresh local for the subsequent write. Documented, accepted, and revisitable when a resolver is added.
 - **Loop closure trap** → All closures created in a `for` body capture the same `item` and see the final iteration value. Documented as Python-style behavior. Mitigation: users who need per-iteration capture can wrap the loop body in an immediately-invoked `fn`.
-- **Breaking change for existing user code** → Any existing program that relied on `x = e` inside a function reaching out to mutate an enclosing `x` will silently change behavior (now creates a local). Mitigation: the project is pre-1.0, the only callers are the test suite and `src/Interpreter/examples/`. Audit during implementation; migrate offending code to `outer x = e`.
+- **Breaking change for existing user code** → Any existing program that relied on `x = e` inside a function reaching out to mutate an enclosing `x` will silently change behavior (now creates a local). Mitigation: the project is pre-1.0, the only callers are the test suite and `src/examples/`. Audit during implementation; migrate offending code to `outer x = e`.
 - **`outer` runtime error timing** → A typo in `outer foobr = 1` (meant `foobar`) only surfaces if that branch executes. Mitigation: deferred to a future resolver pass; not blocking.
 - **Builtin freeze affects tests** → Any tests that previously overwrote builtins via `set()` will now fail. Mitigation: search for and migrate.
 
@@ -121,7 +121,7 @@ We want write semantics that match the Python/Ruby feel the rest of the language
 1. Land the lexer/parser changes for `local` and `outer` first (no semantic change yet — both can map to bare assignment in the interpreter as a temporary shim).
 2. Land the `SymbolTable` rework (function-boundary marker, frozen builtins layer, new `setLocal`/`setOuter` semantics).
 3. Switch `visitVariableAssigment` to dispatch on binding mode and remove `withScope(scope.createChild(), …)` from `visitIfStatement`.
-4. Update the test suite and `src/Interpreter/examples/` to use `outer` where they previously relied on walk-up writes.
+4. Update the test suite and `src/examples/` to use `outer` where they previously relied on walk-up writes.
 5. Update `docs/plan-improvements.md` to remove the line-67 vs line-187 contradiction and reflect the final rules.
 6. Update `lark-sandbox/lucky_script.lark` and tests to keep the reference grammar in sync.
 

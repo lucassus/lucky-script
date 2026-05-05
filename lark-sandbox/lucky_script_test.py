@@ -61,6 +61,10 @@ parser = Lark.open("lucky_script.lark", rel_to=__file__, start="program")
         "-1 or 0",
         "true or undeclaredFn()",
         "true and false == false",
+        "local x = 1",
+        "local x = 1 + 2",
+        "outer x = 1",
+        "outer x = 1 + 2",
     ),
 )
 def test_lucky_script_valid_syntax(script):
