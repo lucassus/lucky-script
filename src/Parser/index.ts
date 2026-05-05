@@ -1,3 +1,4 @@
+/* c8 ignore file */
 export { Parser } from "./Parser";
 export {
   AstNode,
