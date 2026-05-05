@@ -1,9 +1,9 @@
 /* c8 ignore file */
-export { Parser } from "./Parser";
 export {
   AstNode,
-  BooleanLiteral,
   BinaryOperation,
+  BooleanLiteral,
   Numeral,
   UnaryOperation,
 } from "./AstNode";
+export { Parser } from "./Parser";

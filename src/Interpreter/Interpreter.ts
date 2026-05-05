@@ -1,17 +1,5 @@
-import { Return } from "./ControlFlow";
-import { RuntimeError } from "./errors";
-import {
-  LuckyBoolean,
-  LuckyBuiltin,
-  LuckyFunction,
-  LuckyNothing,
-  LuckyNumber,
-  LuckyObject,
-  LuckyString,
-} from "./objects";
-import { SymbolTable } from "./SymbolTable";
-import { BUILTINS } from "./builtins";
-import { AstNode, BinaryOperation, Numeral, UnaryOperation } from "../Parser";
+import type { AstNode } from "../Parser";
+import { BinaryOperation, Numeral, UnaryOperation } from "../Parser";
 import {
   BooleanLiteral,
   FunctionCall,
@@ -25,6 +13,19 @@ import {
   VariableAssigment,
   WhileStatement,
 } from "../Parser/AstNode";
+import { BUILTINS } from "./builtins";
+import { Return } from "./ControlFlow";
+import { RuntimeError } from "./errors";
+import type { LuckyObject } from "./objects";
+import {
+  LuckyBoolean,
+  LuckyBuiltin,
+  LuckyFunction,
+  LuckyNothing,
+  LuckyNumber,
+  LuckyString,
+} from "./objects";
+import { SymbolTable } from "./SymbolTable";
 
 export class Interpreter {
   constructor(
@@ -49,6 +50,8 @@ export class Interpreter {
     if (luckyObject instanceof LuckyString) {
       return luckyObject.value;
     }
+
+    return undefined;
   }
 
   private visit(node: AstNode): LuckyObject {
@@ -176,7 +179,7 @@ export class Interpreter {
     const fnScope = luckyFunction.scope.createChild(true);
 
     for (const [index, parameter] of luckyFunction.parameters.entries()) {
-      const argument = functionCall.args[index];
+      const argument = functionCall.args[index]!;
       fnScope.setLocal(parameter, this.visit(argument));
     }
 
@@ -287,7 +290,7 @@ export class Interpreter {
 
   private visitStringLiteral(node: StringLiteral): LuckyString {
     const raw = node.value.slice(1, -1);
-    const decoded = raw.replace(/\\(["\\n])/g, (_, c) =>
+    const decoded = raw.replace(/\\(["\\n])/g, (_, c: string) =>
       c === "n" ? "\n" : c,
     );
     return new LuckyString(decoded);

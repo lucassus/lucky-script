@@ -1,9 +1,9 @@
+import type { LuckyObject } from "./objects";
 import { LuckyBoolean } from "./objects/LuckyBoolean";
 import { LuckyBuiltin } from "./objects/LuckyBuiltin";
 import { LuckyFunction } from "./objects/LuckyFunction";
 import { LuckyNothing } from "./objects/LuckyNothing";
 import { LuckyNumber } from "./objects/LuckyNumber";
-import { LuckyObject } from "./objects";
 import { LuckyString } from "./objects/LuckyString";
 
 function typeName(arg: LuckyObject): string {
@@ -18,11 +18,12 @@ function typeName(arg: LuckyObject): string {
 }
 
 export const BUILTINS: Record<string, LuckyBuiltin> = {
-  print: new LuckyBuiltin("print", 1, ([arg]) => {
+  print: new LuckyBuiltin("print", 1, (args) => {
+    const arg = args[0]!;
     console.log(arg.display());
     return LuckyNothing.Instance;
   }),
-  type: new LuckyBuiltin("type", 1, ([arg]) => {
-    return new LuckyString(typeName(arg));
+  type: new LuckyBuiltin("type", 1, (args) => {
+    return new LuckyString(typeName(args[0]!));
   }),
 };

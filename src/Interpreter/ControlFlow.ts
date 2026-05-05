@@ -1,4 +1,4 @@
-import { LuckyObject } from "./objects";
+import type { LuckyObject } from "./objects";
 
 export abstract class ControlFlow extends Error {
   constructor(message: string) {

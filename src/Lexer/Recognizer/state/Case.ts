@@ -1,4 +1,4 @@
-import { State } from "./State";
+import type { State } from "./State";
 
 export class Case implements State {
   private readonly transitions = new Map<string, State>();

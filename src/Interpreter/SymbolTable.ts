@@ -1,5 +1,5 @@
 import { NameError, ScopeError } from "./errors";
-import { LuckyObject } from "./objects";
+import type { LuckyObject } from "./objects";
 
 export class SymbolTable {
   private locals: Map<string, LuckyObject> = new Map();
@@ -47,7 +47,7 @@ export class SymbolTable {
   // Throws ScopeError when no such scope exists.
   setOuter(key: string, value: LuckyObject): void {
     const boundary = this.findNearestFunctionBoundary();
-    if (!boundary || !boundary.parent) {
+    if (!boundary?.parent) {
       throw new ScopeError(key);
     }
     const scope = boundary.parent.findWritableScopeThatDefines(key);
@@ -59,7 +59,7 @@ export class SymbolTable {
 
   lookup(key: string): LuckyObject {
     const scope = this.findTheClosestScopeThatDefines(key);
-    return (scope || this).getLocal(key);
+    return (scope ?? this).getLocal(key);
   }
 
   createChild(isFunctionBoundary = false): SymbolTable {

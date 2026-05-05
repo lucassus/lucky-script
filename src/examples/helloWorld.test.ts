@@ -1,4 +1,5 @@
 import { expect, it, vi } from "vitest";
+
 import { run } from "./utils";
 
 it("sayHello prints a personalised greeting", () => {

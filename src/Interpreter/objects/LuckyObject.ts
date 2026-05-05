@@ -1,5 +1,5 @@
-import { LuckyBoolean } from "./LuckyBoolean";
 import { RuntimeError } from "../errors";
+import { LuckyBoolean } from "./LuckyBoolean";
 
 export abstract class LuckyObject {
   add(_value: LuckyObject): LuckyObject {

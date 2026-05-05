@@ -1,11 +1,11 @@
 /* c8 ignore file */
+export { IllegalSymbolError } from "./errors";
 export { Lexer } from "./Lexer";
 export {
-  Token,
-  TokenType,
   Delimiter,
   Keyword,
   Literal,
   Operator,
+  Token,
+  TokenType,
 } from "./Token";
-export { IllegalSymbolError } from "./errors";

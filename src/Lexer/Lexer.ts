@@ -1,9 +1,9 @@
 import { IllegalSymbolError } from "./errors";
+import type { Recognizer } from "./Recognizer";
 import {
   CommentRecognizer,
   IdentifierRecognizer,
   NumeralRecognizer,
-  Recognizer,
   StringRecognizer,
 } from "./Recognizer";
 import {
@@ -12,15 +12,8 @@ import {
   isBeginningOfNumber,
   isWhitespace,
 } from "./symbols";
-import {
-  Delimiter,
-  Keyword,
-  Literal,
-  Location,
-  Operator,
-  Token,
-  TokenType,
-} from "./Token";
+import type { Location, TokenType } from "./Token";
+import { Delimiter, Keyword, Literal, Operator, Token } from "./Token";
 
 export class Lexer {
   private position = -1;
@@ -33,15 +26,11 @@ export class Lexer {
   }
 
   *tokenize(): Generator<Token> {
-    while (true) {
-      const nextToken = this.nextToken();
-
+    let nextToken: Token;
+    do {
+      nextToken = this.nextToken();
       yield nextToken;
-
-      if (nextToken.type === Delimiter.End) {
-        break;
-      }
-    }
+    } while (nextToken.type !== Delimiter.End);
   }
 
   nextToken(): Token {
@@ -49,7 +38,10 @@ export class Lexer {
 
     this.skipWhitespaces();
 
-    if (isBeginningOfComment(this.currentSymbol)) {
+    if (
+      this.currentSymbol !== undefined &&
+      isBeginningOfComment(this.currentSymbol)
+    ) {
       this.skipComment();
     }
 
@@ -137,7 +129,7 @@ export class Lexer {
     this.position += 1;
   }
 
-  private get currentSymbol(): string {
+  private get currentSymbol(): string | undefined {
     return this.input[this.position];
   }
 
@@ -155,7 +147,10 @@ export class Lexer {
   }
 
   private skipWhitespaces(): void {
-    while (isWhitespace(this.currentSymbol)) {
+    while (
+      this.currentSymbol !== undefined &&
+      isWhitespace(this.currentSymbol)
+    ) {
       this.advance();
     }
   }
@@ -177,7 +172,7 @@ export class Lexer {
 
   private recognizeKeywordOrIdentifier(): Token {
     const value = this.recognizeWith(new IdentifierRecognizer());
-    const tokenType = Keyword.fromString(value) || Literal.Identifier;
+    const tokenType = Keyword.fromString(value) ?? Literal.Identifier;
 
     return this.createToken(
       tokenType,
@@ -195,7 +190,7 @@ export class Lexer {
     const { recognized, value } = recognizer.result;
 
     if (!recognized) {
-      throw new IllegalSymbolError(this.currentSymbol, this.position);
+      throw new IllegalSymbolError(this.currentSymbol!, this.position);
     }
 
     return value;

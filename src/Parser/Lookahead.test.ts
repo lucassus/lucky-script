@@ -1,14 +1,13 @@
 import { describe, expect, it } from "vitest";
+
 import { Lookahead } from "./Lookahead";
 
 describe("Lookahead", () => {
   function* makeGenerator() {
     yield "first";
     yield "second";
-
-    while (true) {
-      yield "done";
-    }
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    while (true) yield "done";
   }
 
   it("wraps the generator", () => {

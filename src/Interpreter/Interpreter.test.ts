@@ -1,4 +1,6 @@
 import { describe, expect, it } from "vitest";
+
+import { parse } from "../testingUtils";
 import {
   NameError,
   RuntimeError,
@@ -8,7 +10,6 @@ import {
 import { Interpreter } from "./Interpreter";
 import { LuckyNumber } from "./objects";
 import { SymbolTable } from "./SymbolTable";
-import { parse } from "../testingUtils";
 
 function run(script: string, symbolTable?: SymbolTable) {
   const ast = parse(script);

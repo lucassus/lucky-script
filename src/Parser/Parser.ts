@@ -1,8 +1,14 @@
+import type { Token, TokenType } from "../Lexer";
+import { Delimiter, Keyword, Literal, Operator } from "../Lexer";
+import type {
+  BinaryOperator,
+  Expression,
+  Statement,
+  UnaryOperator,
+} from "./AstNode";
 import {
   BinaryOperation,
-  BinaryOperator,
   BooleanLiteral,
-  Expression,
   FunctionCall,
   FunctionDeclaration,
   IfStatement,
@@ -10,24 +16,14 @@ import {
   Numeral,
   Program,
   ReturnStatement,
-  Statement,
   StringLiteral,
   UnaryOperation,
-  UnaryOperator,
   VariableAccess,
   VariableAssigment,
   WhileStatement,
 } from "./AstNode";
 import { SyntaxError } from "./errors";
 import { Lookahead } from "./Lookahead";
-import {
-  Delimiter,
-  Keyword,
-  Literal,
-  Operator,
-  Token,
-  TokenType,
-} from "../Lexer";
 
 export class Parser {
   private lexer: Lookahead<Token>;
@@ -135,7 +131,7 @@ export class Parser {
   // arith_expression (("<=" | "<" | "==" | "!=" | ">" | ">=") arith_expression)*
   private comparison(): Expression {
     return this.binaryOperation(
-      this.arithmeticExpression,
+      () => this.arithmeticExpression(),
       [
         Operator.Lte,
         Operator.Lt,
@@ -144,7 +140,6 @@ export class Parser {
         Operator.Gt,
         Operator.Gte,
       ],
-      this.arithmeticExpression,
     );
   }
 
@@ -157,15 +152,18 @@ export class Parser {
   }
 
   private orExpression(): Expression {
-    return this.binaryOperation(this.andExpression, [Keyword.Or]);
+    return this.binaryOperation(() => this.andExpression(), [Keyword.Or]);
   }
 
   private andExpression(): Expression {
-    return this.binaryOperation(this.notExpression, [Keyword.And]);
+    return this.binaryOperation(() => this.notExpression(), [Keyword.And]);
   }
 
   private arithmeticExpression(): Expression {
-    return this.binaryOperation(this.term, [Operator.Plus, Operator.Minus]);
+    return this.binaryOperation(
+      () => this.term(),
+      [Operator.Plus, Operator.Minus],
+    );
   }
 
   // "function" IDENTIFIER "(" func_args ")" block
@@ -310,10 +308,10 @@ export class Parser {
   }
 
   private term(): Expression {
-    return this.binaryOperation(this.factor, [
-      Operator.Multiply,
-      Operator.Divide,
-    ]);
+    return this.binaryOperation(
+      () => this.factor(),
+      [Operator.Multiply, Operator.Divide],
+    );
   }
 
   private factor(): Expression {
@@ -328,7 +326,11 @@ export class Parser {
   }
 
   private power(): Expression {
-    return this.binaryOperation(this.atom, [Operator.Power], this.factor);
+    return this.binaryOperation(
+      () => this.atom(),
+      [Operator.Power],
+      () => this.factor(),
+    );
   }
 
   private atom(): Expression {
@@ -375,7 +377,7 @@ export class Parser {
       return this.group();
     }
 
-    throw new SyntaxError(`Unexpected ${currentToken.type}.`);
+    throw new SyntaxError(`Unexpected ${currentToken.type.toString()}.`);
   }
 
   private group(): Expression {
@@ -391,13 +393,13 @@ export class Parser {
     operators: TokenType[],
     rightBranch?: () => Expression,
   ): Expression {
-    let left = leftBranch.apply(this);
+    let left = leftBranch();
 
     while (operators.includes(this.currentToken.type)) {
       const tokenType = this.currentToken.type;
       this.consume(tokenType);
 
-      const right = (rightBranch || leftBranch).apply(this);
+      const right = (rightBranch ?? leftBranch)();
       left = new BinaryOperation(left, tokenType.name as BinaryOperator, right);
     }
 
@@ -407,7 +409,7 @@ export class Parser {
   private consume(tokenType: TokenType): Token {
     if (this.currentToken.type !== tokenType) {
       throw new SyntaxError(
-        `Expected ${tokenType} but got ${this.currentToken.type}.`,
+        `Expected ${tokenType.toString()} but got ${this.currentToken.type.toString()}.`,
       );
     }
 
