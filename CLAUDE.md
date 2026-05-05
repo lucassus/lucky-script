@@ -18,7 +18,7 @@ See `lark-sandbox/CLAUDE.md` for lark-sandbox commands.
 
 ## Quality
 
-After any code change, run `yarn lint` and `yarn test`. Fix all failures before finishing.
+After any code change, run `yarn lint`, `yarn typecheck`, and `yarn test`. Fix all failures before finishing.
 
 ## Directory Structure
 
@@ -75,20 +75,20 @@ For each affected layer, write tests first, then implement. Work in this order:
 **Lexer** (if new tokens or tokenization rules are needed)
 1. Add tests to `src/Lexer/Lexer.test.ts`
 2. Implement in `src/Lexer/`
-3. Run `yarn test -- --testPathPattern=Lexer`
+3. Run `yarn test Lexer`
 
 **Parser** (if new AST nodes or parse rules are needed)
 1. Add tests to `src/Parser/Parser.test.ts`
 2. Add AST node types to `src/Parser/AstNode.ts` if needed
 3. Implement in `src/Parser/Parser.ts`
-4. Run `yarn test -- --testPathPattern=Parser`
+4. Run `yarn test Parser`
 
 **Interpreter** (if new runtime behavior is needed)
 1. Add unit tests colocated with the implementation (e.g., `Interpreter.test.ts` or `objects/LuckyFoo.test.ts`)
 2. Add integration tests in `src/examples/` for complex multi-statement scenarios
 3. Implement in `src/Interpreter/`
-4. Run `yarn test -- --testPathPattern=Interpreter`
+4. Run `yarn test Interpreter`
 
 ### Step 3 — Final quality check
 
-Run `yarn lint && yarn test`. Fix all failures before finishing.
+Run `yarn lint && yarn typecheck && yarn test`. Fix all failures before finishing.
