@@ -14,9 +14,29 @@ yarn build          # compile to dist/
 ts-node src/repl.ts # interactive REPL
 ```
 
+See `lark-sandbox/CLAUDE.md` for lark-sandbox commands.
+
 ## Quality
 
 After any code change, run `yarn lint` and `yarn test`. Fix all failures before finishing.
+
+## Directory Structure
+
+- `lark-sandbox/` — reference grammar (Python/Lark) and syntax smoke tests; has its own CLAUDE.md
+- `src/Lexer/` — tokenizer
+  - `Lexer.ts` — main tokenizer
+  - `Recognizer/` — state-machine recognizers for complex tokens (identifiers, numbers, strings, comments)
+- `src/Parser/` — recursive descent parser
+  - `Parser.ts` — main parser
+  - `AstNode.ts` — all AST node types
+  - `Lookahead.ts` — one-token lookahead wrapper
+- `src/Interpreter/` — tree-walking interpreter
+  - `Interpreter.ts` — main interpreter/visitor
+  - `SymbolTable.ts` — linked-list scope chain
+  - `objects/` — runtime value types (`LuckyNumber`, `LuckyBoolean`, `LuckyString`, `LuckyFunction`, base `LuckyObject`)
+  - `examples/` — integration tests (multi-statement programs)
+- `src/repl.ts` — interactive REPL entry point
+- `src/testingUtils.ts` — `parse()` helper used in tests
 
 ## Architecture
 
@@ -35,9 +55,40 @@ Tree-walking visitor. `Interpreter.run()` takes an `AstNode` (typically `Program
 
 **Return**: implemented by throwing a `Return` error caught in `visitFunctionCall`.
 
-### Entry points
-- `src/repl.ts` — interactive REPL (parse + interpret each line)
-- `src/testingUtils.ts` — `parse(input)` helper used in tests
-
 ### Test structure
-Tests live alongside source files (`*.test.ts`). `src/Interpreter/examples/` holds integration-style tests (e.g., fibonacci).
+Unit tests are colocated with source files (`*.test.ts`). `src/Interpreter/examples/` holds integration tests for complex multi-statement programs (e.g., fibonacci).
+
+## Development Lifecycle
+
+When adding a new language feature, follow this TDD workflow. Only apply each step to layers that are actually affected by the feature — skip layers that need no changes.
+
+### Step 1 — Grammar (only if the feature involves new syntax)
+
+1. Add test cases to `lark-sandbox/lucky_script_test.py`
+2. Update `lark-sandbox/lucky_script.lark` to make the tests green
+3. Run `cd lark-sandbox && make test` to verify
+
+### Step 2 — TypeScript implementation (layer by layer)
+
+For each affected layer, write tests first, then implement. Work in this order:
+
+**Lexer** (if new tokens or tokenization rules are needed)
+1. Add tests to `src/Lexer/Lexer.test.ts`
+2. Implement in `src/Lexer/`
+3. Run `yarn test -- --testPathPattern=Lexer`
+
+**Parser** (if new AST nodes or parse rules are needed)
+1. Add tests to `src/Parser/Parser.test.ts`
+2. Add AST node types to `src/Parser/AstNode.ts` if needed
+3. Implement in `src/Parser/Parser.ts`
+4. Run `yarn test -- --testPathPattern=Parser`
+
+**Interpreter** (if new runtime behavior is needed)
+1. Add unit tests colocated with the implementation (e.g., `Interpreter.test.ts` or `objects/LuckyFoo.test.ts`)
+2. Add integration tests in `src/Interpreter/examples/` for complex multi-statement scenarios
+3. Implement in `src/Interpreter/`
+4. Run `yarn test -- --testPathPattern=Interpreter`
+
+### Step 3 — Final quality check
+
+Run `yarn lint && yarn test`. Fix all failures before finishing.
