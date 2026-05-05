@@ -132,6 +132,16 @@ describe("Lexer", () => {
     });
   });
 
+  it("throws IllegalSymbolError for '!' not followed by '='", () => {
+    expect(() => new Lexer("!5").nextToken()).toThrow(IllegalSymbolError);
+  });
+
+  it("throws IllegalSymbolError for invalid escape sequence in string", () => {
+    expect(() => [...new Lexer('"\\q"').tokenize()]).toThrow(
+      IllegalSymbolError,
+    );
+  });
+
   it.each`
     operator | tokenType
     ${"+"}   | ${Operator.Plus}

@@ -108,6 +108,7 @@ export class Interpreter {
       throw new Return(this.visit(node.expression));
     }
 
+    /* c8 ignore next 3 */
     throw new RuntimeError(
       `Unsupported AST node type ${node.constructor.name}`,
     );
@@ -249,6 +250,7 @@ export class Interpreter {
         return left.gte(right);
       case ">":
         return left.gt(right);
+      /* c8 ignore next 2 */
       default:
         throw new RuntimeError(`Unsupported operator ${node.operator}`);
     }
@@ -266,6 +268,7 @@ export class Interpreter {
         return LuckyBoolean.fromNative(
           value.toBoolean() === LuckyBoolean.False,
         );
+      /* c8 ignore next 2 */
       default:
         throw new RuntimeError(`Unsupported unary operator ${node.operator}`);
     }

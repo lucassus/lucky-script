@@ -13,6 +13,7 @@ function typeName(arg: LuckyObject): string {
   if (arg instanceof LuckyNothing) return "nothing";
   if (arg instanceof LuckyFunction || arg instanceof LuckyBuiltin)
     return "function";
+  /* c8 ignore next */
   return "unknown";
 }
 

@@ -97,10 +97,6 @@ export class Parser {
       return this.outerAssignment();
     }
 
-    if (this.currentToken.type === Delimiter.LeftBrace) {
-      return this.block();
-    }
-
     return this.expression();
   }
 

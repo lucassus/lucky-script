@@ -45,6 +45,10 @@ describe("Interpreter", () => {
       },
     );
 
+    it("evaluates unary plus to the same value", () => {
+      expect(run("+5")).toBe(5);
+    });
+
     it("raises an error on division by zero", () => {
       expect(() => run("2 / 0")).toThrow(ZeroDivisionError);
     });

@@ -2,6 +2,14 @@ import { describe, expect, it } from "vitest";
 import { LuckyBoolean } from "./LuckyBoolean";
 import { LuckyNumber } from "./LuckyNumber";
 
+describe("LuckyNumber.div()", () => {
+  it("divides two numbers", () => {
+    expect(new LuckyNumber(10).div(new LuckyNumber(4))).toEqual(
+      new LuckyNumber(2.5),
+    );
+  });
+});
+
 describe("LuckyNumber.display()", () => {
   it("returns string representation of integer", () => {
     expect(new LuckyNumber(42).display()).toBe("42");
