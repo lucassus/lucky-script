@@ -7,7 +7,7 @@ describe("SymbolTable", () => {
   describe(".setLocal", () => {
     it("sets the given variable at the current scope", () => {
       const parent = new SymbolTable();
-      parent.set("x", new LuckyNumber(1));
+      parent.setLocal("x", new LuckyNumber(1));
       const child = parent.createChild();
 
       const value = new LuckyNumber(2);
@@ -22,55 +22,6 @@ describe("SymbolTable", () => {
       expect(() => frozen.setLocal("x", new LuckyNumber(1))).toThrow(
         ScopeError,
       );
-    });
-  });
-
-  describe(".set", () => {
-    describe("when the given variable is not defined", () => {
-      it("sets a value at the current scope", () => {
-        const parent = new SymbolTable();
-        const child = parent.createChild();
-
-        const value = new LuckyNumber(1);
-        child.set("x", value);
-
-        expect(() => parent.lookup("x")).toThrow(NameError);
-        expect(child.lookup("x")).toBe(value);
-      });
-    });
-
-    describe("when the variable is already defined somewhere in the parent scopes", () => {
-      it("overrides it in the parent scope", () => {
-        const grandParent = new SymbolTable();
-        grandParent.set("x", new LuckyNumber(1));
-        const parent = grandParent.createChild();
-        const child = parent.createChild();
-
-        const value = new LuckyNumber(2);
-        child.set("x", value);
-
-        expect(grandParent.lookup("x")).toBe(value);
-        expect(parent.lookup("x")).toBe(value);
-        expect(child.lookup("x")).toBe(value);
-      });
-    });
-
-    describe("when the variable is already defined in two (or more) scopes", () => {
-      it("overrides it in the first scope", () => {
-        // Given
-        const parent = new SymbolTable();
-        parent.setLocal("x", new LuckyNumber(1));
-
-        const child = parent.createChild();
-        child.setLocal("x", new LuckyNumber(2));
-
-        // When
-        child.set("x", new LuckyNumber(3));
-
-        // Then
-        expect(parent.lookup("x")).toEqual(new LuckyNumber(1));
-        expect(child.lookup("x")).toEqual(new LuckyNumber(3));
-      });
     });
   });
 
@@ -193,7 +144,7 @@ describe("SymbolTable", () => {
       it("returns the value", () => {
         const scope = new SymbolTable();
         const value = new LuckyNumber(1);
-        scope.set("x", value);
+        scope.setLocal("x", value);
 
         expect(scope.lookup("x")).toBe(value);
       });
@@ -203,7 +154,7 @@ describe("SymbolTable", () => {
       it("returns the value", () => {
         const parent = new SymbolTable();
         const value = new LuckyNumber(1);
-        parent.set("x", value);
+        parent.setLocal("x", value);
         const child = parent.createChild();
 
         expect(child.lookup("x")).toBe(value);
@@ -214,7 +165,7 @@ describe("SymbolTable", () => {
       it("returns the value", () => {
         const grandParent = new SymbolTable();
         const value = new LuckyNumber(1);
-        grandParent.set("x", value);
+        grandParent.setLocal("x", value);
         const parent = grandParent.createChild();
         const child = parent.createChild();
 
@@ -235,7 +186,7 @@ describe("SymbolTable", () => {
     describe("when the variable holds a falsy-valued object", () => {
       it("returns the value without throwing", () => {
         const scope = new SymbolTable();
-        scope.set("x", LuckyBoolean.False);
+        scope.setLocal("x", LuckyBoolean.False);
 
         expect(scope.lookup("x")).toBe(LuckyBoolean.False);
       });

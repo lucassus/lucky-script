@@ -93,15 +93,15 @@ describe("Interpreter", () => {
 
     it("reads variables", () => {
       const symbolTable = new SymbolTable();
-      symbolTable.set("x", new LuckyNumber(1));
-      symbolTable.set("y", new LuckyNumber(2));
+      symbolTable.setLocal("x", new LuckyNumber(1));
+      symbolTable.setLocal("y", new LuckyNumber(2));
 
       expect(run("x + y + 3", symbolTable)).toBe(6);
     });
 
     it("increments the given variable", () => {
       const symbolTable = new SymbolTable();
-      symbolTable.set("x", new LuckyNumber(1));
+      symbolTable.setLocal("x", new LuckyNumber(1));
 
       expect(run("x = x + 1", symbolTable)).toBe(2);
       expect(symbolTable.lookup("x")).toEqual(new LuckyNumber(2));

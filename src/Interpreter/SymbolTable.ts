@@ -31,14 +31,6 @@ export class SymbolTable {
     this.locals.set(key, value);
   }
 
-  // Walk-up assignment: finds the nearest defining scope and writes there;
-  // falls back to the current scope. Used only for the old set() semantics
-  // (still called from SymbolTable unit tests).
-  set(key: string, value: LuckyObject): void {
-    const scope = this.findTheClosestScopeThatDefines(key);
-    (scope || this).setLocal(key, value);
-  }
-
   // Bare `x = e`: inside a function → write to the function boundary scope;
   // at top level → write to the current scope.
   setBare(key: string, value: LuckyObject): void {
