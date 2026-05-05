@@ -1,12 +1,4 @@
-import { Lexer } from "../Lexer";
-import { Parser } from "../Parser";
-import { Interpreter } from "../Interpreter/Interpreter";
-
-function run(script: string): undefined | boolean | number | string {
-  const tokens = new Lexer(script).tokenize();
-  const ast = new Parser(tokens).parse();
-  return new Interpreter(ast).run();
-}
+import { run } from "./utils";
 
 describe("string literals", () => {
   it("evaluates a simple string literal", () => {

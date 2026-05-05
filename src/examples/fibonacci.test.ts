@@ -1,6 +1,4 @@
-import { Lexer } from "../Lexer";
-import { Parser } from "../Parser";
-import { Interpreter } from "../Interpreter/Interpreter";
+import { run } from "./utils";
 
 it.each`
   n    | expected
@@ -27,9 +25,7 @@ it.each`
     fib(${n})
   `;
 
-  const tokens = new Lexer(script).tokenize();
-  const ast = new Parser(tokens).parse();
-  const result = new Interpreter(ast).run();
+  const result = run(script);
 
   expect(result).toBe(expected);
 });
