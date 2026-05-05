@@ -1,3 +1,4 @@
+import { describe, expect, it } from "vitest";
 import { RuntimeError } from "../Interpreter/errors";
 import { run } from "./utils";
 

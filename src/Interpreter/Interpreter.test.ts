@@ -1,3 +1,4 @@
+import { describe, expect, it } from "vitest";
 import { NameError, RuntimeError, ZeroDivisionError } from "./errors";
 import { Interpreter } from "./Interpreter";
 import { LuckyNumber } from "./objects";

@@ -1,3 +1,4 @@
+import { describe, expect, it } from "vitest";
 import { RuntimeError } from "../errors";
 import { LuckyBoolean } from "./LuckyBoolean";
 import { LuckyNumber } from "./LuckyNumber";

@@ -1,7 +1,8 @@
+import { expect, it, vi } from "vitest";
 import { run } from "./utils";
 
 it("sayHello prints a personalised greeting", () => {
-  const consoleSpy = jest.spyOn(console, "log").mockImplementation(() => {});
+  const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
 
   run(`
     function sayHello(name) {

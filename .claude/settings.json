@@ -5,7 +5,13 @@
       "Bash(yarn build *)",
       "Bash(yarn lint *)",
       "Bash(yarn test *)",
-      "Bash(yarn typecheck *)"
+      "Bash(yarn typecheck *)",
+      "Bash(openspec new *)",
+      "Bash(openspec status *)",
+      "Bash(openspec instructions *)",
+      "Bash(openspec --version)",
+      "Bash(openspec list *)",
+      "Bash(openspec archive *)"
     ]
   }
 }
