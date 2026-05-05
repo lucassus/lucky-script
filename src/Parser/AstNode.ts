@@ -104,6 +104,15 @@ export class IfStatement extends Statement {
   }
 }
 
+export class WhileStatement extends Statement {
+  constructor(
+    public readonly condition: Expression,
+    public readonly body: Statement[],
+  ) {
+    super();
+  }
+}
+
 export class ReturnStatement extends Statement {
   constructor(public readonly expression: Expression) {
     super();

@@ -13,6 +13,7 @@ import {
   UnaryOperation,
   VariableAccess,
   VariableAssigment,
+  WhileStatement,
 } from "./AstNode";
 import { SyntaxError } from "./errors";
 import { parse } from "../testingUtils";
@@ -572,6 +573,104 @@ describe("Parser", () => {
         ),
       ]),
     );
+  });
+
+  describe("while loops", () => {
+    it("parses while loop with block body", () => {
+      const ast = parse(`
+        while (x < 3) {
+          x = x + 1
+        }
+      `);
+
+      expect(ast).toEqual(
+        new Program([
+          new WhileStatement(
+            new BinaryOperation(new VariableAccess("x"), "<", new Numeral("3")),
+            [
+              new VariableAssigment(
+                "x",
+                new BinaryOperation(
+                  new VariableAccess("x"),
+                  "+",
+                  new Numeral("1"),
+                ),
+              ),
+            ],
+          ),
+        ]),
+      );
+    });
+
+    it("parses while loop with single statement body", () => {
+      const ast = parse(`
+        while (x > 0) x = x - 1
+      `);
+
+      expect(ast).toEqual(
+        new Program([
+          new WhileStatement(
+            new BinaryOperation(new VariableAccess("x"), ">", new Numeral("0")),
+            [
+              new VariableAssigment(
+                "x",
+                new BinaryOperation(
+                  new VariableAccess("x"),
+                  "-",
+                  new Numeral("1"),
+                ),
+              ),
+            ],
+          ),
+        ]),
+      );
+    });
+
+    it("parses nested while loops", () => {
+      const ast = parse(`
+        while (x < 2) {
+          while (y < 2) {
+            y = y + 1
+          }
+          x = x + 1
+        }
+      `);
+
+      expect(ast).toEqual(
+        new Program([
+          new WhileStatement(
+            new BinaryOperation(new VariableAccess("x"), "<", new Numeral("2")),
+            [
+              new WhileStatement(
+                new BinaryOperation(
+                  new VariableAccess("y"),
+                  "<",
+                  new Numeral("2"),
+                ),
+                [
+                  new VariableAssigment(
+                    "y",
+                    new BinaryOperation(
+                      new VariableAccess("y"),
+                      "+",
+                      new Numeral("1"),
+                    ),
+                  ),
+                ],
+              ),
+              new VariableAssigment(
+                "x",
+                new BinaryOperation(
+                  new VariableAccess("x"),
+                  "+",
+                  new Numeral("1"),
+                ),
+              ),
+            ],
+          ),
+        ]),
+      );
+    });
   });
 
   describe("and / or operators", () => {

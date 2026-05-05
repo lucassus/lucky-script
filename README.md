@@ -6,6 +6,7 @@ Lucky Script is a scripting language built from scratch in TypeScript. It has a 
 - First-class functions and closures
 - Function-scoped variables with explicit `local` and `outer` binding
 - `if` / `else` / `else if` control flow
+- `while` loops
 - Arithmetic, comparison, and unary operators
 - Boolean operators: `and`, `or`, `not` (with short-circuit evaluation)
 - Boolean literals: `true`, `false`
@@ -62,7 +63,40 @@ function classify(n) {
 }
 ```
 
-## It supports basic if statements and the recursion:
+## While loops
+
+```
+function sumRange(max) {
+  sum = 0
+  i = 1
+  while (i <= max) {
+    sum = sum + i
+    i = i + 1
+  }
+  return sum
+}
+
+sumRange(10)  # => 55 (sum of 1..10)
+```
+
+While loops support both block and single-statement bodies:
+
+```
+x = 5
+while (x > 0) x = x - 1
+# x is now 0
+
+while (true) {
+  y = 42
+  false  # loop exits because false is falsy
+}
+```
+
+Loop bodies execute in the enclosing scope, so variables created inside the loop are visible after it exits.
+
+## Recursion
+
+The language also supports recursion:
 
 ```
 function fib(n) {
@@ -226,6 +260,6 @@ x = y = 1
 
 ## Planned features
 
-- `while` loop
 - Lists (`[1, 2, 3]`)
 - `for-each` loop
+- `break` and `continue` statements

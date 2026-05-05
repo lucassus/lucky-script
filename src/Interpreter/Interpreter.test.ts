@@ -510,6 +510,108 @@ describe("Interpreter", () => {
     });
   });
 
+  describe("while loops", () => {
+    it("executes while loop while condition is true", () => {
+      const symbolTable = new SymbolTable();
+      const script = `
+        x = 0
+        while (x < 3) {
+          x = x + 1
+        }
+      `;
+
+      run(script, symbolTable);
+      expect(symbolTable.lookup("x")).toEqual(new LuckyNumber(3));
+    });
+
+    it("does not execute while loop if condition is false", () => {
+      const symbolTable = new SymbolTable();
+      const script = `
+        x = 10
+        while (x < 5) {
+          x = x + 1
+        }
+      `;
+
+      run(script, symbolTable);
+      expect(symbolTable.lookup("x")).toEqual(new LuckyNumber(10));
+    });
+
+    it("assignments inside while loop are visible in the enclosing scope", () => {
+      const script = `
+        x = 0
+        while (x < 1) {
+          y = 42
+          x = x + 1
+        }
+        y
+      `;
+
+      expect(run(script)).toBe(42);
+    });
+
+    it("supports nested while loops", () => {
+      const symbolTable = new SymbolTable();
+      const script = `
+        x = 0
+        while (x < 2) {
+          y = 0
+          while (y < 2) {
+            y = y + 1
+          }
+          x = x + 1
+        }
+      `;
+
+      run(script, symbolTable);
+      expect(symbolTable.lookup("x")).toEqual(new LuckyNumber(2));
+      expect(symbolTable.lookup("y")).toEqual(new LuckyNumber(2));
+    });
+
+    it("coerces numeric conditions to boolean", () => {
+      const symbolTable = new SymbolTable();
+      const script = `
+        x = 2
+        while (x) {
+          x = x - 1
+        }
+      `;
+
+      run(script, symbolTable);
+      expect(symbolTable.lookup("x")).toEqual(new LuckyNumber(0));
+    });
+
+    it("treats empty string as falsy", () => {
+      const script = `
+        s = "x"
+        while (s) {
+          s = ""
+        }
+        s
+      `;
+
+      expect(run(script)).toBe("");
+    });
+
+    it("supports return statement inside while loop", () => {
+      const script = `
+        function test() {
+          x = 0
+          while (x < 100) {
+            if (x == 5) {
+              return 42
+            }
+            x = x + 1
+          }
+          return 99
+        }
+        test()
+      `;
+
+      expect(run(script)).toBe(42);
+    });
+  });
+
   describe("nothing literal", () => {
     it("evaluates the nothing literal", () => {
       expect(run("nothing")).toBe(undefined);

@@ -23,6 +23,7 @@ import {
   StringLiteral,
   VariableAccess,
   VariableAssigment,
+  WhileStatement,
 } from "../Parser/AstNode";
 
 export class Interpreter {
@@ -97,6 +98,10 @@ export class Interpreter {
 
     if (node instanceof IfStatement) {
       return this.visitIfStatement(node);
+    }
+
+    if (node instanceof WhileStatement) {
+      return this.visitWhileStatement(node);
     }
 
     if (node instanceof ReturnStatement) {
@@ -317,6 +322,19 @@ export class Interpreter {
       for (const statement of node.elseBranch) {
         this.visit(statement);
       }
+    }
+
+    return LuckyNothing.Instance;
+  }
+
+  private visitWhileStatement(node: WhileStatement): LuckyObject {
+    let condition = this.visit(node.condition);
+
+    while (condition.toBoolean() === LuckyBoolean.True) {
+      for (const statement of node.body) {
+        this.visit(statement);
+      }
+      condition = this.visit(node.condition);
     }
 
     return LuckyNothing.Instance;
