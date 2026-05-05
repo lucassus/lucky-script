@@ -1,7 +1,7 @@
 import * as readline from "readline";
 
-import { ControlFlow } from "./Interpreter/ControlFlow";
 import { Interpreter } from "./Interpreter";
+import { ControlFlow } from "./Interpreter/ControlFlow";
 import { SymbolTable } from "./Interpreter/SymbolTable";
 import { IllegalSymbolError, Lexer } from "./Lexer";
 import { Parser } from "./Parser";
@@ -25,7 +25,7 @@ scanner.on("line", (line) => {
     const lexer = new Lexer(input).tokenize();
     const ast = new Parser(lexer).parse();
     const result = new Interpreter(ast, symbolTable).run();
-    console.log(result === undefined ? "nothing" : result);
+    console.log(result ?? "nothing");
   } catch (error) {
     if (error instanceof ControlFlow) {
       console.error(

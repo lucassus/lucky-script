@@ -1,7 +1,7 @@
+import type { Statement } from "../../Parser/AstNode";
+import type { SymbolTable } from "../SymbolTable";
 import { LuckyBoolean } from "./LuckyBoolean";
 import { LuckyObject } from "./LuckyObject";
-import { Statement } from "../../Parser/AstNode";
-import { SymbolTable } from "../SymbolTable";
 
 export class LuckyFunction extends LuckyObject {
   constructor(

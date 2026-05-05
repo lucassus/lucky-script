@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
+
 import { LuckyBoolean } from "./LuckyBoolean";
 import { LuckyBuiltin } from "./LuckyBuiltin";
 import { LuckyNumber } from "./LuckyNumber";

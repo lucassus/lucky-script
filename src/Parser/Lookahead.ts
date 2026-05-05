@@ -4,13 +4,13 @@ export class Lookahead<T> {
   #next: T;
 
   constructor(private readonly iterator: Iterator<T>) {
-    this.#current = this.iterator.next().value;
-    this.#next = this.iterator.next().value;
+    this.#current = this.iterator.next().value as T;
+    this.#next = this.iterator.next().value as T;
   }
 
   advance() {
     this.#current = this.#next;
-    this.#next = this.iterator.next().value;
+    this.#next = this.iterator.next().value as T;
   }
 
   get current(): T {

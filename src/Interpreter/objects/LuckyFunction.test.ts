@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
+
+import { SymbolTable } from "../SymbolTable";
 import { LuckyBoolean } from "./LuckyBoolean";
 import { LuckyFunction } from "./LuckyFunction";
-import { SymbolTable } from "../SymbolTable";
 
 describe("LuckyFunction.display()", () => {
   it("returns '<function name>' for a named function", () => {

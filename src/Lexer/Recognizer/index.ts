@@ -1,6 +1,6 @@
 /* c8 ignore file */
-export { Recognizer } from "./Recognizer";
-export { NumeralRecognizer } from "./NumeralRecognizer";
 export { CommentRecognizer } from "./CommentRecognizer";
 export { IdentifierRecognizer } from "./IdentifierRecognizer";
+export { NumeralRecognizer } from "./NumeralRecognizer";
+export { Recognizer } from "./Recognizer";
 export { StringRecognizer } from "./StringRecognizer";

@@ -1,6 +1,6 @@
 import { Recognizer } from "./Recognizer";
 import { Case } from "./state/Case";
-import { State } from "./state/State";
+import type { State } from "./state/State";
 
 const beginComment = new Case(0, false);
 

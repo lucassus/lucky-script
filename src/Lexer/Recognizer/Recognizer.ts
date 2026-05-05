@@ -1,4 +1,4 @@
-import { State } from "./state/State";
+import type { State } from "./state/State";
 
 export abstract class Recognizer {
   protected value = "";

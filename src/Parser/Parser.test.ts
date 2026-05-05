@@ -1,4 +1,6 @@
 import { describe, expect, it } from "vitest";
+
+import { parse } from "../testingUtils";
 import {
   BinaryOperation,
   BooleanLiteral,
@@ -16,7 +18,6 @@ import {
   WhileStatement,
 } from "./AstNode";
 import { SyntaxError } from "./errors";
-import { parse } from "../testingUtils";
 
 describe("Parser", () => {
   it("parses empty input", () => {

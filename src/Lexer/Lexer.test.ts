@@ -1,14 +1,9 @@
 import { describe, expect, it } from "vitest";
+
 import { IllegalSymbolError } from "./errors";
 import { Lexer } from "./Lexer";
-import {
-  Delimiter,
-  Keyword,
-  Literal,
-  Location,
-  Operator,
-  Token,
-} from "./Token";
+import type { Location } from "./Token";
+import { Delimiter, Keyword, Literal, Operator, Token } from "./Token";
 
 const anyLocation = expect.objectContaining<Location>({
   position: expect.any(Number),

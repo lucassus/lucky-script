@@ -7,6 +7,7 @@ import {
   type MockInstance,
   vi,
 } from "vitest";
+
 import { RuntimeError } from "../Interpreter/errors";
 import { run } from "./utils";
 
