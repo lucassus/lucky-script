@@ -284,6 +284,7 @@ describe("Lexer", () => {
     ${"not"}   | ${Keyword.Not}
     ${"local"} | ${Keyword.Local}
     ${"outer"} | ${Keyword.Outer}
+    ${"while"} | ${Keyword.While}
   `("tokenizes '$input' as a keyword", ({ input, keyword }) => {
     const tokens = [...new Lexer(input).tokenize()];
     expect(tokens[0]).toEqual(new Token(keyword, anyLocation));

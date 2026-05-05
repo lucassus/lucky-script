@@ -40,6 +40,7 @@ export class Keyword extends TokenType {
   static Function = new Keyword("function");
   static If = new Keyword("if");
   static Else = new Keyword("else");
+  static While = new Keyword("while");
   static Return = new Keyword("return");
   static Nothing = new Keyword("nothing");
   static True = new Keyword("true");

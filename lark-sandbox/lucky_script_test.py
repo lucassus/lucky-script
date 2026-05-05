@@ -65,6 +65,10 @@ parser = Lark.open("lucky_script.lark", rel_to=__file__, start="program")
         "local x = 1 + 2",
         "outer x = 1",
         "outer x = 1 + 2",
+        "while (true) { 1 }",
+        "while (i < 3) { i = i + 1 }",
+        "while (false) {}",
+        "while (true) { while (false) { 1 } }",
     ),
 )
 def test_lucky_script_valid_syntax(script):
@@ -82,6 +86,8 @@ def test_lucky_script_valid_syntax(script):
         "x = function(, x, y) {}",
         "x = function bar(, x, y) {}",
         "function foo(function(bar) {}) {}",
+        "while true { 1 }",
+        "while (true) 1",
     ),
 )
 def test_lucky_script_invalid_syntax(script):

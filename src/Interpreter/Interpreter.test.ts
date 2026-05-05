@@ -510,6 +510,117 @@ describe("Interpreter", () => {
     });
   });
 
+  describe("while statements", () => {
+    it("does not execute the body when the condition is false", () => {
+      const symbolTable = new SymbolTable();
+      const script = `
+        count = 0
+        while (false) {
+          count = count + 1
+        }
+      `;
+
+      run(script, symbolTable);
+      expect(symbolTable.lookup("count")).toEqual(new LuckyNumber(0));
+    });
+
+    it("re-evaluates the condition each iteration and terminates when it is false", () => {
+      const symbolTable = new SymbolTable();
+      const script = `
+        i = 0
+        while (i < 3) {
+          i = i + 1
+        }
+      `;
+
+      run(script, symbolTable);
+      expect(symbolTable.lookup("i")).toEqual(new LuckyNumber(3));
+    });
+
+    it("coerces a non-boolean condition via toBoolean", () => {
+      const symbolTable = new SymbolTable();
+      const script = `
+        n = 3
+        while (n) {
+          n = n - 1
+        }
+      `;
+
+      run(script, symbolTable);
+      expect(symbolTable.lookup("n")).toEqual(new LuckyNumber(0));
+    });
+
+    it("accepts an empty body", () => {
+      const symbolTable = new SymbolTable();
+      const script = `
+        i = 0
+        i = i + 1
+        while (false) {}
+      `;
+
+      run(script, symbolTable);
+      expect(symbolTable.lookup("i")).toEqual(new LuckyNumber(1));
+    });
+
+    it("evaluates to nothing", () => {
+      expect(run("while (false) { 42 }")).toBe(undefined);
+    });
+
+    it("a bare assignment inside the body persists after the loop", () => {
+      const symbolTable = new SymbolTable();
+      const script = `
+        n = 0
+        while (n < 3) {
+          n = n + 1
+        }
+      `;
+
+      run(script, symbolTable);
+      expect(symbolTable.lookup("n")).toEqual(new LuckyNumber(3));
+    });
+
+    it("a new variable introduced inside the body is visible after the loop", () => {
+      const script = `
+        i = 0
+        while (i < 1) {
+          result = 42
+          i = i + 1
+        }
+        result
+      `;
+      expect(run(script)).toBe(42);
+    });
+
+    it("local inside a while body inside a function binds in the function scope", () => {
+      const script = `
+        function foo() {
+          i = 0
+          while (i < 1) {
+            local x = 7
+            i = i + 1
+          }
+          return x
+        }
+        foo()
+      `;
+      expect(run(script)).toBe(7);
+    });
+
+    it("a return inside the body exits the enclosing function", () => {
+      const script = `
+        function foo() {
+          i = 0
+          while (true) {
+            if (i == 2) { return i }
+            i = i + 1
+          }
+        }
+        foo()
+      `;
+      expect(run(script)).toBe(2);
+    });
+  });
+
   describe("nothing literal", () => {
     it("evaluates the nothing literal", () => {
       expect(run("nothing")).toBe(undefined);
