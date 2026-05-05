@@ -2,6 +2,7 @@ import { Return } from "./ControlFlow";
 import { RuntimeError } from "./errors";
 import {
   LuckyBoolean,
+  LuckyBuiltin,
   LuckyFunction,
   LuckyNothing,
   LuckyNumber,
@@ -9,6 +10,7 @@ import {
   LuckyString,
 } from "./objects";
 import { SymbolTable } from "./SymbolTable";
+import { BUILTINS } from "./builtins";
 import { AstNode, BinaryOperation, Numeral, UnaryOperation } from "../Parser";
 import {
   BooleanLiteral,
@@ -27,7 +29,14 @@ export class Interpreter {
   constructor(
     public readonly node: AstNode,
     private scope = new SymbolTable(),
-  ) {}
+  ) {
+    // TODO: builtins live in root scope and can be overwritten by user code
+    // via the standard set() walk-up semantics — improve with a read-only
+    // scope layer in the future.
+    for (const [name, builtin] of Object.entries(BUILTINS)) {
+      this.scope.setLocal(name, builtin);
+    }
+  }
 
   run(): undefined | boolean | number | string {
     const luckyObject = this.visit(this.node);
@@ -141,6 +150,16 @@ export class Interpreter {
     const { name } = functionCall;
 
     const luckyFunction = this.scope.lookup(name);
+
+    if (luckyFunction instanceof LuckyBuiltin) {
+      if (luckyFunction.arity !== functionCall.args.length) {
+        throw new RuntimeError(
+          `Function ${name} takes exactly ${luckyFunction.arity} parameters`,
+        );
+      }
+      const args = functionCall.args.map((arg) => this.visit(arg));
+      return luckyFunction.call(args);
+    }
 
     if (!(luckyFunction instanceof LuckyFunction)) {
       throw new RuntimeError(`The given identifier '${name}' is not callable`);

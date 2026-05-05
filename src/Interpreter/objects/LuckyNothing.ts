@@ -15,4 +15,8 @@ export class LuckyNothing extends LuckyObject {
   toBoolean(): LuckyBoolean {
     return LuckyBoolean.False;
   }
+
+  display(): string {
+    return "nothing";
+  }
 }

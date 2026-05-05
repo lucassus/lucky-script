@@ -20,4 +20,8 @@ export class LuckyFunction extends LuckyObject {
   toBoolean(): LuckyBoolean {
     return LuckyBoolean.True;
   }
+
+  display(): string {
+    return this.name ? `<function ${this.name}>` : "<function>";
+  }
 }
