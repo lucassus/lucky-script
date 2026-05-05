@@ -23,6 +23,7 @@ import {
   StringLiteral,
   VariableAccess,
   VariableAssigment,
+  WhileStatement,
 } from "../Parser/AstNode";
 
 export class Interpreter {
@@ -99,10 +100,15 @@ export class Interpreter {
       return this.visitIfStatement(node);
     }
 
+    if (node instanceof WhileStatement) {
+      return this.visitWhileStatement(node);
+    }
+
     if (node instanceof ReturnStatement) {
       throw new Return(this.visit(node.expression));
     }
 
+    /* c8 ignore next 3 */
     throw new RuntimeError(
       `Unsupported AST node type ${node.constructor.name}`,
     );
@@ -244,6 +250,7 @@ export class Interpreter {
         return left.gte(right);
       case ">":
         return left.gt(right);
+      /* c8 ignore next 2 */
       default:
         throw new RuntimeError(`Unsupported operator ${node.operator}`);
     }
@@ -261,6 +268,7 @@ export class Interpreter {
         return LuckyBoolean.fromNative(
           value.toBoolean() === LuckyBoolean.False,
         );
+      /* c8 ignore next 2 */
       default:
         throw new RuntimeError(`Unsupported unary operator ${node.operator}`);
     }
@@ -315,6 +323,16 @@ export class Interpreter {
       }
     } else if (node.elseBranch) {
       for (const statement of node.elseBranch) {
+        this.visit(statement);
+      }
+    }
+
+    return LuckyNothing.Instance;
+  }
+
+  private visitWhileStatement(node: WhileStatement): LuckyObject {
+    while (this.visit(node.condition).toBoolean() === LuckyBoolean.True) {
+      for (const statement of node.body) {
         this.visit(statement);
       }
     }

@@ -16,6 +16,7 @@ import {
   UnaryOperator,
   VariableAccess,
   VariableAssigment,
+  WhileStatement,
 } from "./AstNode";
 import { SyntaxError } from "./errors";
 import { Lookahead } from "./Lookahead";
@@ -80,6 +81,10 @@ export class Parser {
       return this.ifStatement();
     }
 
+    if (this.currentToken.type === Keyword.While) {
+      return this.whileStatement();
+    }
+
     if (this.currentToken.type === Keyword.Return) {
       return this.returnStatement();
     }
@@ -90,10 +95,6 @@ export class Parser {
 
     if (this.currentToken.type === Keyword.Outer) {
       return this.outerAssignment();
-    }
-
-    if (this.currentToken.type === Delimiter.LeftBrace) {
-      return this.block();
     }
 
     return this.expression();
@@ -245,6 +246,17 @@ export class Parser {
   private returnStatement(): ReturnStatement {
     this.consume(Keyword.Return);
     return new ReturnStatement(this.expression());
+  }
+
+  // "while" "(" expression ")" block
+  private whileStatement(): WhileStatement {
+    this.consume(Keyword.While);
+
+    this.consume(Delimiter.LeftBracket);
+    const condition = this.expression();
+    this.consume(Delimiter.RightBracket);
+
+    return new WhileStatement(condition, this.block());
   }
 
   private block(): Statement[] {

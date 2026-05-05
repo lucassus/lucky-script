@@ -27,6 +27,10 @@ describe("type builtin", () => {
     expect(run("function f() {}\ntype(f)")).toBe("function");
   });
 
+  it("returns 'function' for a builtin function", () => {
+    expect(run("type(print)")).toBe("function");
+  });
+
   it("throws RuntimeError when called with zero arguments", () => {
     expect(() => run("type()")).toThrow(RuntimeError);
   });

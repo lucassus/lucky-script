@@ -13,6 +13,7 @@ import {
   UnaryOperation,
   VariableAccess,
   VariableAssigment,
+  WhileStatement,
 } from "./AstNode";
 import { SyntaxError } from "./errors";
 import { parse } from "../testingUtils";
@@ -572,6 +573,88 @@ describe("Parser", () => {
         ),
       ]),
     );
+  });
+
+  describe("while statement", () => {
+    it("parses a basic while statement", () => {
+      const ast = parse(`
+        while (true) {
+          x = 1
+        }
+      `);
+
+      expect(ast).toEqual(
+        new Program([
+          new WhileStatement(new BooleanLiteral(true), [
+            new VariableAssigment("x", new Numeral("1")),
+          ]),
+        ]),
+      );
+    });
+
+    it("parses a while statement with empty body", () => {
+      expect(parse("while (false) {}")).toEqual(
+        new Program([new WhileStatement(new BooleanLiteral(false), [])]),
+      );
+    });
+
+    it("parses a while statement with a comparison condition", () => {
+      const ast = parse(`
+        while (i < 3) {
+          i = i + 1
+        }
+      `);
+
+      expect(ast).toEqual(
+        new Program([
+          new WhileStatement(
+            new BinaryOperation(new VariableAccess("i"), "<", new Numeral("3")),
+            [
+              new VariableAssigment(
+                "i",
+                new BinaryOperation(
+                  new VariableAccess("i"),
+                  "+",
+                  new Numeral("1"),
+                ),
+              ),
+            ],
+          ),
+        ]),
+      );
+    });
+
+    it("parses nested while statements", () => {
+      const ast = parse(`
+        while (true) {
+          while (false) {
+            1
+          }
+        }
+      `);
+
+      expect(ast).toEqual(
+        new Program([
+          new WhileStatement(new BooleanLiteral(true), [
+            new WhileStatement(new BooleanLiteral(false), [new Numeral("1")]),
+          ]),
+        ]),
+      );
+    });
+
+    it("rejects a while without parens around the condition", () => {
+      expect(() => parse("while true { 1 }")).toThrow(SyntaxError);
+      expect(() => parse("while true { 1 }")).toThrow("Expected '(' delimiter");
+    });
+
+    it("rejects a while without braces around the body", () => {
+      expect(() => parse("while (true) 1")).toThrow(SyntaxError);
+      expect(() => parse("while (true) 1")).toThrow("Expected '{' delimiter");
+    });
+
+    it("rejects assigning to `while` (it is a reserved keyword)", () => {
+      expect(() => parse("while = 1")).toThrow(SyntaxError);
+    });
   });
 
   describe("and / or operators", () => {

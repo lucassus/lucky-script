@@ -1,3 +1,4 @@
+/* c8 ignore file */
 export { LuckyBoolean } from "./LuckyBoolean";
 export { LuckyBuiltin } from "./LuckyBuiltin";
 export { LuckyFunction } from "./LuckyFunction";
