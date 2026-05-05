@@ -1,10 +1,11 @@
+import { describe, expect, it, vi } from "vitest";
 import { LuckyBoolean } from "./LuckyBoolean";
 import { LuckyBuiltin } from "./LuckyBuiltin";
 import { LuckyNumber } from "./LuckyNumber";
 
 describe("LuckyBuiltin", () => {
   it("call() invokes the native function with the provided args", () => {
-    const fn = jest.fn().mockReturnValue(new LuckyNumber(99));
+    const fn = vi.fn().mockReturnValue(new LuckyNumber(99));
     const builtin = new LuckyBuiltin("test", 1, fn);
     const arg = new LuckyNumber(42);
 

@@ -1,3 +1,4 @@
+import { describe, expect, it } from "vitest";
 import { NameError } from "./errors";
 import { LuckyBoolean, LuckyNumber } from "./objects";
 import { SymbolTable } from "./SymbolTable";

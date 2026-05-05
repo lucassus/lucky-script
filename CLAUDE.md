@@ -7,7 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ```bash
 yarn install        # install deps
 yarn test           # run all tests
-yarn test -- --testPathPattern=Lexer  # run single test file
+yarn test Lexer  # run single test file
 yarn lint           # eslint
 yarn typecheck      # tsc --noEmit
 yarn build          # compile to dist/

@@ -1,3 +1,4 @@
+import { describe, expect, it } from "vitest";
 import { LuckyNothing } from "./LuckyNothing";
 
 describe("LuckyNothing.display()", () => {
