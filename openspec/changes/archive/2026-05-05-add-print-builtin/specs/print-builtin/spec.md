@@ -72,7 +72,7 @@ Every concrete `LuckyObject` subtype SHALL implement `display(): string` returni
 - **THEN** it returns `"<function>"`
 
 ### Requirement: helloWorld integration test demonstrates print with a user-defined function
-A `src/Interpreter/examples/helloWorld.test.ts` file SHALL exist demonstrating `print` used inside a named function. The function `sayHello` SHALL accept a `name` argument and call `print` with the greeting `"Hello, " + name + "!"`.
+A `src/examples/helloWorld.test.ts` file SHALL exist demonstrating `print` used inside a named function. The function `sayHello` SHALL accept a `name` argument and call `print` with the greeting `"Hello, " + name + "!"`.
 
 #### Scenario: sayHello prints the expected greeting
 - **WHEN** the program defines `sayHello(name)` and calls `sayHello("World")`

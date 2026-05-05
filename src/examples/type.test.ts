@@ -1,7 +1,7 @@
-import { Lexer } from "../../Lexer";
-import { Parser } from "../../Parser";
-import { Interpreter } from "../Interpreter";
-import { RuntimeError } from "../errors";
+import { Lexer } from "../Lexer";
+import { Parser } from "../Parser";
+import { Interpreter } from "../Interpreter/Interpreter";
+import { RuntimeError } from "../Interpreter/errors";
 
 function run(script: string): undefined | boolean | number | string {
   const tokens = new Lexer(script).tokenize();

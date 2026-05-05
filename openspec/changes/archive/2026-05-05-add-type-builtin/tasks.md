@@ -4,7 +4,7 @@
 
 ## 2. Tests
 
-- [x] 2.1 Add integration tests in `src/Interpreter/examples/type.test.ts` covering all scenarios from the spec (number, string, boolean, nothing, function, wrong arity)
+- [x] 2.1 Add integration tests in `src/examples/type.test.ts` covering all scenarios from the spec (number, string, boolean, nothing, function, wrong arity)
 
 ## 3. Verify
 

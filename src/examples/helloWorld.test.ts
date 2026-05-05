@@ -1,6 +1,6 @@
-import { Lexer } from "../../Lexer";
-import { Parser } from "../../Parser";
-import { Interpreter } from "../Interpreter";
+import { Lexer } from "../Lexer";
+import { Parser } from "../Parser";
+import { Interpreter } from "../Interpreter/Interpreter";
 
 it("sayHello prints a personalised greeting", () => {
   const consoleSpy = jest.spyOn(console, "log").mockImplementation(() => {});

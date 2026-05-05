@@ -32,7 +32,7 @@
 - [x] 5.4 Add integration test: calling `print()` with zero args throws RuntimeError
 - [x] 5.5 Add integration test: calling `print(1, 2)` throws RuntimeError
 - [x] 5.6 Add integration test: overwriting `print` and calling the replacement
-- [x] 5.7 Create `src/Interpreter/examples/helloWorld.test.ts` — define `sayHello(name)` that calls `print("Hello, " + name + "!")`, assert stdout receives `"Hello, World!"`
+- [x] 5.7 Create `src/examples/helloWorld.test.ts` — define `sayHello(name)` that calls `print("Hello, " + name + "!")`, assert stdout receives `"Hello, World!"`
 
 ## 6. Quality check
 

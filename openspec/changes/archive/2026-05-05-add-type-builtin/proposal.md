@@ -17,4 +17,4 @@ Lucky Script has no way to inspect a value's type at runtime. This makes it impo
 ## Impact
 
 - `src/Interpreter/builtins.ts`: add `type` entry
-- `src/Interpreter/examples/type.test.ts`: integration tests
+- `src/examples/type.test.ts`: integration tests
