@@ -8,7 +8,7 @@ import {
   vi,
 } from "vitest";
 
-import { run } from "./utils";
+import { run } from "../testingUtils";
 
 describe("break", () => {
   it("increments counter until 5 then breaks", () => {

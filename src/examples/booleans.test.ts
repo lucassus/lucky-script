@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { run } from "./utils";
+import { run } from "../testingUtils";
 
 describe("Boolean literals", () => {
   it.each`

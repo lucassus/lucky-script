@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { RuntimeError } from "../Interpreter/errors";
-import { run } from "./utils";
+import { run } from "../testingUtils";
 
 describe("type builtin", () => {
   it("returns 'number' for a number", () => {

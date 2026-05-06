@@ -1,22 +1,14 @@
 import { describe, expect, it } from "vitest";
 
-import { parse } from "../testingUtils";
+import { run } from "../testingUtils";
 import {
   NameError,
   RuntimeError,
   ScopeError,
   ZeroDivisionError,
 } from "./errors";
-import { Interpreter } from "./Interpreter";
 import { LuckyNumber } from "./objects";
 import { SymbolTable } from "./SymbolTable";
-
-function run(script: string, symbolTable?: SymbolTable) {
-  const ast = parse(script);
-  const interpreter = new Interpreter(ast, symbolTable);
-
-  return interpreter.run();
-}
 
 describe("Interpreter", () => {
   it.each`

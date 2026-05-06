@@ -1,6 +1,6 @@
 import { expect, it, vi } from "vitest";
 
-import { run } from "./utils";
+import { run } from "../testingUtils";
 
 it("sayHello prints a personalised greeting", () => {
   const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});

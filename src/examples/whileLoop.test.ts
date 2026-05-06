@@ -1,6 +1,6 @@
 import { expect, it } from "vitest";
 
-import { run } from "./utils";
+import { run } from "../testingUtils";
 
 it("counts up to N with a mutating condition", () => {
   const script = `
