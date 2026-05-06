@@ -1,3 +1,5 @@
+import { Interpreter } from "./Interpreter";
+import type { SymbolTable } from "./Interpreter/SymbolTable";
 import { Lexer } from "./Lexer";
 import type { AstNode } from "./Parser";
 import { Parser } from "./Parser";
@@ -5,4 +7,12 @@ import { Parser } from "./Parser";
 export function parse(script: string): AstNode {
   const tokens = new Lexer(script).tokenize();
   return new Parser(tokens).parse();
+}
+
+export function run(
+  script: string,
+  symbolTable?: SymbolTable,
+): undefined | boolean | number | string {
+  const ast = parse(script);
+  return new Interpreter(ast, symbolTable).run();
 }

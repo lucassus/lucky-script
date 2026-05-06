@@ -9,6 +9,8 @@ import type {
 import {
   BinaryOperation,
   BooleanLiteral,
+  BreakStatement,
+  ContinueStatement,
   FunctionCall,
   FunctionDeclaration,
   IfStatement,
@@ -27,6 +29,7 @@ import { Lookahead } from "./Lookahead";
 
 export class Parser {
   private lexer: Lookahead<Token>;
+  private loopDepth = 0;
 
   constructor(iterator: Iterator<Token>) {
     this.lexer = new Lookahead<Token>(iterator);
@@ -79,6 +82,14 @@ export class Parser {
 
     if (this.currentToken.type === Keyword.While) {
       return this.whileStatement();
+    }
+
+    if (this.currentToken.type === Keyword.Break) {
+      return this.breakStatement();
+    }
+
+    if (this.currentToken.type === Keyword.Continue) {
+      return this.continueStatement();
     }
 
     if (this.currentToken.type === Keyword.Return) {
@@ -175,7 +186,13 @@ export class Parser {
     const parameters = this.functionParameters();
     this.consume(Delimiter.RightBracket);
 
-    return new FunctionDeclaration(name, parameters, this.block());
+    const savedDepth = this.loopDepth;
+    this.loopDepth = 0;
+    try {
+      return new FunctionDeclaration(name, parameters, this.block());
+    } finally {
+      this.loopDepth = savedDepth;
+    }
   }
 
   // "function" "(" func_parameters ")" block
@@ -186,7 +203,13 @@ export class Parser {
     const parameters = this.functionParameters();
     this.consume(Delimiter.RightBracket);
 
-    return new FunctionDeclaration(undefined, parameters, this.block());
+    const savedDepth = this.loopDepth;
+    this.loopDepth = 0;
+    try {
+      return new FunctionDeclaration(undefined, parameters, this.block());
+    } finally {
+      this.loopDepth = savedDepth;
+    }
   }
 
   // (IDENTIFIER ("," IDENTIFIER)*)?
@@ -241,6 +264,22 @@ export class Parser {
     return this.block();
   }
 
+  private breakStatement(): BreakStatement {
+    this.consume(Keyword.Break);
+    if (this.loopDepth === 0) {
+      throw new SyntaxError("'break' used outside a loop");
+    }
+    return new BreakStatement();
+  }
+
+  private continueStatement(): ContinueStatement {
+    this.consume(Keyword.Continue);
+    if (this.loopDepth === 0) {
+      throw new SyntaxError("'continue' used outside a loop");
+    }
+    return new ContinueStatement();
+  }
+
   private returnStatement(): ReturnStatement {
     this.consume(Keyword.Return);
     return new ReturnStatement(this.expression());
@@ -254,7 +293,12 @@ export class Parser {
     const condition = this.expression();
     this.consume(Delimiter.RightBracket);
 
-    return new WhileStatement(condition, this.block());
+    this.loopDepth++;
+    try {
+      return new WhileStatement(condition, this.block());
+    } finally {
+      this.loopDepth--;
+    }
   }
 
   private block(): Statement[] {

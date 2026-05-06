@@ -1,6 +1,6 @@
 import { expect, it } from "vitest";
 
-import { run } from "./utils";
+import { run } from "../testingUtils";
 
 it.each`
   n    | expected

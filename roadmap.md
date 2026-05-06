@@ -2,25 +2,6 @@
 
 ## Next
 
-### break / continue
-
-Loop control flow inside `while` (and the future `for-each`). `break` exits the loop immediately; `continue` skips the rest of the current iteration and re-evaluates the condition.
-
-```
-i = 0
-while (true) {
-  if (i == 5) { break }
-  i = i + 1
-}
-
-i = 0
-while (i < 10) {
-  i = i + 1
-  if (i == 3) { continue }
-  print(i)
-}
-```
-
 ### Lists
 
 Ordered, indexable collections. List literals use `[...]` syntax; elements are accessed by zero-based integer index with `lst[i]`. Out-of-bounds access raises a runtime error.

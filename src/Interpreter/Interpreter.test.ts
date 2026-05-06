@@ -1,22 +1,14 @@
 import { describe, expect, it } from "vitest";
 
-import { parse } from "../testingUtils";
+import { run } from "../testingUtils";
 import {
   NameError,
   RuntimeError,
   ScopeError,
   ZeroDivisionError,
 } from "./errors";
-import { Interpreter } from "./Interpreter";
 import { LuckyNumber } from "./objects";
 import { SymbolTable } from "./SymbolTable";
-
-function run(script: string, symbolTable?: SymbolTable) {
-  const ast = parse(script);
-  const interpreter = new Interpreter(ast, symbolTable);
-
-  return interpreter.run();
-}
 
 describe("Interpreter", () => {
   it.each`
@@ -778,6 +770,148 @@ describe("Interpreter", () => {
         foo()
       `;
       expect(run(script, symbolTable)).toBe(1);
+    });
+  });
+
+  describe("break statement", () => {
+    it("exits a while(true) loop on first iteration", () => {
+      const scope = new SymbolTable();
+      run(
+        `
+        count = 0
+        while (true) {
+          count = count + 1
+          break
+        }
+      `,
+        scope,
+      );
+      expect(scope.lookup("count")).toEqual(new LuckyNumber(1));
+    });
+
+    it("exits loop when condition on break is met", () => {
+      const scope = new SymbolTable();
+      run(
+        `
+        i = 0
+        while (true) {
+          if (i == 5) { break }
+          i = i + 1
+        }
+        after = i
+      `,
+        scope,
+      );
+      expect(scope.lookup("after")).toEqual(new LuckyNumber(5));
+    });
+
+    it("continues execution after the loop when break exits", () => {
+      const scope = new SymbolTable();
+      run(
+        `
+        i = 0
+        while (true) {
+          break
+        }
+        after = 42
+      `,
+        scope,
+      );
+      expect(scope.lookup("after")).toEqual(new LuckyNumber(42));
+    });
+
+    it("inner break exits only the inner loop; outer loop continues", () => {
+      const scope = new SymbolTable();
+      run(
+        `
+        outerCount = 0
+        i = 0
+        while (i < 3) {
+          i = i + 1
+          outerCount = outerCount + 1
+          j = 0
+          while (true) {
+            j = j + 1
+            break
+          }
+        }
+      `,
+        scope,
+      );
+      expect(scope.lookup("outerCount")).toEqual(new LuckyNumber(3));
+    });
+
+    it("statements after break in the same block do not execute", () => {
+      const scope = new SymbolTable();
+      run(
+        `
+        sideEffect = 0
+        while (true) {
+          break
+          sideEffect = 99
+        }
+      `,
+        scope,
+      );
+      expect(scope.lookup("sideEffect")).toEqual(new LuckyNumber(0));
+    });
+  });
+
+  describe("continue statement", () => {
+    it("skips the rest of the iteration when continue runs", () => {
+      const scope = new SymbolTable();
+      run(
+        `
+        i = 0
+        sideEffect = 0
+        while (i < 5) {
+          i = i + 1
+          if (i == 3) { continue }
+          sideEffect = sideEffect + 1
+        }
+      `,
+        scope,
+      );
+      expect(scope.lookup("sideEffect")).toEqual(new LuckyNumber(4));
+    });
+
+    it("loop whose body unconditionally continues terminates when condition becomes false", () => {
+      const scope = new SymbolTable();
+      run(
+        `
+        i = 0
+        sideEffect = 0
+        while (i < 5) {
+          i = i + 1
+          continue
+          sideEffect = sideEffect + 1
+        }
+      `,
+        scope,
+      );
+      expect(scope.lookup("i")).toEqual(new LuckyNumber(5));
+      expect(scope.lookup("sideEffect")).toEqual(new LuckyNumber(0));
+    });
+
+    it("inner continue skips only the inner iteration; outer loop is unaffected", () => {
+      const scope = new SymbolTable();
+      run(
+        `
+        outerCount = 0
+        i = 0
+        while (i < 3) {
+          i = i + 1
+          outerCount = outerCount + 1
+          j = 0
+          while (j < 3) {
+            j = j + 1
+            if (j == 2) { continue }
+          }
+        }
+      `,
+        scope,
+      );
+      expect(scope.lookup("outerCount")).toEqual(new LuckyNumber(3));
     });
   });
 });

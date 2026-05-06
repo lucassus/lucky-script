@@ -4,6 +4,8 @@ import { parse } from "../testingUtils";
 import {
   BinaryOperation,
   BooleanLiteral,
+  BreakStatement,
+  ContinueStatement,
   FunctionCall,
   FunctionDeclaration,
   IfStatement,
@@ -777,6 +779,155 @@ describe("Parser", () => {
 
     it("raises an error when statements are not separated", () => {
       expect(() => parse("1+2 3+4")).toThrow(SyntaxError);
+    });
+  });
+
+  describe("break statement", () => {
+    it("parses 'break' inside a while loop", () => {
+      const ast = parse("while (true) { break }");
+      expect(ast).toEqual(
+        new Program([
+          new WhileStatement(new BooleanLiteral(true), [new BreakStatement()]),
+        ]),
+      );
+    });
+
+    it("parses nested while loop with inner break", () => {
+      const ast = parse("while (true) { while (false) { break } }");
+      expect(ast).toEqual(
+        new Program([
+          new WhileStatement(new BooleanLiteral(true), [
+            new WhileStatement(new BooleanLiteral(false), [
+              new BreakStatement(),
+            ]),
+          ]),
+        ]),
+      );
+    });
+
+    it("parses 'break' inside if block within while", () => {
+      const ast = parse("while (true) { if (true) { break } }");
+      expect(ast).toEqual(
+        new Program([
+          new WhileStatement(new BooleanLiteral(true), [
+            new IfStatement(new BooleanLiteral(true), [new BreakStatement()]),
+          ]),
+        ]),
+      );
+    });
+
+    it("parses statement before break in same block", () => {
+      const ast = parse("while (true) { x = 1\nbreak }");
+      expect(ast).toEqual(
+        new Program([
+          new WhileStatement(new BooleanLiteral(true), [
+            new VariableAssigment("x", new Numeral("1")),
+            new BreakStatement(),
+          ]),
+        ]),
+      );
+    });
+
+    it("throws SyntaxError for 'break' at top level", () => {
+      expect(() => parse("break")).toThrow(
+        new SyntaxError("'break' used outside a loop"),
+      );
+    });
+
+    it("throws SyntaxError for 'break' inside if without enclosing loop", () => {
+      expect(() => parse("if (true) { break }")).toThrow(
+        new SyntaxError("'break' used outside a loop"),
+      );
+    });
+
+    it("throws SyntaxError for 'break' inside named function", () => {
+      expect(() => parse("function foo() { break }")).toThrow(
+        new SyntaxError("'break' used outside a loop"),
+      );
+    });
+
+    it("throws SyntaxError for 'break' inside function nested in loop", () => {
+      expect(() => parse("while (true) { function foo() { break } }")).toThrow(
+        new SyntaxError("'break' used outside a loop"),
+      );
+    });
+  });
+
+  describe("continue statement", () => {
+    it("parses 'continue' inside a while loop with if", () => {
+      const ast = parse(
+        "while (i < 10) { if (i == 3) { continue }\n i = i + 1 }",
+      );
+      expect(ast).toEqual(
+        new Program([
+          new WhileStatement(
+            new BinaryOperation(
+              new VariableAccess("i"),
+              "<",
+              new Numeral("10"),
+            ),
+            [
+              new IfStatement(
+                new BinaryOperation(
+                  new VariableAccess("i"),
+                  "==",
+                  new Numeral("3"),
+                ),
+                [new ContinueStatement()],
+              ),
+              new VariableAssigment(
+                "i",
+                new BinaryOperation(
+                  new VariableAccess("i"),
+                  "+",
+                  new Numeral("1"),
+                ),
+              ),
+            ],
+          ),
+        ]),
+      );
+    });
+
+    it("parses loop with both break and continue", () => {
+      const ast = parse("while (true) { break\ncontinue }");
+      expect(ast).toEqual(
+        new Program([
+          new WhileStatement(new BooleanLiteral(true), [
+            new BreakStatement(),
+            new ContinueStatement(),
+          ]),
+        ]),
+      );
+    });
+
+    it("parses 'continue' inside else block within while", () => {
+      const ast = parse(
+        "while (true) { if (true) { break } else { continue } }",
+      );
+      expect(ast).toEqual(
+        new Program([
+          new WhileStatement(new BooleanLiteral(true), [
+            new IfStatement(
+              new BooleanLiteral(true),
+              [new BreakStatement()],
+              [new ContinueStatement()],
+            ),
+          ]),
+        ]),
+      );
+    });
+
+    it("throws SyntaxError for 'continue' at top level", () => {
+      expect(() => parse("continue")).toThrow(
+        new SyntaxError("'continue' used outside a loop"),
+      );
+    });
+
+    it("throws SyntaxError for 'continue' inside anonymous function nested in loop", () => {
+      expect(() =>
+        parse("while (true) { x = function () { continue } }"),
+      ).toThrow(new SyntaxError("'continue' used outside a loop"));
     });
   });
 });

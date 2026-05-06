@@ -9,7 +9,7 @@ import {
 } from "vitest";
 
 import { RuntimeError } from "../Interpreter/errors";
-import { run } from "./utils";
+import { run } from "../testingUtils";
 
 describe("print builtin", () => {
   let consoleSpy: MockInstance;

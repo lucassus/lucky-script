@@ -2,6 +2,8 @@ import type { AstNode } from "../Parser";
 import { BinaryOperation, Numeral, UnaryOperation } from "../Parser";
 import {
   BooleanLiteral,
+  BreakStatement,
+  ContinueStatement,
   FunctionCall,
   FunctionDeclaration,
   IfStatement,
@@ -14,7 +16,7 @@ import {
   WhileStatement,
 } from "../Parser/AstNode";
 import { BUILTINS } from "./builtins";
-import { Return } from "./ControlFlow";
+import { Break, Continue, Return } from "./ControlFlow";
 import { RuntimeError } from "./errors";
 import type { LuckyObject } from "./objects";
 import {
@@ -105,6 +107,14 @@ export class Interpreter {
 
     if (node instanceof WhileStatement) {
       return this.visitWhileStatement(node);
+    }
+
+    if (node instanceof BreakStatement) {
+      return this.visitBreakStatement(node);
+    }
+
+    if (node instanceof ContinueStatement) {
+      return this.visitContinueStatement(node);
     }
 
     if (node instanceof ReturnStatement) {
@@ -334,12 +344,28 @@ export class Interpreter {
   }
 
   private visitWhileStatement(node: WhileStatement): LuckyObject {
-    while (this.visit(node.condition).toBoolean() === LuckyBoolean.True) {
+    outer: while (
+      this.visit(node.condition).toBoolean() === LuckyBoolean.True
+    ) {
       for (const statement of node.body) {
-        this.visit(statement);
+        try {
+          this.visit(statement);
+        } catch (e) {
+          if (e instanceof Break) break outer;
+          if (e instanceof Continue) continue outer;
+          throw e;
+        }
       }
     }
 
     return LuckyNothing.Instance;
+  }
+
+  private visitBreakStatement(_node: BreakStatement): never {
+    throw new Break();
+  }
+
+  private visitContinueStatement(_node: ContinueStatement): never {
+    throw new Continue();
   }
 }
