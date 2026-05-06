@@ -237,6 +237,4 @@ x = y = 1
 
 ## Planned features
 
-- `break` / `continue` inside `while`
-- Lists (`[1, 2, 3]`)
-- `for-each` loop
+See [roadmap.md](roadmap.md) for the full roadmap with descriptions and examples.
