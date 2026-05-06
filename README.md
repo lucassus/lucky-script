@@ -6,7 +6,7 @@ Lucky Script is a scripting language built from scratch in TypeScript. It has a 
 - First-class functions and closures
 - Function-scoped variables with explicit `local` and `outer` binding
 - `if` / `else` / `else if` control flow
-- `while` loops
+- `while` loops with `break` and `continue`
 - Arithmetic, comparison, and unary operators
 - Boolean operators: `and`, `or`, `not` (with short-circuit evaluation)
 - Boolean literals: `true`, `false`
@@ -72,6 +72,29 @@ while (i < 5) {
   i = i + 1
 }
 ```
+
+## break and continue
+
+`break` exits the loop immediately; `continue` skips the rest of the current iteration and re-evaluates the condition.
+
+```
+i = 0
+while (true) {
+  if (i == 5) { break }
+  i = i + 1
+}
+# i == 5 after the loop
+
+i = 0
+while (i < 10) {
+  i = i + 1
+  if (i == 3) { continue }
+  print(i)
+}
+# prints 1 2 4 5 6 7 8 9 10 (3 is skipped)
+```
+
+Both keywords are parse-time checked: using `break` or `continue` outside a loop (including inside a function literal nested in a loop) is a `SyntaxError`.
 
 ## It supports basic if statements and the recursion:
 

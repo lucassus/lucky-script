@@ -98,9 +98,3 @@ For each affected layer, write tests first, then implement. Work in this order:
 ### Step 3 — Final quality check
 
 Run `yarn lint && yarn typecheck && yarn test`. Fix all failures before finishing.
-
-<!-- SPECKIT START -->
-For additional context about technologies to be used, project structure,
-shell commands, and other important information, read the current plan at
-`specs/001-while-break-continue/plan.md`.
-<!-- SPECKIT END -->

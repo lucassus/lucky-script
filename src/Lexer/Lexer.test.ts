@@ -281,15 +281,17 @@ describe("Lexer", () => {
   });
 
   it.each`
-    input      | keyword
-    ${"true"}  | ${Keyword.True}
-    ${"false"} | ${Keyword.False}
-    ${"and"}   | ${Keyword.And}
-    ${"or"}    | ${Keyword.Or}
-    ${"not"}   | ${Keyword.Not}
-    ${"local"} | ${Keyword.Local}
-    ${"outer"} | ${Keyword.Outer}
-    ${"while"} | ${Keyword.While}
+    input         | keyword
+    ${"true"}     | ${Keyword.True}
+    ${"false"}    | ${Keyword.False}
+    ${"and"}      | ${Keyword.And}
+    ${"or"}       | ${Keyword.Or}
+    ${"not"}      | ${Keyword.Not}
+    ${"local"}    | ${Keyword.Local}
+    ${"outer"}    | ${Keyword.Outer}
+    ${"while"}    | ${Keyword.While}
+    ${"break"}    | ${Keyword.Break}
+    ${"continue"} | ${Keyword.Continue}
   `("tokenizes '$input' as a keyword", ({ input, keyword }) => {
     const tokens = [...new Lexer(input).tokenize()];
     expect(tokens[0]).toEqual(new Token(keyword, anyLocation));

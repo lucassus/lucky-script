@@ -113,6 +113,10 @@ export class WhileStatement extends Statement {
   }
 }
 
+export class BreakStatement extends Statement {}
+
+export class ContinueStatement extends Statement {}
+
 export class ReturnStatement extends Statement {
   constructor(public readonly expression: Expression) {
     super();

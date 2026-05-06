@@ -13,3 +13,17 @@ export class Return extends ControlFlow {
     Object.setPrototypeOf(this, Return.prototype);
   }
 }
+
+export class Break extends ControlFlow {
+  constructor() {
+    super("Break");
+    Object.setPrototypeOf(this, Break.prototype);
+  }
+}
+
+export class Continue extends ControlFlow {
+  constructor() {
+    super("Continue");
+    Object.setPrototypeOf(this, Continue.prototype);
+  }
+}
