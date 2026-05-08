@@ -77,9 +77,9 @@ describe("if statement with boolean condition", () => {
       expect(
         run(`
         result = 0
-        if (${condition}) {
+        if ${condition}
           result = 1
-        }
+        end
         result
       `),
       ).toBe(expected);
@@ -90,11 +90,11 @@ describe("if statement with boolean condition", () => {
     expect(
       run(`
         result = 0
-        if (false) {
+        if false
           result = 1
-        } else {
+        else
           result = 2
-        }
+        end
         result
       `),
     ).toBe(2);
@@ -104,9 +104,9 @@ describe("if statement with boolean condition", () => {
     expect(
       run(`
         result = 0
-        if (1 > 0 and true) {
+        if 1 > 0 and true
           result = 1
-        }
+        end
         result
       `),
     ).toBe(1);

@@ -4,21 +4,21 @@ import { run } from "../testingUtils";
 
 it("makeCounter closure using local and outer", () => {
   const script = `
-    function makeCounter() {
+    fn makeCounter()
       local n = 0
 
-      function inc() {
+      fn inc()
         outer n = n + 1
-      }
+      end
 
-      function get() {
+      fn get()
         return n
-      }
+      end
 
       inc()
       inc()
       return get()
-    }
+    end
 
     makeCounter()
   `;
@@ -28,20 +28,20 @@ it("makeCounter closure using local and outer", () => {
 
 it("two independent counters do not share state", () => {
   const script = `
-    function makeCounter(initial) {
+    fn makeCounter(initial)
       local n = initial
 
-      function inc() {
+      fn inc()
         outer n = n + 1
-      }
+      end
 
-      function get() {
+      fn get()
         return n
-      }
+      end
 
       inc()
       return get()
-    }
+    end
 
     a = makeCounter(0)
     b = makeCounter(1)

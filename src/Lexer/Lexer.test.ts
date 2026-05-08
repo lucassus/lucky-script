@@ -15,7 +15,7 @@ describe("Lexer", () => {
   it("tokenizes an empty input", () => {
     const lexer = new Lexer("");
 
-    expect(lexer.nextToken()).toEqual(new Token(Delimiter.End, anyLocation));
+    expect(lexer.nextToken()).toEqual(new Token(Delimiter.Eof, anyLocation));
   });
 
   describe("statements separators", () => {
@@ -31,7 +31,7 @@ describe("Lexer", () => {
         new Token(Literal.Number, anyLocation, "2"),
         new Token(Delimiter.NewLine, anyLocation),
         new Token(Delimiter.NewLine, anyLocation),
-        new Token(Delimiter.End, anyLocation),
+        new Token(Delimiter.Eof, anyLocation),
       ]);
     });
 
@@ -42,7 +42,7 @@ describe("Lexer", () => {
       expect(tokens.length).toBe(2);
       expect(tokens).toEqual([
         new Token(Delimiter.NewLine, anyLocation),
-        new Token(Delimiter.End, anyLocation),
+        new Token(Delimiter.Eof, anyLocation),
       ]);
     });
   });
@@ -62,7 +62,7 @@ describe("Lexer", () => {
       new Token(Literal.Number, anyLocation, "1"),
       new Token(Operator.Plus, anyLocation),
       new Token(Literal.Number, anyLocation, "2"),
-      new Token(Delimiter.End, anyLocation),
+      new Token(Delimiter.Eof, anyLocation),
     ]);
   });
 
@@ -81,7 +81,7 @@ describe("Lexer", () => {
       new Token(Delimiter.NewLine, anyLocation),
       new Token(Literal.Identifier, anyLocation, "second"),
       new Token(Delimiter.NewLine, anyLocation),
-      new Token(Delimiter.End, anyLocation),
+      new Token(Delimiter.Eof, anyLocation),
     ]);
   });
 
@@ -175,7 +175,7 @@ describe("Lexer", () => {
       new Token(Literal.Number, anyLocation, "1"),
       new Token(Operator.Plus, anyLocation),
       new Token(Literal.Number, anyLocation, "2"),
-      new Token(Delimiter.End, anyLocation),
+      new Token(Delimiter.Eof, anyLocation),
     ]);
   });
 
@@ -187,20 +187,12 @@ describe("Lexer", () => {
     expect(tokens).toEqual([
       new Token(Delimiter.LeftBracket, anyLocation),
       new Token(Delimiter.RightBracket, anyLocation),
-      new Token(Delimiter.End, anyLocation),
+      new Token(Delimiter.Eof, anyLocation),
     ]);
   });
 
-  it("recognizes left and right braces", () => {
-    const lexer = new Lexer("{}");
-    const tokens = [...lexer.tokenize()];
-
-    expect(tokens.length).toBe(3);
-    expect(tokens).toEqual([
-      new Token(Delimiter.LeftBrace, anyLocation),
-      new Token(Delimiter.RightBrace, anyLocation),
-      new Token(Delimiter.End, anyLocation),
-    ]);
+  it("throws IllegalSymbolError for braces", () => {
+    expect(() => [...new Lexer("{}").tokenize()]).toThrow(IllegalSymbolError);
   });
 
   describe("identifiers", () => {
@@ -229,28 +221,39 @@ describe("Lexer", () => {
         new Token(Literal.Identifier, anyLocation, "someVar"),
         new Token(Operator.Assigment, anyLocation),
         new Token(Literal.Number, anyLocation, "123"),
-        new Token(Delimiter.End, anyLocation),
+        new Token(Delimiter.Eof, anyLocation),
+      ]);
+    });
+
+    it("tokenizes 'function' as an identifier", () => {
+      const lexer = new Lexer("function");
+      const tokens = [...lexer.tokenize()];
+
+      expect(tokens).toEqual([
+        new Token(Literal.Identifier, anyLocation, "function"),
+        new Token(Delimiter.Eof, anyLocation),
       ]);
     });
   });
 
-  it("recognizes function declaration", () => {
-    const lexer = new Lexer("function add() { return 1 + 2 }");
+  it("recognizes fn declaration", () => {
+    const lexer = new Lexer("fn add()\n  return 1 + 2\nend");
     const tokens = [...lexer.tokenize()];
 
-    expect(tokens.length).toBe(11);
+    expect(tokens.length).toBe(12);
     expect(tokens).toEqual([
-      new Token(Keyword.Function, anyLocation),
+      new Token(Keyword.Fn, anyLocation),
       new Token(Literal.Identifier, anyLocation, "add"),
       new Token(Delimiter.LeftBracket, anyLocation),
       new Token(Delimiter.RightBracket, anyLocation),
-      new Token(Delimiter.LeftBrace, anyLocation),
+      new Token(Delimiter.NewLine, anyLocation),
       new Token(Keyword.Return, anyLocation),
       new Token(Literal.Number, anyLocation, "1"),
       new Token(Operator.Plus, anyLocation),
       new Token(Literal.Number, anyLocation, "2"),
-      new Token(Delimiter.RightBrace, anyLocation),
-      new Token(Delimiter.End, anyLocation),
+      new Token(Delimiter.NewLine, anyLocation),
+      new Token(Keyword.End, anyLocation),
+      new Token(Delimiter.Eof, anyLocation),
     ]);
   });
 
@@ -260,27 +263,26 @@ describe("Lexer", () => {
 
     expect(tokens).toEqual([
       new Token(Keyword.Nothing, anyLocation),
-      new Token(Delimiter.End, anyLocation),
+      new Token(Delimiter.Eof, anyLocation),
     ]);
   });
 
-  it("recognizes if expressions", () => {
-    const lexer = new Lexer("if (x < 1) { return 123 }");
+  it("recognizes if expression", () => {
+    const lexer = new Lexer("if x < 1\n  return 123\nend");
     const tokens = [...lexer.tokenize()];
 
-    expect(tokens.length).toBe(11);
+    expect(tokens.length).toBe(10);
     expect(tokens).toEqual([
       new Token(Keyword.If, anyLocation),
-      new Token(Delimiter.LeftBracket, anyLocation),
       new Token(Literal.Identifier, anyLocation, "x"),
       new Token(Operator.Lt, anyLocation),
       new Token(Literal.Number, anyLocation, "1"),
-      new Token(Delimiter.RightBracket, anyLocation),
-      new Token(Delimiter.LeftBrace, anyLocation),
+      new Token(Delimiter.NewLine, anyLocation),
       new Token(Keyword.Return, anyLocation),
       new Token(Literal.Number, anyLocation, "123"),
-      new Token(Delimiter.RightBrace, anyLocation),
-      new Token(Delimiter.End, anyLocation),
+      new Token(Delimiter.NewLine, anyLocation),
+      new Token(Keyword.End, anyLocation),
+      new Token(Delimiter.Eof, anyLocation),
     ]);
   });
 
@@ -296,6 +298,11 @@ describe("Lexer", () => {
     ${"while"}    | ${Keyword.While}
     ${"break"}    | ${Keyword.Break}
     ${"continue"} | ${Keyword.Continue}
+    ${"fn"}       | ${Keyword.Fn}
+    ${"end"}      | ${Keyword.End}
+    ${"then"}     | ${Keyword.Then}
+    ${"elseif"}   | ${Keyword.ElseIf}
+    ${"in"}       | ${Keyword.In}
   `("tokenizes '$input' as a keyword", ({ input, keyword }) => {
     const tokens = [...new Lexer(input).tokenize()];
     expect(tokens[0]).toEqual(new Token(keyword, anyLocation));
@@ -310,7 +317,7 @@ describe("Lexer", () => {
       new Token(Literal.Identifier, anyLocation, "x"),
       new Token(Operator.Assigment, anyLocation),
       new Token(Literal.Number, anyLocation, "1"),
-      new Token(Delimiter.End, anyLocation),
+      new Token(Delimiter.Eof, anyLocation),
     ]);
   });
 
@@ -323,7 +330,7 @@ describe("Lexer", () => {
       new Token(Literal.Identifier, anyLocation, "x"),
       new Token(Operator.Assigment, anyLocation),
       new Token(Literal.Number, anyLocation, "1"),
-      new Token(Delimiter.End, anyLocation),
+      new Token(Delimiter.Eof, anyLocation),
     ]);
   });
 
@@ -426,7 +433,7 @@ describe("Lexer", () => {
     });
 
     token = lexer.nextToken();
-    expect(token.type).toBe(Delimiter.End);
+    expect(token.type).toBe(Delimiter.Eof);
     expect(token.location).toEqual<Location>({
       position: 17,
       line: 3,

@@ -14,10 +14,12 @@ describe("break", () => {
   it("increments counter until 5 then breaks", () => {
     const script = `
       i = 0
-      while (true) {
-        if (i == 5) { break }
+      while true
+        if i == 5
+          break
+        end
         i = i + 1
-      }
+      end
       i
     `;
     expect(run(script)).toBe(5);
@@ -26,10 +28,10 @@ describe("break", () => {
   it("body executes once before break; variable visible after loop", () => {
     const script = `
       x = 0
-      while (true) {
+      while true
         x = 99
         break
-      }
+      end
       x
     `;
     expect(run(script)).toBe(99);
@@ -39,15 +41,15 @@ describe("break", () => {
     const script = `
       outerCount = 0
       i = 0
-      while (i < 3) {
+      while i < 3
         i = i + 1
         outerCount = outerCount + 1
         j = 0
-        while (true) {
+        while true
           j = j + 1
           break
-        }
-      }
+        end
+      end
       outerCount
     `;
     expect(run(script)).toBe(3);
@@ -68,11 +70,13 @@ describe("continue", () => {
   it("prints 1-10 skipping 3", () => {
     const script = `
       i = 0
-      while (i < 10) {
+      while i < 10
         i = i + 1
-        if (i == 3) { continue }
+        if i == 3
+          continue
+        end
         print(i)
-      }
+      end
     `;
     run(script);
     const calls = consoleSpy.mock.calls.map((c) => c[0]);
@@ -83,11 +87,11 @@ describe("continue", () => {
     const script = `
       i = 0
       sideEffect = 0
-      while (i < 5) {
+      while i < 5
         i = i + 1
         continue
         sideEffect = sideEffect + 1
-      }
+      end
       sideEffect
     `;
     expect(run(script)).toBe(0);
@@ -97,15 +101,17 @@ describe("continue", () => {
     const script = `
       outerCount = 0
       i = 0
-      while (i < 3) {
+      while i < 3
         i = i + 1
         outerCount = outerCount + 1
         j = 0
-        while (j < 3) {
+        while j < 3
           j = j + 1
-          if (j == 2) { continue }
-        }
-      }
+          if j == 2
+            continue
+          end
+        end
+      end
       outerCount
     `;
     expect(run(script)).toBe(3);

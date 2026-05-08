@@ -71,11 +71,11 @@ describe("string in boolean context", () => {
     expect(
       run(`
       result = 0
-      if ("") {
+      if ""
         result = 1
-      } else {
+      else
         result = 2
-      }
+      end
       result
     `),
     ).toBe(2);
@@ -85,9 +85,9 @@ describe("string in boolean context", () => {
     expect(
       run(`
       result = 0
-      if ("hello") {
+      if "hello"
         result = 1
-      }
+      end
       result
     `),
     ).toBe(1);

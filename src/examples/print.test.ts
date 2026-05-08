@@ -59,9 +59,9 @@ describe("print builtin", () => {
   it("can be overwritten by user code", () => {
     run(`
       called = 0
-      function myPrint(x) {
+      fn myPrint(x)
         outer called = 1
-      }
+      end
       print = myPrint
       print(42)
     `);
@@ -70,9 +70,9 @@ describe("print builtin", () => {
 
   it("local print inside a function does not affect print in other functions", () => {
     run(`
-      function usesLocalPrint() {
+      fn usesLocalPrint()
         local print = "shadowed"
-      }
+      end
       usesLocalPrint()
       print(42)
     `);

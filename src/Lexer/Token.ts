@@ -41,9 +41,10 @@ export class Keyword extends TokenType {
     Keyword.values.push(this);
   }
 
-  static Function = new Keyword("function");
+  static Fn = new Keyword("fn");
   static If = new Keyword("if");
   static Else = new Keyword("else");
+  static ElseIf = new Keyword("elseif");
   static While = new Keyword("while");
   static Return = new Keyword("return");
   static Nothing = new Keyword("nothing");
@@ -56,6 +57,9 @@ export class Keyword extends TokenType {
   static Outer = new Keyword("outer");
   static Break = new Keyword("break");
   static Continue = new Keyword("continue");
+  static End = new Keyword("end");
+  static Then = new Keyword("then");
+  static In = new Keyword("in");
 
   static fromString(string: string): undefined | Keyword {
     return this.values.find((keyword) => keyword.name === string);
@@ -65,11 +69,9 @@ export class Keyword extends TokenType {
 export class Delimiter extends TokenType {
   static LeftBracket = new Delimiter("(");
   static RightBracket = new Delimiter(")");
-  static LeftBrace = new Delimiter("{");
-  static RightBrace = new Delimiter("}");
   static NewLine = new Delimiter("NewLine");
   static Comma = new Delimiter(",");
-  static End = new Delimiter("End");
+  static Eof = new Delimiter("Eof");
 }
 
 export interface Location {

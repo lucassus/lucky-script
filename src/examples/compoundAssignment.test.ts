@@ -28,12 +28,12 @@ it("bare compound assignment with all operators", () => {
 it("bare compound assignment inside function creates local binding", () => {
   const script = `
     x = 1
-    
-    function foo() {
+
+    fn foo()
       x += 99
       return x
-    }
-    
+    end
+
     foo()
     x
   `;
@@ -44,12 +44,12 @@ it("bare compound assignment inside function creates local binding", () => {
 it("local compound assignment reads outer then writes local", () => {
   const script = `
     x = 10
-    
-    function foo() {
+
+    fn foo()
       local x += 5
       return x
-    }
-    
+    end
+
     foo()
   `;
 
@@ -59,11 +59,11 @@ it("local compound assignment reads outer then writes local", () => {
 it("outer compound assignment mutates enclosing variable", () => {
   const script = `
     x = 10
-    
-    function foo() {
+
+    fn foo()
       outer x += 5
-    }
-    
+    end
+
     foo()
     x
   `;
@@ -73,18 +73,18 @@ it("outer compound assignment mutates enclosing variable", () => {
 
 it("outer compound assignment in nested function", () => {
   const script = `
-    function makeCounter() {
+    fn makeCounter()
       local n = 0
-      
-      function inc() {
+
+      fn inc()
         outer n += 1
-      }
-      
+      end
+
       inc()
       inc()
       return n
-    }
-    
+    end
+
     makeCounter()
   `;
 
@@ -106,12 +106,12 @@ it("compound assignment in while loop", () => {
   const script = `
     i = 0
     sum = 0
-    
-    while (i < 5) {
+
+    while i < 5
       sum += i
       i += 1
-    }
-    
+    end
+
     sum
   `;
 
@@ -121,18 +121,18 @@ it("compound assignment in while loop", () => {
 it("compound assignment with local in nested scopes", () => {
   const script = `
     x = 100
-    
-    function outerFn() {
+
+    fn outerFn()
       local x = 10
-      
-      function inner() {
+
+      fn inner()
         local x += 5
         return x
-      }
-      
+      end
+
       return inner() + x
-    }
-    
+    end
+
     outerFn()
   `;
 

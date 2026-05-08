@@ -16,9 +16,11 @@ local_assignment   : "local" IDENTIFIER ("=" | "+=" | "-=" | "*=" | "/=") expres
 
 outer_assignment   : "outer" IDENTIFIER ("=" | "+=" | "-=" | "*=" | "/=") expression
 
-if_statement       : "if" "(" expression ")" block ("else" (if_statement | block))?
+if_statement       : "if" expression condition_end statements ("elseif" expression condition_end statements)* ("else" statements)? "end"
 
-while_statement    : "while" "(" expression ")" block
+condition_end      : "then" | _NEWLINE
+
+while_statement    : "while" expression condition_end statements "end"
 
 break_statement    : "break"
 
@@ -43,13 +45,12 @@ arith_expression   : term (("+" | "-") term)*
 
 assigment          : IDENTIFIER ("=" | "+=" | "-=" | "*=" | "/=") expression
 
-func_declaration   : "function" IDENTIFIER "(" func_parameters ")" block
+func_declaration   : "fn" IDENTIFIER "(" func_parameters ")" _NEWLINE? statements "end"
 
-anonymous_func     : "function" "(" func_parameters ")" block
+anonymous_func     : "fn" "(" func_parameters ")" _NEWLINE statements "end"
+                   | "fn" "(" func_parameters ")" expression
 
 func_parameters    : (IDENTIFIER ("," IDENTIFIER)*)?
-
-block              : "{" statements "}"
 
 term               : factor (("*" | "/") factor)*
 

@@ -5,8 +5,9 @@ Lucky Script is a scripting language built from scratch in TypeScript. It has a 
 **Features:**
 - First-class functions and closures
 - Function-scoped variables with explicit `local` and `outer` binding
-- `if` / `else` / `else if` control flow
+- `if` / `elseif` / `else` control flow
 - `while` loops with `break` and `continue`
+- Short-form lambda expressions: `fn(x) x * 2`
 - Arithmetic, comparison, and unary operators
 - Compound assignment operators: `+=`, `-=`, `*=`, `/=`
 - Boolean operators: `and`, `or`, `not` (with short-circuit evaluation)
@@ -28,50 +29,88 @@ Lucky Script is a scripting language built from scratch in TypeScript. It has a 
 > 1 + 2 * 3 ** 5.2
 606.4252366531416
 
-> function add(a, b) { return a + b }
-undefined
+> fn add(a, b)
+  return a + b
+end
+nothing
 > add(1, 2)
 3
 
-> function asdf
-SyntaxError: Expected '(' delimiter but got 'End' delimiter.
+> fn asdf
+SyntaxError: Expected '(' delimiter but got 'end' keyword.
 
-> function foo() asdf
-SyntaxError: Expected '{' delimiter but got 'Identifier' literal.
+> fn foo() asdf
+SyntaxError: Expected 'end' keyword but got 'Identifier' literal.
 ```
 
 ## Functions
 
+Functions use the `fn` keyword and `end` delimiter:
+
 ```
-function add(a, b) {
+fn add(a, b)
   return a + b
-}
+end
 
 add(1, 2) * 2 - 1  # Evaluates to 5
 ```
 
-## If / else
+### Short-form lambda
+
+Anonymous functions with a single expression can be written inline without `end`. The expression is implicitly returned:
 
 ```
-function classify(n) {
-  if (n < 0) {
+double = fn(x) x * 2
+double(3)  # => 6
+
+fn(a, b) a + b
+```
+
+For anything more complex, use the full form:
+
+```
+fn(x)
+  local y = x * 2
+  return y + 1
+end
+```
+
+## If / elseif / else
+
+Conditions are not wrapped in parentheses. The condition is terminated by a newline or the `then` keyword:
+
+```
+fn classify(n)
+  if n < 0
     return -1
-  } else if (n == 0) {
+  elseif n == 0
     return 0
-  } else {
+  else
     return 1
-  }
-}
+  end
+end
+```
+
+Single-line with `then`:
+
+```
+if x > 0 then print(x) end
 ```
 
 ## While loops
 
 ```
 i = 0
-while (i < 5) {
+while i < 5
   print(i)
   i = i + 1
-}
+end
+```
+
+Single-line with `then`:
+
+```
+while true then break end
 ```
 
 ## break and continue
@@ -80,18 +119,20 @@ while (i < 5) {
 
 ```
 i = 0
-while (true) {
-  if (i == 5) { break }
+while true
+  if i == 5 then break end
   i = i + 1
-}
+end
 # i == 5 after the loop
 
 i = 0
-while (i < 10) {
+while i < 10
   i = i + 1
-  if (i == 3) { continue }
+  if i == 3
+    continue
+  end
   print(i)
-}
+end
 # prints 1 2 4 5 6 7 8 9 10 (3 is skipped)
 ```
 
@@ -100,43 +141,50 @@ Both keywords are parse-time checked: using `break` or `continue` outside a loop
 ## It supports basic if statements and the recursion:
 
 ```
-function fib(n) {
-  if (n < 2) {
+fn fib(n)
+  if n < 2
     return n
-  }
-  
+  end
+
   return fib(n - 2) + fib(n - 1)
-}
+end
 ```
 
 ## Higher order functions are also supported:
 
 ```
-foo = function() { 
+foo = fn()
   x = 1
-  
+
   # Yes! It's a function that returns another function ;)
-  return function() {
+  return fn()
     return x + 2
-  }
-}
+  end
+end
 
 bar = foo()
 bar()
 ```
 
+With short-form lambdas:
+
+```
+nums.map(fn(x) x * 2)
+nums.filter(fn(x) x > 1)
+```
+
 ## Variable scoping
 
-Only function calls create a new scope. `if`, `else`, and `while` execute in the enclosing scope.
+Only function calls create a new scope. `if`, `elseif`, `else`, and `while` execute in the enclosing scope.
 
 ```
 a = 1
 
-function foo() {
+fn foo()
   a = 2       # local to foo — does NOT mutate outer a
   outer a = 2 # explicitly mutates the outer a
   local b = 3 # explicitly local, shadows any outer binding named b
-}
+end
 ```
 
 Reads always walk the full scope chain:
@@ -144,9 +192,9 @@ Reads always walk the full scope chain:
 ```
 x = 10
 
-function double() {
+fn double()
   return x * 2  # reads x from the enclosing scope
-}
+end
 
 double()  # => 20
 x = 5
@@ -156,21 +204,21 @@ double()  # => 10
 Closures with `outer`:
 
 ```
-function makeCounter() {
+fn makeCounter()
   local n = 0
 
-  function inc() {
+  fn inc()
     outer n = n + 1
-  }
+  end
 
-  function get() {
+  fn get()
     return n
-  }
+  end
 
   inc()
   inc()
   return get()
-}
+end
 
 makeCounter()  # => 2
 ```
@@ -240,8 +288,8 @@ greeting + " " + name   # => "hello world"
 "back\\slash"           # => back\slash
 
 # Truthiness: empty string is falsy, non-empty is truthy
-if ("") { ... }         # skipped
-if ("hello") { ... }    # runs
+if "" then ... end      # skipped
+if "hello" then ... end # runs
 ```
 
 ## Nothing
