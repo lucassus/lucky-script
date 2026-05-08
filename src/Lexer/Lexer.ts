@@ -30,7 +30,7 @@ export class Lexer {
     do {
       nextToken = this.nextToken();
       yield nextToken;
-    } while (nextToken.type !== Delimiter.End);
+    } while (nextToken.type !== Delimiter.Eof);
   }
 
   nextToken(): Token {
@@ -48,7 +48,7 @@ export class Lexer {
     this.startLocation = this.getCurrentLocation();
 
     if (this.currentSymbol === undefined) {
-      return this.createToken(Delimiter.End);
+      return this.createToken(Delimiter.Eof);
     }
 
     switch (this.currentSymbol) {
@@ -58,10 +58,6 @@ export class Lexer {
         return this.createToken(Delimiter.LeftBracket);
       case ")":
         return this.createToken(Delimiter.RightBracket);
-      case "{":
-        return this.createToken(Delimiter.LeftBrace);
-      case "}":
-        return this.createToken(Delimiter.RightBrace);
       case ",":
         return this.createToken(Delimiter.Comma);
 

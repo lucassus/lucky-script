@@ -20,52 +20,15 @@ Iterates over every element in a list. The loop variable is bound in the enclosi
 
 ```
 total = 0
-for item in [10, 20, 30] {
+for item in [10, 20, 30]
   total = total + item
-}
+end
 total   # => 60
 ```
 
 ---
 
 ## Later
-
-### Syntax overhaul â€” `fn` / `end` blocks
-
-Replace `function` / `{}` braces with `fn` / `end` to give the language a Python/Ruby feel. All blocks (`if`, `while`, `for`) use `end` as the closing delimiter. The `do` prefix is not required.
-
-This is a breaking change to the surface syntax, but the interpreter internals stay the same.
-
-```
-fn add(a, b)
-  a + b
-end
-
-if x > 0
-  print(x)
-end
-
-while x > 0
-  x = x - 1
-end
-```
-
-### Implicit return
-
-The last expression evaluated in a function body is returned automatically. Explicit `return` remains valid for early exit.
-
-```
-fn square(x)
-  x * x
-end
-
-fn classify(n)
-  if n < 0
-    return -1
-  end
-  n * 2
-end
-```
 
 ### Strict boolean conditions
 
@@ -107,9 +70,9 @@ Built-in methods on lists and strings via dot syntax. No user-defined classes â€
 
 ```
 nums = [1, 2, 3]
-nums.length                      # => 3
-nums.map(fn(x) x * 2 end)        # => [2, 4, 6]
-nums.filter(fn(x) x > 1 end)     # => [2, 3]
+nums.length                  # => 3
+nums.map(fn(x) x * 2)       # => [2, 4, 6]
+nums.filter(fn(x) x > 1)    # => [2, 3]
 
 "hello".upcase                   # => "HELLO"
 "hello".length                   # => 5

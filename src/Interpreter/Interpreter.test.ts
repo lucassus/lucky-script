@@ -129,10 +129,10 @@ describe("Interpreter", () => {
   describe("functions", () => {
     it("interprets function calls", () => {
       const script = `
-        function foo() {
+        fn foo()
           return 1 + 2
-        }
-        
+        end
+
         foo()
       `;
 
@@ -141,10 +141,10 @@ describe("Interpreter", () => {
 
     it("interprets function calls with arguments", () => {
       const script = `
-        function add(x, y) {
+        fn add(x, y)
           return x + y
-        }
-        
+        end
+
         add(1, 2)
       `;
 
@@ -153,15 +153,15 @@ describe("Interpreter", () => {
 
     it("interprets function calls with complex arguments", () => {
       const script = `
-        function giveMeOne() { return 1 }
-      
-        function add(x, fn) {
-          # Yes! It can take another function as parameter.
-          return x + fn()
-        }
-        
-        # A function call could take anonymous function
-        add(giveMeOne(), function () { return 2 })
+        fn giveMeOne()
+          return 1
+        end
+
+        fn add(x, f)
+          return x + f()
+        end
+
+        add(giveMeOne(), fn () 2)
       `;
 
       expect(run(script)).toBe(3);
@@ -177,10 +177,10 @@ describe("Interpreter", () => {
         "raises an error when invalid number of arguments is given",
         ({ args }) => {
           const script = `
-            function add(x, y) {
+            fn add(x, y)
               return x + y
-            }
-            
+            end
+
             add(${args})
           `;
 
@@ -192,9 +192,11 @@ describe("Interpreter", () => {
       );
 
       it("raises an error when anonymous function is called with invalid number of arguments", () => {
-        const script = `;
-          foo = function (x, y) { return x + y }
-          
+        const script = `
+          foo = fn (x, y)
+            return x + y
+          end
+
           foo(1, 2, 3)
         `;
 
@@ -206,16 +208,14 @@ describe("Interpreter", () => {
 
     it("obeys the return statement", () => {
       const script = `
-        function foo() {
+        fn foo()
           return 1 + 2
-          
-          # These lines should be skipped
-          
+
           3
           4
           return 5
-        }
-        
+        end
+
         foo()
       `;
 
@@ -224,7 +224,9 @@ describe("Interpreter", () => {
 
     it("returns nothing when the return statement is not present", () => {
       const script = `
-        function foo() { 123 }
+        fn foo()
+          123
+        end
         foo()
     `;
 
@@ -233,12 +235,14 @@ describe("Interpreter", () => {
 
     it("interprets nested function declaration", () => {
       const script = `
-        function foo() {
-          function bar() { return 3 }
-        
+        fn foo()
+          fn bar()
+            return 3
+          end
+
           return 1 + 2 + bar()
-        }
-        
+        end
+
         foo()
     `;
 
@@ -247,15 +251,14 @@ describe("Interpreter", () => {
 
     it("interprets anonymous functions", () => {
       const script = `
-        foo = function () { 
+        foo = fn ()
           x = 1
-          
-          # Yes! It's a function that returns another function ;)
-          return function () {
+
+          return fn ()
             return x + 2
-          }
-        }
-        
+          end
+        end
+
         bar = foo()
         bar()
       `;
@@ -265,8 +268,10 @@ describe("Interpreter", () => {
 
     it("raises an error on illegal binary operation", () => {
       const script = `
-        function foo() { return 1 }
-        
+        fn foo()
+          return 1
+        end
+
         1 + foo
     `;
 
@@ -283,8 +288,10 @@ describe("Interpreter", () => {
 
     it("raises an error on illegal unary operation", () => {
       const script = `
-        function foo() { return 1 }
-        
+        fn foo()
+          return 1
+        end
+
         -foo
     `;
 
@@ -314,7 +321,9 @@ describe("Interpreter", () => {
 
     it("allows to re-assign the function to a new identifier", () => {
       const script = `
-        function foo() { return 41 }
+        fn foo()
+          return 41
+        end
         bar = foo
         bar()
     `;
@@ -329,17 +338,17 @@ describe("Interpreter", () => {
       const script = `
         a = 1
 
-        function foo() {
+        fn foo()
           outer a = 2
           b = 1
 
-          function bar() {
+          fn bar()
             c = 3
             return a + b + c
-          }
+          end
 
           return bar()
-        }
+        end
 
         d = foo()
       `;
@@ -357,15 +366,13 @@ describe("Interpreter", () => {
       const symbolTable = new SymbolTable();
       const script = `
         a = 1
-        
-        function add() {
-          # Currently a is 1, but later its value will be changed
-          
+
+        fn add()
           return a + 1
-        }
-        
+        end
+
         firstResult = add()
-        
+
         a = 2
         secondResult = add()
       `;
@@ -380,14 +387,13 @@ describe("Interpreter", () => {
       const symbolTable = new SymbolTable();
       const script = `
         x = 1
-  
-        function foo(x) {
-          # Function argument x should shadow x from the parent scope
+
+        fn foo(x)
           x = x + 1
-          
+
           return x + 1
-        }
-  
+        end
+
         y = foo(2)
       `;
 
@@ -404,9 +410,9 @@ describe("Interpreter", () => {
       const script = `
         x = 0
 
-        if (x < 1) {
+        if x < 1
           x = 1
-        }
+        end
       `;
 
       run(script, symbolTable);
@@ -416,9 +422,9 @@ describe("Interpreter", () => {
     it("assignments inside if-block are visible in the enclosing scope", () => {
       const script = `
         x = 1
-        if (x < 2) {
+        if x < 2
           y = 99
-        }
+        end
         y
       `;
 
@@ -430,11 +436,11 @@ describe("Interpreter", () => {
       const script = `
         x = 5
 
-        if (x < 1) {
+        if x < 1
           x = 1
-        } else {
+        else
           x = 99
-        }
+        end
       `;
 
       run(script, symbolTable);
@@ -446,11 +452,11 @@ describe("Interpreter", () => {
       const script = `
         x = 0
 
-        if (x < 1) {
+        if x < 1
           x = 1
-        } else {
+        else
           x = 99
-        }
+        end
       `;
 
       run(script, symbolTable);
@@ -462,12 +468,11 @@ describe("Interpreter", () => {
       const script = `
         x = 5
 
-        if (x < 1) {
+        if x < 1
           x = 1
-        }
-        else {
+        else
           x = 99
-        }
+        end
       `;
 
       run(script, symbolTable);
@@ -479,13 +484,13 @@ describe("Interpreter", () => {
       const script = `
         x = 5
 
-        if (x < 1) {
+        if x < 1
           x = 1
-        } else if (x < 10) {
+        elseif x < 10
           x = 10
-        } else {
+        else
           x = 99
-        }
+        end
       `;
 
       run(script, symbolTable);
@@ -495,11 +500,11 @@ describe("Interpreter", () => {
     it("assignments inside else-block are visible in the enclosing scope", () => {
       const script = `
         x = 5
-        if (x < 1) {
+        if x < 1
           y = 1
-        } else {
+        else
           y = 99
-        }
+        end
         y
       `;
 
@@ -512,9 +517,8 @@ describe("Interpreter", () => {
       const symbolTable = new SymbolTable();
       const script = `
         count = 0
-        while (false) {
-          count = count + 1
-        }
+        while false
+        end
       `;
 
       run(script, symbolTable);
@@ -525,9 +529,9 @@ describe("Interpreter", () => {
       const symbolTable = new SymbolTable();
       const script = `
         i = 0
-        while (i < 3) {
+        while i < 3
           i = i + 1
-        }
+        end
       `;
 
       run(script, symbolTable);
@@ -538,9 +542,9 @@ describe("Interpreter", () => {
       const symbolTable = new SymbolTable();
       const script = `
         n = 3
-        while (n) {
+        while n
           n = n - 1
-        }
+        end
       `;
 
       run(script, symbolTable);
@@ -552,7 +556,8 @@ describe("Interpreter", () => {
       const script = `
         i = 0
         i = i + 1
-        while (false) {}
+        while false
+        end
       `;
 
       run(script, symbolTable);
@@ -560,16 +565,16 @@ describe("Interpreter", () => {
     });
 
     it("evaluates to nothing", () => {
-      expect(run("while (false) { 42 }")).toBe(undefined);
+      expect(run("while false\n  42\nend")).toBe(undefined);
     });
 
     it("a bare assignment inside the body persists after the loop", () => {
       const symbolTable = new SymbolTable();
       const script = `
         n = 0
-        while (n < 3) {
+        while n < 3
           n = n + 1
-        }
+        end
       `;
 
       run(script, symbolTable);
@@ -579,10 +584,10 @@ describe("Interpreter", () => {
     it("a new variable introduced inside the body is visible after the loop", () => {
       const script = `
         i = 0
-        while (i < 1) {
+        while i < 1
           result = 42
           i = i + 1
-        }
+        end
         result
       `;
       expect(run(script)).toBe(42);
@@ -590,14 +595,14 @@ describe("Interpreter", () => {
 
     it("local inside a while body inside a function binds in the function scope", () => {
       const script = `
-        function foo() {
+        fn foo()
           i = 0
-          while (i < 1) {
+          while i < 1
             local x = 7
             i = i + 1
-          }
+          end
           return x
-        }
+        end
         foo()
       `;
       expect(run(script)).toBe(7);
@@ -605,13 +610,15 @@ describe("Interpreter", () => {
 
     it("a return inside the body exits the enclosing function", () => {
       const script = `
-        function foo() {
+        fn foo()
           i = 0
-          while (true) {
-            if (i == 2) { return i }
+          while true
+            if i == 2
+              return i
+            end
             i = i + 1
-          }
-        }
+          end
+        end
         foo()
       `;
       expect(run(script)).toBe(2);
@@ -636,9 +643,9 @@ describe("Interpreter", () => {
       const symbolTable = new SymbolTable();
       const script = `
         x = 1
-        if (nothing) {
+        if nothing
           x = 2
-        }
+        end
       `;
 
       run(script, symbolTable);
@@ -655,7 +662,9 @@ describe("Interpreter", () => {
 
     it("allows returning nothing from a function", () => {
       const script = `
-        function foo() { return nothing }
+        fn foo()
+          return nothing
+        end
         foo()
       `;
       expect(run(script)).toBe(undefined);
@@ -666,7 +675,9 @@ describe("Interpreter", () => {
     it("bare write inside a function does not mutate outer binding", () => {
       const script = `
         x = 1
-        function foo() { x = 99 }
+        fn foo()
+          x = 99
+        end
         foo()
         x
       `;
@@ -675,11 +686,11 @@ describe("Interpreter", () => {
 
     it("bare write inside a function rebinds the local on subsequent writes", () => {
       const script = `
-        function foo() {
+        fn foo()
           x = 1
           x = 2
           return x
-        }
+        end
         foo()
       `;
       expect(run(script)).toBe(2);
@@ -688,7 +699,9 @@ describe("Interpreter", () => {
     it("local shadows an outer variable", () => {
       const script = `
         x = 1
-        function foo() { local x = 99 }
+        fn foo()
+          local x = 99
+        end
         foo()
         x
       `;
@@ -697,10 +710,10 @@ describe("Interpreter", () => {
 
     it("local can shadow a builtin inside a function", () => {
       const script = `
-        function foo() {
+        fn foo()
           local print = "shadowed"
           return print
-        }
+        end
         foo()
       `;
       expect(run(script)).toBe("shadowed");
@@ -708,11 +721,11 @@ describe("Interpreter", () => {
 
     it("duplicate local in the same scope rebinds silently", () => {
       const script = `
-        function foo() {
+        fn foo()
           local x = 1
           local x = 2
           return x
-        }
+        end
         foo()
       `;
       expect(run(script)).toBe(2);
@@ -721,7 +734,9 @@ describe("Interpreter", () => {
     it("outer mutates the top-level binding", () => {
       const script = `
         x = 1
-        function foo() { outer x = 99 }
+        fn foo()
+          outer x = 99
+        end
         foo()
         x
       `;
@@ -729,7 +744,7 @@ describe("Interpreter", () => {
     });
 
     it("outer raises ScopeError when no enclosing binding exists", () => {
-      expect(() => run("function foo() { outer y = 1 }\nfoo()")).toThrow(
+      expect(() => run("fn foo()\n  outer y = 1\nend\nfoo()")).toThrow(
         ScopeError,
       );
     });
@@ -737,7 +752,9 @@ describe("Interpreter", () => {
     it("if and while bodies do not introduce a new scope", () => {
       const script = `
         x = 0
-        if (x == 0) { y = 7 }
+        if x == 0
+          y = 7
+        end
         y
       `;
       expect(run(script)).toBe(7);
@@ -746,27 +763,29 @@ describe("Interpreter", () => {
     it("reads still walk the full scope chain", () => {
       const script = `
         x = 1
-        function foo() { return x }
+        fn foo()
+          return x
+        end
         foo()
       `;
       expect(run(script)).toBe(1);
     });
 
     it("builtins cannot be mutated via outer", () => {
-      expect(() =>
-        run(`function foo() { outer print = "nope" }\nfoo()`),
-      ).toThrow(ScopeError);
+      expect(() => run(`fn foo()\n  outer print = "nope"\nend\nfoo()`)).toThrow(
+        ScopeError,
+      );
     });
 
     it("read before a later local declaration sees the outer binding", () => {
       const symbolTable = new SymbolTable();
       const script = `
         x = 1
-        function foo() {
+        fn foo()
           result = x
           local x = 2
           return result
-        }
+        end
         foo()
       `;
       expect(run(script, symbolTable)).toBe(1);
@@ -779,10 +798,10 @@ describe("Interpreter", () => {
       run(
         `
         count = 0
-        while (true) {
+        while true
           count = count + 1
           break
-        }
+        end
       `,
         scope,
       );
@@ -794,10 +813,12 @@ describe("Interpreter", () => {
       run(
         `
         i = 0
-        while (true) {
-          if (i == 5) { break }
+        while true
+          if i == 5
+            break
+          end
           i = i + 1
-        }
+        end
         after = i
       `,
         scope,
@@ -810,9 +831,9 @@ describe("Interpreter", () => {
       run(
         `
         i = 0
-        while (true) {
+        while true
           break
-        }
+        end
         after = 42
       `,
         scope,
@@ -826,15 +847,15 @@ describe("Interpreter", () => {
         `
         outerCount = 0
         i = 0
-        while (i < 3) {
+        while i < 3
           i = i + 1
           outerCount = outerCount + 1
           j = 0
-          while (true) {
+          while true
             j = j + 1
             break
-          }
-        }
+          end
+        end
       `,
         scope,
       );
@@ -846,10 +867,10 @@ describe("Interpreter", () => {
       run(
         `
         sideEffect = 0
-        while (true) {
+        while true
           break
           sideEffect = 99
-        }
+        end
       `,
         scope,
       );
@@ -864,11 +885,13 @@ describe("Interpreter", () => {
         `
         i = 0
         sideEffect = 0
-        while (i < 5) {
+        while i < 5
           i = i + 1
-          if (i == 3) { continue }
+          if i == 3
+            continue
+          end
           sideEffect = sideEffect + 1
-        }
+        end
       `,
         scope,
       );
@@ -881,11 +904,11 @@ describe("Interpreter", () => {
         `
         i = 0
         sideEffect = 0
-        while (i < 5) {
+        while i < 5
           i = i + 1
           continue
           sideEffect = sideEffect + 1
-        }
+        end
       `,
         scope,
       );
@@ -899,19 +922,59 @@ describe("Interpreter", () => {
         `
         outerCount = 0
         i = 0
-        while (i < 3) {
+        while i < 3
           i = i + 1
           outerCount = outerCount + 1
           j = 0
-          while (j < 3) {
+          while j < 3
             j = j + 1
-            if (j == 2) { continue }
-          }
-        }
+            if j == 2
+              continue
+            end
+          end
+        end
       `,
         scope,
       );
       expect(scope.lookup("outerCount")).toEqual(new LuckyNumber(3));
+    });
+  });
+
+  describe("short-form lambda", () => {
+    it("returns the result of a single expression", () => {
+      const script = `
+        double = fn(x) x * 2
+        double(3)
+      `;
+      expect(run(script)).toBe(6);
+    });
+
+    it("works with multiple parameters", () => {
+      const script = `
+        add = fn(a, b) a + b
+        add(1, 2)
+      `;
+      expect(run(script)).toBe(3);
+    });
+
+    it("full-form function without return returns nothing", () => {
+      const script = `
+        fn foo()
+          1 + 2
+        end
+        foo()
+      `;
+      expect(run(script)).toBe(undefined);
+    });
+
+    it("short-form lambda as argument", () => {
+      const script = `
+        fn apply(f, x)
+          return f(x)
+        end
+        apply(fn(x) x * 2, 5)
+      `;
+      expect(run(script)).toBe(10);
     });
   });
 });

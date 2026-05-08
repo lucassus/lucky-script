@@ -40,23 +40,23 @@ export class Parser {
   }
 
   private program(): Program {
-    return new Program(this.statements(Delimiter.End));
+    return new Program(this.statements(Delimiter.Eof));
   }
 
-  // _NEWLINE* statement? (_NEWLINE+ statement?)*
-  private statements(end: TokenType): Statement[] {
+  private statements(endTokens: TokenType | TokenType[]): Statement[] {
+    const ends = Array.isArray(endTokens) ? endTokens : [endTokens];
     this.discardNewLines();
 
     const statements: Statement[] = [];
 
-    if (this.currentToken.type !== end) {
+    if (!ends.includes(this.currentToken.type)) {
       statements.push(this.statement());
 
-      while (this.currentToken.type != end) {
+      while (!ends.includes(this.currentToken.type)) {
         this.consume(Delimiter.NewLine);
         this.discardNewLines();
 
-        if (this.currentToken.type !== end) {
+        if (!ends.includes(this.currentToken.type)) {
           statements.push(this.statement());
         }
       }
@@ -72,7 +72,10 @@ export class Parser {
   }
 
   private statement(): Statement {
-    if (this.currentToken.type === Keyword.Function) {
+    if (
+      this.currentToken.type === Keyword.Fn &&
+      this.nextToken.type === Literal.Identifier
+    ) {
       return this.functionDeclaration();
     }
 
@@ -149,9 +152,6 @@ export class Parser {
     return new VariableAssigment(name, this.expression(), "outer");
   }
 
-  // : assigment
-  // | anonymous_func
-  // | or_expression
   private expression(): Expression {
     if (
       this.currentToken.type === Literal.Identifier &&
@@ -164,14 +164,16 @@ export class Parser {
       return this.assigment();
     }
 
-    if (this.currentToken.type === Keyword.Function) {
+    if (
+      this.currentToken.type === Keyword.Fn &&
+      this.nextToken.type === Delimiter.LeftBracket
+    ) {
       return this.anonymousFunction();
     }
 
     return this.orExpression();
   }
 
-  // arith_expression (("<=" | "<" | "==" | "!=" | ">" | ">=") arith_expression)*
   private comparison(): Expression {
     return this.binaryOperation(
       () => this.arithmeticExpression(),
@@ -209,14 +211,15 @@ export class Parser {
     );
   }
 
-  // "function" IDENTIFIER "(" func_args ")" block
   private functionDeclaration(): FunctionDeclaration {
-    this.consume(Keyword.Function);
+    this.consume(Keyword.Fn);
     const name = this.consume(Literal.Identifier).value;
 
     this.consume(Delimiter.LeftBracket);
     const parameters = this.functionParameters();
     this.consume(Delimiter.RightBracket);
+
+    this.discardNewLines();
 
     const savedDepth = this.loopDepth;
     this.loopDepth = 0;
@@ -227,24 +230,39 @@ export class Parser {
     }
   }
 
-  // "function" "(" func_parameters ")" block
   private anonymousFunction(): Expression {
-    this.consume(Keyword.Function);
+    this.consume(Keyword.Fn);
 
     this.consume(Delimiter.LeftBracket);
     const parameters = this.functionParameters();
     this.consume(Delimiter.RightBracket);
 
-    const savedDepth = this.loopDepth;
-    this.loopDepth = 0;
-    try {
-      return new FunctionDeclaration(undefined, parameters, this.block());
-    } finally {
-      this.loopDepth = savedDepth;
+    if (
+      this.currentToken.type === Delimiter.NewLine ||
+      this.currentToken.type === Keyword.End
+    ) {
+      const savedDepth = this.loopDepth;
+      this.loopDepth = 0;
+      try {
+        return new FunctionDeclaration(undefined, parameters, this.block());
+      } finally {
+        this.loopDepth = savedDepth;
+      }
     }
+
+    const expr = this.expression();
+
+    if (this.currentToken.type === Keyword.End) {
+      throw new SyntaxError(
+        "Short-form function must not be followed by 'end'. Use full form instead.",
+      );
+    }
+
+    return new FunctionDeclaration(undefined, parameters, [
+      new ReturnStatement(expr),
+    ]);
   }
 
-  // (IDENTIFIER ("," IDENTIFIER)*)?
   private functionParameters(): string[] {
     if (this.currentToken.type === Delimiter.RightBracket) {
       return [];
@@ -260,40 +278,61 @@ export class Parser {
     return args;
   }
 
-  // "if" "(" expression ")" block ("else" (if_statement | block))?
   private ifStatement(): IfStatement {
     this.consume(Keyword.If);
 
-    this.consume(Delimiter.LeftBracket);
     const condition = this.expression();
-    this.consume(Delimiter.RightBracket);
+    this.consumeConditionEnd();
 
-    const thenBranch = this.block();
+    const thenBranch = this.statements([
+      Keyword.ElseIf,
+      Keyword.Else,
+      Keyword.End,
+    ]);
+    this.discardNewLines();
+
     const elseBranch = this.tryParseElseBranch();
 
+    this.consume(Keyword.End);
     return new IfStatement(condition, thenBranch, elseBranch);
   }
 
   private tryParseElseBranch(): Statement[] | undefined {
+    this.discardNewLines();
+
+    if (this.currentToken.type === Keyword.ElseIf) {
+      return this.elseifBranch();
+    }
+
     if (this.currentToken.type === Keyword.Else) {
-      return this.elseBody();
+      return this.parseElseBranch();
     }
-    if (
-      this.currentToken.type === Delimiter.NewLine &&
-      this.nextToken.type === Keyword.Else
-    ) {
-      this.consume(Delimiter.NewLine);
-      return this.elseBody();
-    }
+
     return undefined;
   }
 
-  private elseBody(): Statement[] {
+  private elseifBranch(): Statement[] {
+    this.consume(Keyword.ElseIf);
+
+    const condition = this.expression();
+    this.consumeConditionEnd();
+
+    const body = this.statements([Keyword.ElseIf, Keyword.Else, Keyword.End]);
+    this.discardNewLines();
+
+    const elseBranch = this.tryParseElseBranch();
+    return [new IfStatement(condition, body, elseBranch)];
+  }
+
+  private parseElseBranch(): Statement[] {
     this.consume(Keyword.Else);
+    this.discardNewLines();
+
     if (this.currentToken.type === Keyword.If) {
-      return [this.ifStatement()];
+      throw new SyntaxError("Expected 'elseif' instead of 'else if'.");
     }
-    return this.block();
+
+    return this.statements(Keyword.End);
   }
 
   private breakStatement(): BreakStatement {
@@ -317,13 +356,11 @@ export class Parser {
     return new ReturnStatement(this.expression());
   }
 
-  // "while" "(" expression ")" block
   private whileStatement(): WhileStatement {
     this.consume(Keyword.While);
 
-    this.consume(Delimiter.LeftBracket);
     const condition = this.expression();
-    this.consume(Delimiter.RightBracket);
+    this.consumeConditionEnd();
 
     this.loopDepth++;
     try {
@@ -334,21 +371,23 @@ export class Parser {
   }
 
   private block(): Statement[] {
-    if (this.nextToken.type === Delimiter.RightBrace) {
-      this.consume(Delimiter.LeftBrace);
-      this.consume(Delimiter.RightBrace);
-
-      return [];
-    }
-
-    this.consume(Delimiter.LeftBrace);
-    const statements = this.statements(Delimiter.RightBrace);
-    this.consume(Delimiter.RightBrace);
-
-    return statements;
+    const stmts = this.statements(Keyword.End);
+    this.consume(Keyword.End);
+    return stmts;
   }
 
-  // IDENTIFIER "(" func_call_args ")"
+  private consumeConditionEnd(): void {
+    if (this.currentToken.type === Keyword.Then) {
+      this.consume(Keyword.Then);
+      this.discardNewLines();
+    } else if (this.currentToken.type === Delimiter.NewLine) {
+      this.consume(Delimiter.NewLine);
+      this.discardNewLines();
+    } else {
+      throw new SyntaxError("Expected 'then' or newline after condition.");
+    }
+  }
+
   private functionCall(): Expression {
     const name = this.consume(Literal.Identifier).value!;
 
@@ -359,7 +398,6 @@ export class Parser {
     return new FunctionCall(name, args);
   }
 
-  // (expression ("," expression)*)?
   private functionCallArguments(): Expression[] {
     if (this.currentToken.type === Delimiter.RightBracket) {
       return [];
@@ -375,7 +413,6 @@ export class Parser {
     return args;
   }
 
-  // IDENTIFIER ("=" | "+=" | "-=" | "*=" | "/=") expression
   private assigment(): Expression {
     const name = this.consume(Literal.Identifier).value!;
 
