@@ -110,6 +110,20 @@ export class Parser {
   private localAssignment(): VariableAssigment {
     this.consume(Keyword.Local);
     const name = this.consume(Literal.Identifier).value!;
+
+    const operator = this.currentToken.type;
+    const binaryOp = this.toBinaryOp(operator);
+
+    if (binaryOp) {
+      this.consume(operator);
+      const expr = this.expression();
+      return new VariableAssigment(
+        name,
+        new BinaryOperation(new VariableAccess(name), binaryOp, expr),
+        "local",
+      );
+    }
+
     this.consume(Operator.Assigment);
     return new VariableAssigment(name, this.expression(), "local");
   }
@@ -117,6 +131,20 @@ export class Parser {
   private outerAssignment(): VariableAssigment {
     this.consume(Keyword.Outer);
     const name = this.consume(Literal.Identifier).value!;
+
+    const operator = this.currentToken.type;
+    const binaryOp = this.toBinaryOp(operator);
+
+    if (binaryOp) {
+      this.consume(operator);
+      const expr = this.expression();
+      return new VariableAssigment(
+        name,
+        new BinaryOperation(new VariableAccess(name), binaryOp, expr),
+        "outer",
+      );
+    }
+
     this.consume(Operator.Assigment);
     return new VariableAssigment(name, this.expression(), "outer");
   }
@@ -127,7 +155,11 @@ export class Parser {
   private expression(): Expression {
     if (
       this.currentToken.type === Literal.Identifier &&
-      this.nextToken.type === Operator.Assigment
+      (this.nextToken.type === Operator.Assigment ||
+        this.nextToken.type === Operator.PlusAssign ||
+        this.nextToken.type === Operator.MinusAssign ||
+        this.nextToken.type === Operator.MultiplyAssign ||
+        this.nextToken.type === Operator.DivideAssign)
     ) {
       return this.assigment();
     }
@@ -343,11 +375,23 @@ export class Parser {
     return args;
   }
 
-  // IDENTIFIER "=" expression
+  // IDENTIFIER ("=" | "+=" | "-=" | "*=" | "/=") expression
   private assigment(): Expression {
     const name = this.consume(Literal.Identifier).value!;
-    this.consume(Operator.Assigment);
 
+    const operator = this.currentToken.type;
+    const binaryOp = this.toBinaryOp(operator);
+
+    if (binaryOp) {
+      this.consume(operator);
+      const expr = this.expression();
+      return new VariableAssigment(
+        name,
+        new BinaryOperation(new VariableAccess(name), binaryOp, expr),
+      );
+    }
+
+    this.consume(Operator.Assigment);
     return new VariableAssigment(name, this.expression());
   }
 
@@ -469,5 +513,13 @@ export class Parser {
 
   private get nextToken(): Token {
     return this.lexer.next;
+  }
+
+  private toBinaryOp(operator: TokenType): BinaryOperator | null {
+    if (operator === Operator.PlusAssign) return "+";
+    if (operator === Operator.MinusAssign) return "-";
+    if (operator === Operator.MultiplyAssign) return "*";
+    if (operator === Operator.DivideAssign) return "/";
+    return null;
   }
 }

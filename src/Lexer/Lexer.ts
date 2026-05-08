@@ -72,15 +72,26 @@ export class Lexer {
       // Operators
 
       case "+":
-        return this.createToken(Operator.Plus);
-      case "-":
-        return this.createToken(Operator.Minus);
-      case "*":
         return this.createToken(
-          this.nextSymbolMatches("*") ? Operator.Power : Operator.Multiply,
+          this.nextSymbolMatches("=") ? Operator.PlusAssign : Operator.Plus,
+        );
+      case "-":
+        return this.createToken(
+          this.nextSymbolMatches("=") ? Operator.MinusAssign : Operator.Minus,
+        );
+      case "*":
+        if (this.nextSymbolMatches("*")) {
+          return this.createToken(Operator.Power);
+        }
+        return this.createToken(
+          this.nextSymbolMatches("=")
+            ? Operator.MultiplyAssign
+            : Operator.Multiply,
         );
       case "/":
-        return this.createToken(Operator.Divide);
+        return this.createToken(
+          this.nextSymbolMatches("=") ? Operator.DivideAssign : Operator.Divide,
+        );
       case "<":
         return this.createToken(
           this.nextSymbolMatches("=") ? Operator.Lte : Operator.Lt,

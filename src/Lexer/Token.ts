@@ -14,6 +14,10 @@ export class Literal extends TokenType {
 
 export class Operator extends TokenType {
   static Assigment = new Operator("=");
+  static PlusAssign = new Operator("+=");
+  static MinusAssign = new Operator("-=");
+  static MultiplyAssign = new Operator("*=");
+  static DivideAssign = new Operator("/=");
 
   static Plus = new Operator("+");
   static Minus = new Operator("-");

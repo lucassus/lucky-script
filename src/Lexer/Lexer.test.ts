@@ -150,6 +150,10 @@ describe("Lexer", () => {
     ${"=="}  | ${Operator.Eq}
     ${">"}   | ${Operator.Gt}
     ${">="}  | ${Operator.Gte}
+    ${"+="}  | ${Operator.PlusAssign}
+    ${"-="}  | ${Operator.MinusAssign}
+    ${"*="}  | ${Operator.MultiplyAssign}
+    ${"/="}  | ${Operator.DivideAssign}
   `("recognizes operator $operator", ({ operator, tokenType }) => {
     const lexer = new Lexer(operator);
 

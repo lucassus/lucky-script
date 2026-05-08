@@ -133,16 +133,6 @@ end
 
 ## Future
 
-### Compound assignment
-
-`+=`, `-=`, `*=`, `/=` desugared to `x = x op e` at parse time. No new interpreter machinery needed.
-
-```
-x = 10
-x += 5    # => 15
-x *= 2    # => 30
-```
-
 ### User-defined classes / objects
 
 Struct-like objects with named fields and methods. Syntax and semantics TBD.
