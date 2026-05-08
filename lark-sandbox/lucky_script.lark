@@ -12,9 +12,9 @@ statement          : func_declaration
                    | outer_assignment
                    | expression
 
-local_assignment   : "local" IDENTIFIER "=" expression
+local_assignment   : "local" IDENTIFIER ("=" | "+=" | "-=" | "*=" | "/=") expression
 
-outer_assignment   : "outer" IDENTIFIER "=" expression
+outer_assignment   : "outer" IDENTIFIER ("=" | "+=" | "-=" | "*=" | "/=") expression
 
 if_statement       : "if" "(" expression ")" block ("else" (if_statement | block))?
 
@@ -41,7 +41,7 @@ comparison         : arith_expression (("<=" | "<" | "==" | "!=" | ">" | ">=") a
 
 arith_expression   : term (("+" | "-") term)*
 
-assigment          : IDENTIFIER "=" expression
+assigment          : IDENTIFIER ("=" | "+=" | "-=" | "*=" | "/=") expression
 
 func_declaration   : "function" IDENTIFIER "(" func_parameters ")" block
 

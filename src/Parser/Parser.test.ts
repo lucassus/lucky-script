@@ -248,6 +248,152 @@ describe("Parser", () => {
         ]),
       );
     });
+
+    describe("compound assignment", () => {
+      it("parses plus-equals assignment", () => {
+        const ast = parse("x += 5");
+
+        expect(ast).toEqual(
+          new Program([
+            new VariableAssigment(
+              "x",
+              new BinaryOperation(
+                new VariableAccess("x"),
+                "+",
+                new Numeral("5"),
+              ),
+            ),
+          ]),
+        );
+      });
+
+      it("parses minus-equals assignment", () => {
+        const ast = parse("counter -= 1");
+
+        expect(ast).toEqual(
+          new Program([
+            new VariableAssigment(
+              "counter",
+              new BinaryOperation(
+                new VariableAccess("counter"),
+                "-",
+                new Numeral("1"),
+              ),
+            ),
+          ]),
+        );
+      });
+
+      it("parses multiply-equals assignment", () => {
+        const ast = parse("total *= 2");
+
+        expect(ast).toEqual(
+          new Program([
+            new VariableAssigment(
+              "total",
+              new BinaryOperation(
+                new VariableAccess("total"),
+                "*",
+                new Numeral("2"),
+              ),
+            ),
+          ]),
+        );
+      });
+
+      it("parses divide-equals assignment", () => {
+        const ast = parse("value /= 10");
+
+        expect(ast).toEqual(
+          new Program([
+            new VariableAssigment(
+              "value",
+              new BinaryOperation(
+                new VariableAccess("value"),
+                "/",
+                new Numeral("10"),
+              ),
+            ),
+          ]),
+        );
+      });
+
+      it("parses compound assignment with expression", () => {
+        const ast = parse("x += 1 + 2");
+
+        expect(ast).toEqual(
+          new Program([
+            new VariableAssigment(
+              "x",
+              new BinaryOperation(
+                new VariableAccess("x"),
+                "+",
+                new BinaryOperation(new Numeral("1"), "+", new Numeral("2")),
+              ),
+            ),
+          ]),
+        );
+      });
+
+      it("parses local compound assignment", () => {
+        const ast = parse("local x += 5");
+
+        expect(ast).toEqual(
+          new Program([
+            new VariableAssigment(
+              "x",
+              new BinaryOperation(
+                new VariableAccess("x"),
+                "+",
+                new Numeral("5"),
+              ),
+              "local",
+            ),
+          ]),
+        );
+      });
+
+      it("parses outer compound assignment", () => {
+        const ast = parse("outer x -= 3");
+
+        expect(ast).toEqual(
+          new Program([
+            new VariableAssigment(
+              "x",
+              new BinaryOperation(
+                new VariableAccess("x"),
+                "-",
+                new Numeral("3"),
+              ),
+              "outer",
+            ),
+          ]),
+        );
+      });
+
+      it("parses compound assignment inside function", () => {
+        const ast = parse("function foo() { x *= 2 }");
+
+        expect(ast).toEqual(
+          new Program([
+            new FunctionDeclaration(
+              "foo",
+              [],
+              [
+                new VariableAssigment(
+                  "x",
+                  new BinaryOperation(
+                    new VariableAccess("x"),
+                    "*",
+                    new Numeral("2"),
+                  ),
+                ),
+              ],
+            ),
+          ]),
+        );
+      });
+    });
   });
 
   it("parses a script with several lines of code", () => {

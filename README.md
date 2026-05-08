@@ -8,6 +8,7 @@ Lucky Script is a scripting language built from scratch in TypeScript. It has a 
 - `if` / `else` / `else if` control flow
 - `while` loops with `break` and `continue`
 - Arithmetic, comparison, and unary operators
+- Compound assignment operators: `+=`, `-=`, `*=`, `/=`
 - Boolean operators: `and`, `or`, `not` (with short-circuit evaluation)
 - Boolean literals: `true`, `false`
 - String literals with escape sequences (`\"`, `\\`, `\n`)
@@ -192,12 +193,18 @@ Unary: `-x`, `+x`
 
 Boolean: `and`, `or`, `not`
 
+Compound assignment: `+=`, `-=`, `*=`, `/=`
+
 ```
 1 + 2 * 3 ** 2   # => 19
 -5 + 3           # => -2
 1 < 2            # => truthy
 1 == 1           # => truthy
 1 != 2           # => truthy
+
+x = 10
+x += 5           # x is now 15
+x *= 2           # x is now 30
 ```
 
 ## Booleans

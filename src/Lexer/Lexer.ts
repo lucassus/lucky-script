@@ -72,31 +72,42 @@ export class Lexer {
       // Operators
 
       case "+":
-        return this.createToken(Operator.Plus);
-      case "-":
-        return this.createToken(Operator.Minus);
-      case "*":
         return this.createToken(
-          this.nextSymbolMatches("*") ? Operator.Power : Operator.Multiply,
+          this.tryConsumeSymbol("=") ? Operator.PlusAssign : Operator.Plus,
+        );
+      case "-":
+        return this.createToken(
+          this.tryConsumeSymbol("=") ? Operator.MinusAssign : Operator.Minus,
+        );
+      case "*":
+        if (this.tryConsumeSymbol("*")) {
+          return this.createToken(Operator.Power);
+        }
+        return this.createToken(
+          this.tryConsumeSymbol("=")
+            ? Operator.MultiplyAssign
+            : Operator.Multiply,
         );
       case "/":
-        return this.createToken(Operator.Divide);
+        return this.createToken(
+          this.tryConsumeSymbol("=") ? Operator.DivideAssign : Operator.Divide,
+        );
       case "<":
         return this.createToken(
-          this.nextSymbolMatches("=") ? Operator.Lte : Operator.Lt,
+          this.tryConsumeSymbol("=") ? Operator.Lte : Operator.Lt,
         );
       case "=":
         return this.createToken(
-          this.nextSymbolMatches("=") ? Operator.Eq : Operator.Assigment,
+          this.tryConsumeSymbol("=") ? Operator.Eq : Operator.Assigment,
         );
       case "!":
-        if (!this.nextSymbolMatches("=")) {
+        if (!this.tryConsumeSymbol("=")) {
           throw new IllegalSymbolError(this.currentSymbol, this.position);
         }
         return this.createToken(Operator.Neq);
       case ">":
         return this.createToken(
-          this.nextSymbolMatches("=") ? Operator.Gte : Operator.Gt,
+          this.tryConsumeSymbol("=") ? Operator.Gte : Operator.Gt,
         );
 
       case '"':
@@ -137,7 +148,7 @@ export class Lexer {
     return this.input[this.position + 1];
   }
 
-  private nextSymbolMatches(symbol: string): boolean {
+  private tryConsumeSymbol(symbol: string): boolean {
     if (this.nextSymbol === symbol) {
       this.advance();
       return true;
