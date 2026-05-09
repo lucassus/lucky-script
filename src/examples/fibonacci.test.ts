@@ -16,7 +16,7 @@ it.each`
   ${9} | ${34}
 `("calculates fibonacci number for $n", ({ n, expected }) => {
   const script = `
-    fn fib(n)
+    fun fib(n)
       if n < 2
         return n
       end

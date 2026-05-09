@@ -184,9 +184,9 @@ describe("Parser", () => {
     });
 
     it.each`
-      script                 | message
-      ${"x = fn foo()\nend"} | ${"Unexpected 'fn' keyword."}
-      ${"x = "}              | ${"Unexpected 'Eof' delimiter."}
+      script                  | message
+      ${"x = fun foo()\nend"} | ${"Unexpected 'fun' keyword."}
+      ${"x = "}               | ${"Unexpected 'Eof' delimiter."}
     `("raises errors for invalid assignments", ({ script, message }) => {
       expect(() => parse(script)).toThrow(SyntaxError);
       expect(() => parse(script)).toThrow(message);
@@ -223,7 +223,7 @@ describe("Parser", () => {
     });
 
     it("parses local assignment inside a function body", () => {
-      const ast = parse("fn foo()\n  local x = 1\nend");
+      const ast = parse("fun foo()\n  local x = 1\nend");
 
       expect(ast).toEqual(
         new Program([
@@ -237,7 +237,7 @@ describe("Parser", () => {
     });
 
     it("parses outer assignment inside a function body", () => {
-      const ast = parse("fn foo()\n  outer x = 1\nend");
+      const ast = parse("fun foo()\n  outer x = 1\nend");
 
       expect(ast).toEqual(
         new Program([
@@ -373,7 +373,7 @@ describe("Parser", () => {
       });
 
       it("parses compound assignment inside function", () => {
-        const ast = parse("fn foo()\n  x *= 2\nend");
+        const ast = parse("fun foo()\n  x *= 2\nend");
 
         expect(ast).toEqual(
           new Program([
@@ -419,7 +419,7 @@ describe("Parser", () => {
 
   describe("function declaration", () => {
     it("parses a declaration without arguments", () => {
-      const ast = parse("fn add()\n  x = 1\n  return x + 2\nend");
+      const ast = parse("fun add()\n  x = 1\n  return x + 2\nend");
 
       expect(ast).toEqual(
         new Program([
@@ -442,7 +442,7 @@ describe("Parser", () => {
     });
 
     it("parses a declaration with arguments", () => {
-      const ast = parse("fn add(x, y)\n  return x + y\nend");
+      const ast = parse("fun add(x, y)\n  return x + y\nend");
 
       expect(ast).toEqual(
         new Program([
@@ -465,8 +465,8 @@ describe("Parser", () => {
 
     it.each`
       input
-      ${"fn add()\nend"}
-      ${"fn add() end"}
+      ${"fun add()\nend"}
+      ${"fun add() end"}
     `("parses a declaration with empty body", ({ input }) => {
       const ast = parse(input);
 
@@ -476,7 +476,7 @@ describe("Parser", () => {
     });
 
     it("parses anonymous function declaration", () => {
-      const ast = parse("add = fn(a, b)\n  return a + b\nend");
+      const ast = parse("add = fun(a, b)\n  return a + b\nend");
 
       expect(ast).toEqual(
         new Program([
@@ -501,17 +501,17 @@ describe("Parser", () => {
     });
 
     it("can't parse declaration assigment to a variable", () => {
-      const parseScript = () => parse("x = fn foo()\nend");
+      const parseScript = () => parse("x = fun foo()\nend");
 
       expect(parseScript).toThrow(SyntaxError);
-      expect(parseScript).toThrow("Unexpected 'fn' keyword.");
+      expect(parseScript).toThrow("Unexpected 'fun' keyword.");
     });
 
     it.each`
-      script                 | message
-      ${"fn abc(,x,y)\nend"} | ${"Expected 'Identifier' literal but got ',' delimiter."}
-      ${"fn abc(x,)\nend"}   | ${"Expected 'Identifier' literal but got ')' delimiter."}
-      ${"fn abc(x,,)\nend"}  | ${"Expected 'Identifier' literal but got ',' delimiter."}
+      script                  | message
+      ${"fun abc(,x,y)\nend"} | ${"Expected 'Identifier' literal but got ',' delimiter."}
+      ${"fun abc(x,)\nend"}   | ${"Expected 'Identifier' literal but got ')' delimiter."}
+      ${"fun abc(x,,)\nend"}  | ${"Expected 'Identifier' literal but got ',' delimiter."}
     `(
       "can't parse declaration with invalid arguments",
       ({ script, message }) => {
@@ -980,14 +980,14 @@ describe("Parser", () => {
     });
 
     it("throws SyntaxError for 'break' inside named function", () => {
-      expect(() => parse("fn foo()\n  break\nend")).toThrow(
+      expect(() => parse("fun foo()\n  break\nend")).toThrow(
         new SyntaxError("'break' used outside a loop"),
       );
     });
 
     it("throws SyntaxError for 'break' inside function nested in loop", () => {
       expect(() =>
-        parse("while true\n  fn foo()\n    break\n  end\nend"),
+        parse("while true\n  fun foo()\n    break\n  end\nend"),
       ).toThrow(new SyntaxError("'break' used outside a loop"));
     });
   });
@@ -1065,7 +1065,7 @@ describe("Parser", () => {
 
     it("throws SyntaxError for 'continue' inside anonymous function nested in loop", () => {
       expect(() =>
-        parse("while true\n  x = fn()\n    continue\n  end\nend"),
+        parse("while true\n  x = fun()\n    continue\n  end\nend"),
       ).toThrow(new SyntaxError("'continue' used outside a loop"));
     });
   });
@@ -1142,7 +1142,7 @@ describe("Parser", () => {
 
   describe("short-form lambda", () => {
     it("parses single-parameter short-form lambda", () => {
-      const ast = parse("fn(x) x * 2");
+      const ast = parse("fun(x) x * 2");
 
       expect(ast).toEqual(
         new Program([
@@ -1164,7 +1164,7 @@ describe("Parser", () => {
     });
 
     it("parses multi-parameter short-form lambda", () => {
-      const ast = parse("fn(a, b) a + b");
+      const ast = parse("fun(a, b) a + b");
 
       expect(ast).toEqual(
         new Program([
@@ -1186,7 +1186,7 @@ describe("Parser", () => {
     });
 
     it("parses short-form lambda as callback argument", () => {
-      const ast = parse("foo(fn(x) x * 2)");
+      const ast = parse("foo(fun(x) x * 2)");
 
       expect(ast).toEqual(
         new Program([
@@ -1210,21 +1210,21 @@ describe("Parser", () => {
     });
 
     it("rejects 'end' after short-form lambda", () => {
-      expect(() => parse("fn(x) x * 2 end")).toThrow(SyntaxError);
+      expect(() => parse("fun(x) x * 2 end")).toThrow(SyntaxError);
     });
 
     it("rejects named function with short form", () => {
-      expect(() => parse("fn add(a, b) a + b")).toThrow(SyntaxError);
+      expect(() => parse("fun add(a, b) a + b")).toThrow(SyntaxError);
     });
   });
 
   describe("new syntax errors", () => {
     it("rejects braces in function body", () => {
-      expect(() => parse("fn foo() { return 1 }")).toThrow(IllegalSymbolError);
+      expect(() => parse("fun foo() { return 1 }")).toThrow(IllegalSymbolError);
     });
 
     it("rejects function missing end", () => {
-      expect(() => parse("fn foo()\n  return 1")).toThrow(SyntaxError);
+      expect(() => parse("fun foo()\n  return 1")).toThrow(SyntaxError);
     });
   });
 });

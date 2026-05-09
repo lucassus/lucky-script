@@ -73,7 +73,7 @@ export class Parser {
 
   private statement(): Statement {
     if (
-      this.currentToken.type === Keyword.Fn &&
+      this.currentToken.type === Keyword.Fun &&
       this.nextToken.type === Literal.Identifier
     ) {
       return this.functionDeclaration();
@@ -165,7 +165,7 @@ export class Parser {
     }
 
     if (
-      this.currentToken.type === Keyword.Fn &&
+      this.currentToken.type === Keyword.Fun &&
       this.nextToken.type === Delimiter.LeftBracket
     ) {
       return this.anonymousFunction();
@@ -212,7 +212,7 @@ export class Parser {
   }
 
   private functionDeclaration(): FunctionDeclaration {
-    this.consume(Keyword.Fn);
+    this.consume(Keyword.Fun);
     const name = this.consume(Literal.Identifier).value;
 
     this.consume(Delimiter.LeftBracket);
@@ -231,7 +231,7 @@ export class Parser {
   }
 
   private anonymousFunction(): Expression {
-    this.consume(Keyword.Fn);
+    this.consume(Keyword.Fun);
 
     this.consume(Delimiter.LeftBracket);
     const parameters = this.functionParameters();

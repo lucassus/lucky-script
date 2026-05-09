@@ -29,7 +29,7 @@ it("bare compound assignment inside function creates local binding", () => {
   const script = `
     x = 1
 
-    fn foo()
+    fun foo()
       x += 99
       return x
     end
@@ -45,7 +45,7 @@ it("local compound assignment reads outer then writes local", () => {
   const script = `
     x = 10
 
-    fn foo()
+    fun foo()
       local x += 5
       return x
     end
@@ -60,7 +60,7 @@ it("outer compound assignment mutates enclosing variable", () => {
   const script = `
     x = 10
 
-    fn foo()
+    fun foo()
       outer x += 5
     end
 
@@ -73,10 +73,10 @@ it("outer compound assignment mutates enclosing variable", () => {
 
 it("outer compound assignment in nested function", () => {
   const script = `
-    fn makeCounter()
+    fun makeCounter()
       local n = 0
 
-      fn inc()
+      fun inc()
         outer n += 1
       end
 
@@ -122,10 +122,10 @@ it("compound assignment with local in nested scopes", () => {
   const script = `
     x = 100
 
-    fn outerFn()
+    fun outerFn()
       local x = 10
 
-      fn inner()
+      fun inner()
         local x += 5
         return x
       end

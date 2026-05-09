@@ -25,7 +25,7 @@ describe("type builtin", () => {
   });
 
   it("returns 'function' for a user-defined function", () => {
-    expect(run("fn f()\nend\ntype(f)")).toBe("function");
+    expect(run("fun f()\nend\ntype(f)")).toBe("function");
   });
 
   it("returns 'function' for a builtin function", () => {
