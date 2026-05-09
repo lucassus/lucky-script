@@ -45,3 +45,23 @@ it("supports passing functions as arguments", () => {
 
   expect(run(script)).toBe(20);
 });
+
+it("supports passing named functions as arguments", () => {
+  const script = `
+    fun add(x, y)
+      return x + y
+    end
+
+    sub = fun (x, y)
+      return x - y
+    end
+
+    fun perform(operation, x, y)
+      return operation(x, y)
+    end
+
+    perform(add, 10, 3) + perform(sub, 10, 3)
+  `;
+
+  expect(run(script)).toBe(20);
+});
