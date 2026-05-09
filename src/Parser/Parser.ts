@@ -99,19 +99,15 @@ export class Parser {
       return this.returnStatement();
     }
 
-    if (this.currentToken.type === Keyword.Local) {
-      return this.localAssignment();
-    }
-
-    if (this.currentToken.type === Keyword.Outer) {
-      return this.outerAssignment();
+    if (this.currentToken.type === Keyword.Let) {
+      return this.letAssignment();
     }
 
     return this.expression();
   }
 
-  private localAssignment(): VariableAssigment {
-    this.consume(Keyword.Local);
+  private letAssignment(): VariableAssigment {
+    this.consume(Keyword.Let);
     const name = this.consume(Literal.Identifier).value!;
 
     const operator = this.currentToken.type;
@@ -123,33 +119,12 @@ export class Parser {
       return new VariableAssigment(
         name,
         new BinaryOperation(new VariableAccess(name), binaryOp, expr),
-        "local",
+        "declaration",
       );
     }
 
     this.consume(Operator.Assigment);
-    return new VariableAssigment(name, this.expression(), "local");
-  }
-
-  private outerAssignment(): VariableAssigment {
-    this.consume(Keyword.Outer);
-    const name = this.consume(Literal.Identifier).value!;
-
-    const operator = this.currentToken.type;
-    const binaryOp = this.toBinaryOp(operator);
-
-    if (binaryOp) {
-      this.consume(operator);
-      const expr = this.expression();
-      return new VariableAssigment(
-        name,
-        new BinaryOperation(new VariableAccess(name), binaryOp, expr),
-        "outer",
-      );
-    }
-
-    this.consume(Operator.Assigment);
-    return new VariableAssigment(name, this.expression(), "outer");
+    return new VariableAssigment(name, this.expression(), "declaration");
   }
 
   private expression(): Expression {

@@ -4,15 +4,15 @@ import { run } from "../testingUtils";
 
 it("supports higher order functions returning another function", () => {
   const script = `
-    foo = fun()
-      x = 1
+    let foo = fun()
+      let x = 1
     
       return fun()
         return x + 2
       end
     end
     
-    bar = foo()
+    let bar = foo()
     bar()
   `;
 
@@ -25,8 +25,8 @@ it("supports higher order functions with short-form lambdas", () => {
       return fun(x) x * factor
     end
 
-    double = makeMultiplier(2)
-    triple = makeMultiplier(3)
+    let double = makeMultiplier(2)
+    let triple = makeMultiplier(3)
 
     double(5) + triple(4)
   `;
@@ -52,7 +52,7 @@ it("supports passing named functions as arguments", () => {
       return x + y
     end
 
-    sub = fun (x, y)
+    let sub = fun (x, y)
       return x - y
     end
 

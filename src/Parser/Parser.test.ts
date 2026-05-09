@@ -192,59 +192,53 @@ describe("Parser", () => {
       expect(() => parse(script)).toThrow(message);
     });
 
-    it("parses local assignment", () => {
-      const ast = parse("local x = 1");
+    it("parses let assignment", () => {
+      const ast = parse("let x = 1");
 
       expect(ast).toEqual(
-        new Program([new VariableAssigment("x", new Numeral("1"), "local")]),
+        new Program([
+          new VariableAssigment("x", new Numeral("1"), "declaration"),
+        ]),
       );
     });
 
-    it("parses outer assignment", () => {
-      const ast = parse("outer x = 1");
-
-      expect(ast).toEqual(
-        new Program([new VariableAssigment("x", new Numeral("1"), "outer")]),
-      );
-    });
-
-    it("parses local assignment with expression", () => {
-      const ast = parse("local x = 1 + 2");
+    it("parses let assignment with expression", () => {
+      const ast = parse("let x = 1 + 2");
 
       expect(ast).toEqual(
         new Program([
           new VariableAssigment(
             "x",
             new BinaryOperation(new Numeral("1"), "+", new Numeral("2")),
-            "local",
+            "declaration",
           ),
         ]),
       );
     });
 
-    it("parses local assignment inside a function body", () => {
-      const ast = parse("fun foo()\n  local x = 1\nend");
+    it("parses let assignment inside a function body", () => {
+      const ast = parse("fun foo()\n  let x = 1\nend");
 
       expect(ast).toEqual(
         new Program([
           new FunctionDeclaration(
             "foo",
             [],
-            [new VariableAssigment("x", new Numeral("1"), "local")],
+            [new VariableAssigment("x", new Numeral("1"), "declaration")],
           ),
         ]),
       );
     });
 
-    it("parses outer assignment inside a function body", () => {
-      const ast = parse("fun foo()\n  outer x = 1\nend");
+    it("parses let compound assignment", () => {
+      const ast = parse("let x += 5");
 
       expect(ast).toEqual(
         new Program([
-          new FunctionDeclaration(
-            "foo",
-            [],
-            [new VariableAssigment("x", new Numeral("1"), "outer")],
+          new VariableAssigment(
+            "x",
+            new BinaryOperation(new VariableAccess("x"), "+", new Numeral("5")),
+            "declaration",
           ),
         ]),
       );
@@ -331,42 +325,6 @@ describe("Parser", () => {
                 "+",
                 new BinaryOperation(new Numeral("1"), "+", new Numeral("2")),
               ),
-            ),
-          ]),
-        );
-      });
-
-      it("parses local compound assignment", () => {
-        const ast = parse("local x += 5");
-
-        expect(ast).toEqual(
-          new Program([
-            new VariableAssigment(
-              "x",
-              new BinaryOperation(
-                new VariableAccess("x"),
-                "+",
-                new Numeral("5"),
-              ),
-              "local",
-            ),
-          ]),
-        );
-      });
-
-      it("parses outer compound assignment", () => {
-        const ast = parse("outer x -= 3");
-
-        expect(ast).toEqual(
-          new Program([
-            new VariableAssigment(
-              "x",
-              new BinaryOperation(
-                new VariableAccess("x"),
-                "-",
-                new Numeral("3"),
-              ),
-              "outer",
             ),
           ]),
         );

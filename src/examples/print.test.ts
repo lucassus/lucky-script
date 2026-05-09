@@ -58,20 +58,20 @@ describe("print builtin", () => {
 
   it("can be overwritten by user code", () => {
     run(`
-      called = 0
+      let called = 0
       fun myPrint(x)
-        outer called = 1
+        let called = 1
       end
-      print = myPrint
+      let print = myPrint
       print(42)
     `);
     expect(consoleSpy).not.toHaveBeenCalled();
   });
 
-  it("local print inside a function does not affect print in other functions", () => {
+  it("let print inside a function does not affect print in other functions", () => {
     run(`
       fun usesLocalPrint()
-        local print = "shadowed"
+        let print = "shadowed"
       end
       usesLocalPrint()
       print(42)

@@ -2,13 +2,13 @@ import { expect, it } from "vitest";
 
 import { run } from "../testingUtils";
 
-it("makeCounter closure using local and outer", () => {
+it("makeCounter closure using let and reassignment", () => {
   const script = `
     fun makeCounter()
-      local n = 0
+      let n = 0
 
       fun inc()
-        outer n = n + 1
+        n = n + 1
       end
 
       fun get()
@@ -29,10 +29,10 @@ it("makeCounter closure using local and outer", () => {
 it("two independent counters do not share state", () => {
   const script = `
     fun makeCounter(initial)
-      local n = initial
+      let n = initial
 
       fun inc()
-        outer n = n + 1
+        n = n + 1
       end
 
       fun get()
@@ -43,8 +43,8 @@ it("two independent counters do not share state", () => {
       return get()
     end
 
-    a = makeCounter(0)
-    b = makeCounter(1)
+    let a = makeCounter(0)
+    let b = makeCounter(1)
     a + b
   `;
 

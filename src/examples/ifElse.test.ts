@@ -23,8 +23,8 @@ it("evaluates if, elseif, and else branches correctly", () => {
 
 it("supports single-line if with then keyword", () => {
   const script = `
-    x = 10
-    result = 0
+    let x = 10
+    let result = 0
     if x > 0 then result = x end
     result
   `;

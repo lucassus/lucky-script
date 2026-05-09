@@ -155,7 +155,7 @@ export class Interpreter {
     );
 
     if (name) {
-      this.scope.setBare(name, luckyFunction);
+      this.scope.declare(name, luckyFunction);
     }
 
     return luckyFunction;
@@ -190,7 +190,7 @@ export class Interpreter {
 
     for (const [index, parameter] of luckyFunction.parameters.entries()) {
       const argument = functionCall.args[index]!;
-      fnScope.setLocal(parameter, this.visit(argument));
+      fnScope.declare(parameter, this.visit(argument));
     }
 
     return this.withScope(fnScope, () => {
@@ -309,15 +309,12 @@ export class Interpreter {
   private visitVariableAssigment(node: VariableAssigment): LuckyObject {
     const value = this.visit(node.value);
 
-    switch (node.mode) {
-      case "local":
-        this.scope.setLocal(node.name, value);
-        break;
-      case "outer":
-        this.scope.setOuter(node.name, value);
+    switch (node.kind) {
+      case "declaration":
+        this.scope.declare(node.name, value);
         break;
       default:
-        this.scope.setBare(node.name, value);
+        this.scope.reassign(node.name, value);
     }
 
     return value;

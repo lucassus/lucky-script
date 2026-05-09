@@ -42,9 +42,9 @@ Lucky Script is a small, functional-first scripting language. Block syntax uses 
 ### The basics
 
 ```
-greeting = "hello"
-n        = 1 + 2 * 3
-ok       = n > 5 and greeting == "hello"
+let greeting = "hello"
+let n        = 1 + 2 * 3
+let ok       = n > 5 and greeting == "hello"
 
 print(greeting)   # => hello
 ```
@@ -53,14 +53,14 @@ print(greeting)   # => hello
 
 ```
 fun makeCounter()
-  count = 0
+  let count = 0
   return fun()
     count += 1
     return count
   end
 end
 
-next = makeCounter()
+let next = makeCounter()
 next()   # => 1
 next()   # => 2
 ```
@@ -79,7 +79,7 @@ fun classify(x)
 end
 
 # guard-if: early exit from a loop
-i = 0
+let i = 0
 while true
   i += 1
   break if i >= 10
@@ -90,11 +90,11 @@ end
 ### Lists, lambdas, and pipelines
 
 ```
-nums = [1, 2, 3, 4, 5]
+let nums = [1, 2, 3, 4, 5]
 
-doubled   = nums |> map(x -> x * 2)             # => [2, 4, 6, 8, 10]
-positives = nums |> filter(x -> x > 2)           # => [3, 4, 5]
-total     = nums |> reduce((acc, x) -> acc + x, 0)   # => 15
+let doubled   = nums |> map(x -> x * 2)             # => [2, 4, 6, 8, 10]
+let positives = nums |> filter(x -> x > 2)          # => [3, 4, 5]
+let total     = nums |> reduce((acc, x) -> acc + x, 0)   # => 15
 ```
 
 ### Pattern matching

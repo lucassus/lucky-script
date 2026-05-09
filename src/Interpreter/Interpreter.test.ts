@@ -1,12 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { run } from "../testingUtils";
-import {
-  NameError,
-  RuntimeError,
-  ScopeError,
-  ZeroDivisionError,
-} from "./errors";
+import { NameError, RuntimeError, ZeroDivisionError } from "./errors";
 import { LuckyNumber } from "./objects";
 import { SymbolTable } from "./SymbolTable";
 
@@ -76,29 +71,29 @@ describe("Interpreter", () => {
     it("sets variables", () => {
       const symbolTable = new SymbolTable();
 
-      expect(run("pi = 3.14", symbolTable)).toBe(3.14);
+      expect(run("let pi = 3.14", symbolTable)).toBe(3.14);
       expect(symbolTable.lookup("pi")).toEqual(new LuckyNumber(3.14));
     });
 
     it("sets a chain of variables", () => {
       const symbolTable = new SymbolTable();
 
-      expect(run("x = y = 1", symbolTable)).toBe(1);
+      expect(run("let x = 0\nlet y = 0\nx = y = 1", symbolTable)).toBe(1);
       expect(symbolTable.lookup("x")).toEqual(new LuckyNumber(1));
       expect(symbolTable.lookup("y")).toEqual(new LuckyNumber(1));
     });
 
     it("reads variables", () => {
       const symbolTable = new SymbolTable();
-      symbolTable.setLocal("x", new LuckyNumber(1));
-      symbolTable.setLocal("y", new LuckyNumber(2));
+      symbolTable.declare("x", new LuckyNumber(1));
+      symbolTable.declare("y", new LuckyNumber(2));
 
       expect(run("x + y + 3", symbolTable)).toBe(6);
     });
 
     it("increments the given variable", () => {
       const symbolTable = new SymbolTable();
-      symbolTable.setLocal("x", new LuckyNumber(1));
+      symbolTable.declare("x", new LuckyNumber(1));
 
       expect(run("x = x + 1", symbolTable)).toBe(2);
       expect(symbolTable.lookup("x")).toEqual(new LuckyNumber(2));
@@ -114,8 +109,8 @@ describe("Interpreter", () => {
 
   it("interprets programs that have several lines of script", () => {
     const script = `
-      x = 1
-      y = 2
+      let x = 1
+      let y = 2
       x + y * 2
     `;
 
@@ -193,7 +188,7 @@ describe("Interpreter", () => {
 
       it("raises an error when anonymous function is called with invalid number of arguments", () => {
         const script = `
-          foo = fun (x, y)
+          let foo = fun (x, y)
             return x + y
           end
 
@@ -251,15 +246,15 @@ describe("Interpreter", () => {
 
     it("interprets anonymous functions", () => {
       const script = `
-        foo = fun ()
-          x = 1
+        let foo = fun ()
+          let x = 1
 
           return fun ()
             return x + 2
           end
         end
 
-        bar = foo()
+        let bar = foo()
         bar()
       `;
 
@@ -307,7 +302,7 @@ describe("Interpreter", () => {
 
     it("raises an error when the given identifier is not callable", () => {
       const script = `
-        notAFunction = 123
+        let notAFunction = 123
         notAFunction()
       `;
 
@@ -324,7 +319,7 @@ describe("Interpreter", () => {
         fun foo()
           return 41
         end
-        bar = foo
+        let bar = foo
         bar()
     `;
 
@@ -336,27 +331,27 @@ describe("Interpreter", () => {
     it("creates valid scopes for function calls", () => {
       const symbolTable = new SymbolTable();
       const script = `
-        a = 1
+        let a = 1
 
         fun foo()
-          outer a = 2
-          b = 1
+          let a = 2
+          let b = 1
 
           fun bar()
-            c = 3
+            let c = 3
             return a + b + c
           end
 
           return bar()
         end
 
-        d = foo()
+        let d = foo()
       `;
 
       run(script, symbolTable);
 
       expect(symbolTable.lookup("d")).toEqual(new LuckyNumber(6));
-      expect(symbolTable.lookup("a")).toEqual(new LuckyNumber(2));
+      expect(symbolTable.lookup("a")).toEqual(new LuckyNumber(1));
 
       expect(() => symbolTable.lookup("b")).toThrow(NameError);
       expect(() => symbolTable.lookup("c")).toThrow(NameError);
@@ -365,16 +360,16 @@ describe("Interpreter", () => {
     it("allows to use dynamic scopes", () => {
       const symbolTable = new SymbolTable();
       const script = `
-        a = 1
+        let a = 1
 
         fun add()
           return a + 1
         end
 
-        firstResult = add()
+        let firstResult = add()
 
-        a = 2
-        secondResult = add()
+        let a = 2
+        let secondResult = add()
       `;
 
       run(script, symbolTable);
@@ -383,18 +378,18 @@ describe("Interpreter", () => {
       expect(symbolTable.lookup("secondResult")).toEqual(new LuckyNumber(3));
     });
 
-    it("creates local variables for arguments passed to function call", () => {
+    it("creates let variables for arguments passed to function call", () => {
       const symbolTable = new SymbolTable();
       const script = `
-        x = 1
+        let x = 1
 
         fun foo(x)
-          x = x + 1
+          let x = x + 1
 
           return x + 1
         end
 
-        y = foo(2)
+        let y = foo(2)
       `;
 
       run(script, symbolTable);
@@ -408,10 +403,10 @@ describe("Interpreter", () => {
     it("interprets a simple if statement", () => {
       const symbolTable = new SymbolTable();
       const script = `
-        x = 0
+        let x = 0
 
         if x < 1
-          x = 1
+          let x = 1
         end
       `;
 
@@ -421,9 +416,9 @@ describe("Interpreter", () => {
 
     it("assignments inside if-block are visible in the enclosing scope", () => {
       const script = `
-        x = 1
+        let x = 1
         if x < 2
-          y = 99
+          let y = 99
         end
         y
       `;
@@ -434,12 +429,12 @@ describe("Interpreter", () => {
     it("executes else branch when condition is false", () => {
       const symbolTable = new SymbolTable();
       const script = `
-        x = 5
+        let x = 5
 
         if x < 1
-          x = 1
+          let x = 1
         else
-          x = 99
+          let x = 99
         end
       `;
 
@@ -450,12 +445,12 @@ describe("Interpreter", () => {
     it("skips else branch when condition is true", () => {
       const symbolTable = new SymbolTable();
       const script = `
-        x = 0
+        let x = 0
 
         if x < 1
-          x = 1
+          let x = 1
         else
-          x = 99
+          let x = 99
         end
       `;
 
@@ -466,12 +461,12 @@ describe("Interpreter", () => {
     it("supports else on next line", () => {
       const symbolTable = new SymbolTable();
       const script = `
-        x = 5
+        let x = 5
 
         if x < 1
-          x = 1
+          let x = 1
         else
-          x = 99
+          let x = 99
         end
       `;
 
@@ -482,14 +477,14 @@ describe("Interpreter", () => {
     it("supports else-if chain", () => {
       const symbolTable = new SymbolTable();
       const script = `
-        x = 5
+        let x = 5
 
         if x < 1
-          x = 1
+          let x = 1
         elseif x < 10
-          x = 10
+          let x = 10
         else
-          x = 99
+          let x = 99
         end
       `;
 
@@ -499,11 +494,11 @@ describe("Interpreter", () => {
 
     it("assignments inside else-block are visible in the enclosing scope", () => {
       const script = `
-        x = 5
+        let x = 5
         if x < 1
-          y = 1
+          let y = 1
         else
-          y = 99
+          let y = 99
         end
         y
       `;
@@ -516,7 +511,7 @@ describe("Interpreter", () => {
     it("does not execute the body when the condition is false", () => {
       const symbolTable = new SymbolTable();
       const script = `
-        count = 0
+        let count = 0
         while false
         end
       `;
@@ -528,9 +523,9 @@ describe("Interpreter", () => {
     it("re-evaluates the condition each iteration and terminates when it is false", () => {
       const symbolTable = new SymbolTable();
       const script = `
-        i = 0
+        let i = 0
         while i < 3
-          i = i + 1
+          let i = i + 1
         end
       `;
 
@@ -541,9 +536,9 @@ describe("Interpreter", () => {
     it("coerces a non-boolean condition via toBoolean", () => {
       const symbolTable = new SymbolTable();
       const script = `
-        n = 3
+        let n = 3
         while n
-          n = n - 1
+          let n = n - 1
         end
       `;
 
@@ -554,8 +549,8 @@ describe("Interpreter", () => {
     it("accepts an empty body", () => {
       const symbolTable = new SymbolTable();
       const script = `
-        i = 0
-        i = i + 1
+        let i = 0
+        let i = i + 1
         while false
         end
       `;
@@ -571,9 +566,9 @@ describe("Interpreter", () => {
     it("a bare assignment inside the body persists after the loop", () => {
       const symbolTable = new SymbolTable();
       const script = `
-        n = 0
+        let n = 0
         while n < 3
-          n = n + 1
+          let n = n + 1
         end
       `;
 
@@ -583,23 +578,23 @@ describe("Interpreter", () => {
 
     it("a new variable introduced inside the body is visible after the loop", () => {
       const script = `
-        i = 0
+        let i = 0
         while i < 1
-          result = 42
-          i = i + 1
+          let result = 42
+          let i = i + 1
         end
         result
       `;
       expect(run(script)).toBe(42);
     });
 
-    it("local inside a while body inside a function binds in the function scope", () => {
+    it("let inside a while body inside a function binds in the function scope", () => {
       const script = `
         fun foo()
-          i = 0
+          let i = 0
           while i < 1
-            local x = 7
-            i = i + 1
+            let x = 7
+            let i = i + 1
           end
           return x
         end
@@ -611,12 +606,12 @@ describe("Interpreter", () => {
     it("a return inside the body exits the enclosing function", () => {
       const script = `
         fun foo()
-          i = 0
+          let i = 0
           while true
             if i == 2
               return i
             end
-            i = i + 1
+            let i = i + 1
           end
         end
         foo()
@@ -642,9 +637,9 @@ describe("Interpreter", () => {
     it("treats nothing as falsy in if statement", () => {
       const symbolTable = new SymbolTable();
       const script = `
-        x = 1
+        let x = 1
         if nothing
-          x = 2
+          let x = 2
         end
       `;
 
@@ -657,7 +652,7 @@ describe("Interpreter", () => {
     });
 
     it("allows assigning nothing to a variable", () => {
-      expect(run("x = nothing")).toBe(undefined);
+      expect(run("let x = nothing")).toBe(undefined);
     });
 
     it("allows returning nothing from a function", () => {
@@ -672,11 +667,11 @@ describe("Interpreter", () => {
   });
 
   describe("variable scoping rules", () => {
-    it("bare write inside a function does not mutate outer binding", () => {
+    it("bare write inside a function does not mutate binding", () => {
       const script = `
-        x = 1
+        let x = 1
         fun foo()
-          x = 99
+          let x = 99
         end
         foo()
         x
@@ -684,11 +679,11 @@ describe("Interpreter", () => {
       expect(run(script)).toBe(1);
     });
 
-    it("bare write inside a function rebinds the local on subsequent writes", () => {
+    it("bare write inside a function rebinds the let on subsequent writes", () => {
       const script = `
         fun foo()
-          x = 1
-          x = 2
+          let x = 1
+          let x = 2
           return x
         end
         foo()
@@ -696,11 +691,11 @@ describe("Interpreter", () => {
       expect(run(script)).toBe(2);
     });
 
-    it("local shadows an outer variable", () => {
+    it("let shadows an variable", () => {
       const script = `
-        x = 1
+        let x = 1
         fun foo()
-          local x = 99
+          let x = 99
         end
         foo()
         x
@@ -708,10 +703,10 @@ describe("Interpreter", () => {
       expect(run(script)).toBe(1);
     });
 
-    it("local can shadow a builtin inside a function", () => {
+    it("let can shadow a builtin inside a function", () => {
       const script = `
         fun foo()
-          local print = "shadowed"
+          let print = "shadowed"
           return print
         end
         foo()
@@ -719,11 +714,11 @@ describe("Interpreter", () => {
       expect(run(script)).toBe("shadowed");
     });
 
-    it("duplicate local in the same scope rebinds silently", () => {
+    it("duplicate let in the same scope rebinds silently", () => {
       const script = `
         fun foo()
-          local x = 1
-          local x = 2
+          let x = 1
+          let x = 2
           return x
         end
         foo()
@@ -731,11 +726,11 @@ describe("Interpreter", () => {
       expect(run(script)).toBe(2);
     });
 
-    it("outer mutates the top-level binding", () => {
+    it("mutates the top-level binding", () => {
       const script = `
-        x = 1
+        let x = 1
         fun foo()
-          outer x = 99
+          x = 99
         end
         foo()
         x
@@ -743,17 +738,15 @@ describe("Interpreter", () => {
       expect(run(script)).toBe(99);
     });
 
-    it("outer raises ScopeError when no enclosing binding exists", () => {
-      expect(() => run("fun foo()\n  outer y = 1\nend\nfoo()")).toThrow(
-        ScopeError,
-      );
+    it("raises NameError when no enclosing binding exists", () => {
+      expect(() => run("fun foo()\n  y = 1\nend\nfoo()")).toThrow(NameError);
     });
 
     it("if and while bodies do not introduce a new scope", () => {
       const script = `
-        x = 0
+        let x = 0
         if x == 0
-          y = 7
+          let y = 7
         end
         y
       `;
@@ -762,7 +755,7 @@ describe("Interpreter", () => {
 
     it("reads still walk the full scope chain", () => {
       const script = `
-        x = 1
+        let x = 1
         fun foo()
           return x
         end
@@ -771,19 +764,19 @@ describe("Interpreter", () => {
       expect(run(script)).toBe(1);
     });
 
-    it("builtins cannot be mutated via outer", () => {
-      expect(() =>
-        run(`fun foo()\n  outer print = "nope"\nend\nfoo()`),
-      ).toThrow(ScopeError);
+    it("builtins cannot be mutated without declaration", () => {
+      expect(() => run(`fun foo()\n  print = "nope"\nend\nfoo()`)).toThrow(
+        NameError,
+      );
     });
 
-    it("read before a later local declaration sees the outer binding", () => {
+    it("read before a later let declaration sees the binding", () => {
       const symbolTable = new SymbolTable();
       const script = `
-        x = 1
+        let x = 1
         fun foo()
-          result = x
-          local x = 2
+          let result = x
+          let x = 2
           return result
         end
         foo()
@@ -797,9 +790,9 @@ describe("Interpreter", () => {
       const scope = new SymbolTable();
       run(
         `
-        count = 0
+        let count = 0
         while true
-          count = count + 1
+          let count = count + 1
           break
         end
       `,
@@ -812,14 +805,14 @@ describe("Interpreter", () => {
       const scope = new SymbolTable();
       run(
         `
-        i = 0
+        let i = 0
         while true
           if i == 5
             break
           end
-          i = i + 1
+          let i = i + 1
         end
-        after = i
+        let after = i
       `,
         scope,
       );
@@ -830,29 +823,29 @@ describe("Interpreter", () => {
       const scope = new SymbolTable();
       run(
         `
-        i = 0
+        let i = 0
         while true
           break
         end
-        after = 42
+        let after = 42
       `,
         scope,
       );
       expect(scope.lookup("after")).toEqual(new LuckyNumber(42));
     });
 
-    it("inner break exits only the inner loop; outer loop continues", () => {
+    it("inner break exits only the inner loop; loop continues", () => {
       const scope = new SymbolTable();
       run(
         `
-        outerCount = 0
-        i = 0
+        let outerCount = 0
+        let i = 0
         while i < 3
-          i = i + 1
-          outerCount = outerCount + 1
-          j = 0
+          let i = i + 1
+          let outerCount = outerCount + 1
+          let j = 0
           while true
-            j = j + 1
+            let j = j + 1
             break
           end
         end
@@ -866,10 +859,10 @@ describe("Interpreter", () => {
       const scope = new SymbolTable();
       run(
         `
-        sideEffect = 0
+        let sideEffect = 0
         while true
           break
-          sideEffect = 99
+          let sideEffect = 99
         end
       `,
         scope,
@@ -883,14 +876,14 @@ describe("Interpreter", () => {
       const scope = new SymbolTable();
       run(
         `
-        i = 0
-        sideEffect = 0
+        let i = 0
+        let sideEffect = 0
         while i < 5
-          i = i + 1
+          let i = i + 1
           if i == 3
             continue
           end
-          sideEffect = sideEffect + 1
+          let sideEffect = sideEffect + 1
         end
       `,
         scope,
@@ -902,12 +895,12 @@ describe("Interpreter", () => {
       const scope = new SymbolTable();
       run(
         `
-        i = 0
-        sideEffect = 0
+        let i = 0
+        let sideEffect = 0
         while i < 5
-          i = i + 1
+          let i = i + 1
           continue
-          sideEffect = sideEffect + 1
+          let sideEffect = sideEffect + 1
         end
       `,
         scope,
@@ -916,18 +909,18 @@ describe("Interpreter", () => {
       expect(scope.lookup("sideEffect")).toEqual(new LuckyNumber(0));
     });
 
-    it("inner continue skips only the inner iteration; outer loop is unaffected", () => {
+    it("inner continue skips only the inner iteration; loop is unaffected", () => {
       const scope = new SymbolTable();
       run(
         `
-        outerCount = 0
-        i = 0
+        let outerCount = 0
+        let i = 0
         while i < 3
-          i = i + 1
-          outerCount = outerCount + 1
-          j = 0
+          let i = i + 1
+          let outerCount = outerCount + 1
+          let j = 0
           while j < 3
-            j = j + 1
+            let j = j + 1
             if j == 2
               continue
             end
@@ -943,7 +936,7 @@ describe("Interpreter", () => {
   describe("short-form lambda", () => {
     it("returns the result of a single expression", () => {
       const script = `
-        double = fun(x) x * 2
+        let double = fun(x) x * 2
         double(3)
       `;
       expect(run(script)).toBe(6);
@@ -951,7 +944,7 @@ describe("Interpreter", () => {
 
     it("works with multiple parameters", () => {
       const script = `
-        add = fun(a, b) a + b
+        let add = fun(a, b) a + b
         add(1, 2)
       `;
       expect(run(script)).toBe(3);

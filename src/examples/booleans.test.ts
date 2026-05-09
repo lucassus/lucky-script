@@ -76,9 +76,9 @@ describe("if statement with boolean condition", () => {
     ({ condition, expected }) => {
       expect(
         run(`
-        result = 0
+        let result = 0
         if ${condition}
-          result = 1
+          let result = 1
         end
         result
       `),
@@ -89,11 +89,11 @@ describe("if statement with boolean condition", () => {
   it("executes else-branch when condition is false", () => {
     expect(
       run(`
-        result = 0
+        let result = 0
         if false
-          result = 1
+          let result = 1
         else
-          result = 2
+          let result = 2
         end
         result
       `),
@@ -103,9 +103,9 @@ describe("if statement with boolean condition", () => {
   it("uses boolean expression as condition", () => {
     expect(
       run(`
-        result = 0
+        let result = 0
         if 1 > 0 and true
-          result = 1
+          let result = 1
         end
         result
       `),

@@ -4,7 +4,7 @@ import { run } from "../testingUtils";
 
 it("bare compound assignment at top level", () => {
   const script = `
-    x = 10
+    let x = 10
     x += 5
     x
   `;
@@ -14,7 +14,7 @@ it("bare compound assignment at top level", () => {
 
 it("bare compound assignment with all operators", () => {
   const script = `
-    x = 20
+    let x = 20
     x += 5
     x -= 3
     x *= 2
@@ -25,9 +25,9 @@ it("bare compound assignment with all operators", () => {
   expect(run(script)).toBe(11);
 });
 
-it("bare compound assignment inside function creates local binding", () => {
+it("bare compound assignment inside function mutates the nearest binding", () => {
   const script = `
-    x = 1
+    let x = 1
 
     fun foo()
       x += 99
@@ -38,15 +38,15 @@ it("bare compound assignment inside function creates local binding", () => {
     x
   `;
 
-  expect(run(script)).toBe(1);
+  expect(run(script)).toBe(100);
 });
 
-it("local compound assignment reads outer then writes local", () => {
+it("let compound assignment reads then writes let", () => {
   const script = `
-    x = 10
+    let x = 10
 
     fun foo()
-      local x += 5
+      let x += 5
       return x
     end
 
@@ -56,12 +56,12 @@ it("local compound assignment reads outer then writes local", () => {
   expect(run(script)).toBe(15);
 });
 
-it("outer compound assignment mutates enclosing variable", () => {
+it("compound assignment mutates enclosing variable", () => {
   const script = `
-    x = 10
+    let x = 10
 
     fun foo()
-      outer x += 5
+      x += 5
     end
 
     foo()
@@ -71,13 +71,13 @@ it("outer compound assignment mutates enclosing variable", () => {
   expect(run(script)).toBe(15);
 });
 
-it("outer compound assignment in nested function", () => {
+it("compound assignment in nested function", () => {
   const script = `
     fun makeCounter()
-      local n = 0
+      let n = 0
 
       fun inc()
-        outer n += 1
+        n += 1
       end
 
       inc()
@@ -93,8 +93,8 @@ it("outer compound assignment in nested function", () => {
 
 it("compound assignment with expression", () => {
   const script = `
-    x = 10
-    y = 3
+    let x = 10
+    let y = 3
     x += y * 2
     x
   `;
@@ -104,8 +104,8 @@ it("compound assignment with expression", () => {
 
 it("compound assignment in while loop", () => {
   const script = `
-    i = 0
-    sum = 0
+    let i = 0
+    let sum = 0
 
     while i < 5
       sum += i
@@ -118,15 +118,15 @@ it("compound assignment in while loop", () => {
   expect(run(script)).toBe(10);
 });
 
-it("compound assignment with local in nested scopes", () => {
+it("compound assignment with let in nested scopes", () => {
   const script = `
-    x = 100
+    let x = 100
 
     fun outerFn()
-      local x = 10
+      let x = 10
 
       fun inner()
-        local x += 5
+        let x += 5
         return x
       end
 

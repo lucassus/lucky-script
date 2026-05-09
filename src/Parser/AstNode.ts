@@ -66,13 +66,13 @@ export class UnaryOperation extends Expression {
   }
 }
 
-export type BindingMode = "bare" | "local" | "outer";
+export type AssignmentKind = "declaration" | "reassignment";
 
 export class VariableAssigment extends Expression {
   constructor(
     public readonly name: string,
     public readonly value: Expression,
-    public readonly mode: BindingMode = "bare",
+    public readonly kind: AssignmentKind = "reassignment",
   ) {
     super();
   }

@@ -5,7 +5,7 @@ Lucky Script is a scripting language built from scratch in TypeScript. It has a 
 **Features:**
 
 - First-class functions and closures
-- Function-scoped variables with explicit `local` and `outer` binding
+- Declaration-first variables with `let` and lexical reassignment
 - `if` / `elseif` / `else` control flow
 - `while` loops with `break` and `continue`
 - Short-form lambda expressions: `fun(x) x * 2`
@@ -61,7 +61,7 @@ add(1, 2) * 2 - 1  # Evaluates to 5
 Anonymous functions with a single expression can be written inline without `end`. The expression is implicitly returned:
 
 ```
-double = fun(x) x * 2
+let double = fun(x) x * 2
 double(3)  # => 6
 
 fun(a, b) a + b
@@ -71,7 +71,7 @@ For anything more complex, use the full form:
 
 ```
 fun(x)
-  local y = x * 2
+  let y = x * 2
   return y + 1
 end
 ```
@@ -101,7 +101,7 @@ if x > 0 then print(x) end
 ## While loops
 
 ```
-i = 0
+let i = 0
 while i < 5
   print(i)
   i = i + 1
@@ -119,14 +119,14 @@ while true then break end
 `break` exits the loop immediately; `continue` skips the rest of the current iteration and re-evaluates the condition.
 
 ```
-i = 0
+let i = 0
 while true
   if i == 5 then break end
   i = i + 1
 end
 # i == 5 after the loop
 
-i = 0
+let i = 0
 while i < 10
   i = i + 1
   if i == 3
@@ -154,8 +154,8 @@ end
 ## Higher order functions are also supported:
 
 ```
-foo = fun()
-  x = 1
+let foo = fun()
+  let x = 1
 
   # Yes! It's a function that returns another function ;)
   return fun()
@@ -163,7 +163,7 @@ foo = fun()
   end
 end
 
-bar = foo()
+let bar = foo()
 bar()
 ```
 
@@ -179,19 +179,22 @@ nums.filter(fun(x) x > 1)
 Only function calls create a new scope. `if`, `elseif`, `else`, and `while` execute in the enclosing scope.
 
 ```
-a = 1
+let a = 1
 
 fn foo()
-  a = 2       # local to foo — does NOT mutate outer a
-  outer a = 2 # explicitly mutates the outer a
-  local b = 3 # explicitly local, shadows any outer binding named b
+  let a = 2  # shadows the outer a
+  a = 3      # reassigns the nearest existing binding (the local one)
+end
+
+fun bumpOuter()
+  a = a + 1  # mutates outer a because no nearer declaration exists
 end
 ```
 
 Reads always walk the full scope chain:
 
 ```
-x = 10
+let x = 10
 
 fn double()
   return x * 2  # reads x from the enclosing scope
@@ -202,14 +205,14 @@ x = 5
 double()  # => 10
 ```
 
-Closures with `outer`:
+Closures with lexical reassignment:
 
 ```
 fn makeCounter()
-  local n = 0
+  let n = 0
 
   fun inc()
-    outer n = n + 1
+    n = n + 1
   end
 
   fun get()
@@ -251,7 +254,7 @@ Compound assignment: `+=`, `-=`, `*=`, `/=`
 1 == 1           # => truthy
 1 != 2           # => truthy
 
-x = 10
+let x = 10
 x += 5           # x is now 15
 x *= 2           # x is now 30
 ```
