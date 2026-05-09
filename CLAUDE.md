@@ -16,6 +16,10 @@ ts-node src/repl.ts # interactive REPL
 
 See `lark-sandbox/CLAUDE.md` for lark-sandbox commands.
 
+## Philosophy
+
+Lucky Script is a personal learning project. No one uses it in production systems, and it should not be used in production systems. Breaking changes to the language syntax or semantics are fine — don't let backward compatibility concerns block good design decisions.
+
 ## Quality
 
 After any code change, run `yarn lint`, `yarn typecheck`, and `yarn test`. Fix all failures before finishing.
