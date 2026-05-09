@@ -772,9 +772,9 @@ describe("Interpreter", () => {
     });
 
     it("builtins cannot be mutated via outer", () => {
-      expect(() => run(`fun foo()\n  outer print = "nope"\nend\nfoo()`)).toThrow(
-        ScopeError,
-      );
+      expect(() =>
+        run(`fun foo()\n  outer print = "nope"\nend\nfoo()`),
+      ).toThrow(ScopeError);
     });
 
     it("read before a later local declaration sees the outer binding", () => {

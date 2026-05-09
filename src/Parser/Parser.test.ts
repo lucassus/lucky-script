@@ -184,9 +184,9 @@ describe("Parser", () => {
     });
 
     it.each`
-      script                 | message
+      script                  | message
       ${"x = fun foo()\nend"} | ${"Unexpected 'fun' keyword."}
-      ${"x = "}              | ${"Unexpected 'Eof' delimiter."}
+      ${"x = "}               | ${"Unexpected 'Eof' delimiter."}
     `("raises errors for invalid assignments", ({ script, message }) => {
       expect(() => parse(script)).toThrow(SyntaxError);
       expect(() => parse(script)).toThrow(message);
@@ -508,7 +508,7 @@ describe("Parser", () => {
     });
 
     it.each`
-      script                 | message
+      script                  | message
       ${"fun abc(,x,y)\nend"} | ${"Expected 'Identifier' literal but got ',' delimiter."}
       ${"fun abc(x,)\nend"}   | ${"Expected 'Identifier' literal but got ')' delimiter."}
       ${"fun abc(x,,)\nend"}  | ${"Expected 'Identifier' literal but got ',' delimiter."}

@@ -8,7 +8,7 @@ it("evaluates nothing (null) value", () => {
     x
   `;
   // Assuming the `run` method returns `null` or a specific object representing `nothing`
-  expect(run(script)).toBe(undefined); 
+  expect(run(script)).toBe(undefined);
 });
 
 it("evaluates number literals with underscores and floats", () => {

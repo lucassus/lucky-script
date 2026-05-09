@@ -298,7 +298,7 @@ describe("Lexer", () => {
     ${"while"}    | ${Keyword.While}
     ${"break"}    | ${Keyword.Break}
     ${"continue"} | ${Keyword.Continue}
-    ${"fun"}       | ${Keyword.Fun}
+    ${"fun"}      | ${Keyword.Fun}
     ${"end"}      | ${Keyword.End}
     ${"then"}     | ${Keyword.Then}
     ${"elseif"}   | ${Keyword.ElseIf}
