@@ -71,8 +71,8 @@ Built-in methods on lists and strings via dot syntax. No user-defined classes â€
 ```
 nums = [1, 2, 3]
 nums.length                  # => 3
-nums.map(fn(x) x * 2)       # => [2, 4, 6]
-nums.filter(fn(x) x > 1)    # => [2, 3]
+nums.map(fun(x) x * 2)       # => [2, 4, 6]
+nums.filter(fun(x) x > 1)    # => [2, 3]
 
 "hello".upcase                   # => "HELLO"
 "hello".length                   # => 5

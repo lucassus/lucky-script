@@ -7,7 +7,7 @@ Lucky Script is a scripting language built from scratch in TypeScript. It has a 
 - Function-scoped variables with explicit `local` and `outer` binding
 - `if` / `elseif` / `else` control flow
 - `while` loops with `break` and `continue`
-- Short-form lambda expressions: `fn(x) x * 2`
+- Short-form lambda expressions: `fun(x) x * 2`
 - Arithmetic, comparison, and unary operators
 - Compound assignment operators: `+=`, `-=`, `*=`, `/=`
 - Boolean operators: `and`, `or`, `not` (with short-circuit evaluation)
@@ -29,23 +29,23 @@ Lucky Script is a scripting language built from scratch in TypeScript. It has a 
 > 1 + 2 * 3 ** 5.2
 606.4252366531416
 
-> fn add(a, b)
+> fun add(a, b)
   return a + b
 end
 nothing
 > add(1, 2)
 3
 
-> fn asdf
+> fun asdf
 SyntaxError: Expected '(' delimiter but got 'end' keyword.
 
-> fn foo() asdf
+> fun foo() asdf
 SyntaxError: Expected 'end' keyword but got 'Identifier' literal.
 ```
 
 ## Functions
 
-Functions use the `fn` keyword and `end` delimiter:
+Functions use the `fun` keyword and `end` delimiter:
 
 ```
 fn add(a, b)
@@ -60,16 +60,16 @@ add(1, 2) * 2 - 1  # Evaluates to 5
 Anonymous functions with a single expression can be written inline without `end`. The expression is implicitly returned:
 
 ```
-double = fn(x) x * 2
+double = fun(x) x * 2
 double(3)  # => 6
 
-fn(a, b) a + b
+fun(a, b) a + b
 ```
 
 For anything more complex, use the full form:
 
 ```
-fn(x)
+fun(x)
   local y = x * 2
   return y + 1
 end
@@ -153,11 +153,11 @@ end
 ## Higher order functions are also supported:
 
 ```
-foo = fn()
+foo = fun()
   x = 1
 
   # Yes! It's a function that returns another function ;)
-  return fn()
+  return fun()
     return x + 2
   end
 end
@@ -169,8 +169,8 @@ bar()
 With short-form lambdas:
 
 ```
-nums.map(fn(x) x * 2)
-nums.filter(fn(x) x > 1)
+nums.map(fun(x) x * 2)
+nums.filter(fun(x) x > 1)
 ```
 
 ## Variable scoping
@@ -207,11 +207,11 @@ Closures with `outer`:
 fn makeCounter()
   local n = 0
 
-  fn inc()
+  fun inc()
     outer n = n + 1
   end
 
-  fn get()
+  fun get()
     return n
   end
 

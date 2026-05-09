@@ -16,7 +16,7 @@ it("counts up to N with a mutating condition", () => {
 
 it("computes the sum of 1..N inside a function", () => {
   const script = `
-    fn sumTo(n)
+    fun sumTo(n)
       total = 0
       i = 1
       while i <= n
@@ -33,7 +33,7 @@ it("computes the sum of 1..N inside a function", () => {
 
 it("early-returns from inside a while body", () => {
   const script = `
-    fn firstMultipleOf(n, limit)
+    fun firstMultipleOf(n, limit)
       i = 1
       while i < limit
         if i * n == 12

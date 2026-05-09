@@ -129,7 +129,7 @@ describe("Interpreter", () => {
   describe("functions", () => {
     it("interprets function calls", () => {
       const script = `
-        fn foo()
+        fun foo()
           return 1 + 2
         end
 
@@ -141,7 +141,7 @@ describe("Interpreter", () => {
 
     it("interprets function calls with arguments", () => {
       const script = `
-        fn add(x, y)
+        fun add(x, y)
           return x + y
         end
 
@@ -153,15 +153,15 @@ describe("Interpreter", () => {
 
     it("interprets function calls with complex arguments", () => {
       const script = `
-        fn giveMeOne()
+        fun giveMeOne()
           return 1
         end
 
-        fn add(x, f)
+        fun add(x, f)
           return x + f()
         end
 
-        add(giveMeOne(), fn () 2)
+        add(giveMeOne(), fun () 2)
       `;
 
       expect(run(script)).toBe(3);
@@ -177,7 +177,7 @@ describe("Interpreter", () => {
         "raises an error when invalid number of arguments is given",
         ({ args }) => {
           const script = `
-            fn add(x, y)
+            fun add(x, y)
               return x + y
             end
 
@@ -193,7 +193,7 @@ describe("Interpreter", () => {
 
       it("raises an error when anonymous function is called with invalid number of arguments", () => {
         const script = `
-          foo = fn (x, y)
+          foo = fun (x, y)
             return x + y
           end
 
@@ -208,7 +208,7 @@ describe("Interpreter", () => {
 
     it("obeys the return statement", () => {
       const script = `
-        fn foo()
+        fun foo()
           return 1 + 2
 
           3
@@ -224,7 +224,7 @@ describe("Interpreter", () => {
 
     it("returns nothing when the return statement is not present", () => {
       const script = `
-        fn foo()
+        fun foo()
           123
         end
         foo()
@@ -235,8 +235,8 @@ describe("Interpreter", () => {
 
     it("interprets nested function declaration", () => {
       const script = `
-        fn foo()
-          fn bar()
+        fun foo()
+          fun bar()
             return 3
           end
 
@@ -251,10 +251,10 @@ describe("Interpreter", () => {
 
     it("interprets anonymous functions", () => {
       const script = `
-        foo = fn ()
+        foo = fun ()
           x = 1
 
-          return fn ()
+          return fun ()
             return x + 2
           end
         end
@@ -268,7 +268,7 @@ describe("Interpreter", () => {
 
     it("raises an error on illegal binary operation", () => {
       const script = `
-        fn foo()
+        fun foo()
           return 1
         end
 
@@ -288,7 +288,7 @@ describe("Interpreter", () => {
 
     it("raises an error on illegal unary operation", () => {
       const script = `
-        fn foo()
+        fun foo()
           return 1
         end
 
@@ -321,7 +321,7 @@ describe("Interpreter", () => {
 
     it("allows to re-assign the function to a new identifier", () => {
       const script = `
-        fn foo()
+        fun foo()
           return 41
         end
         bar = foo
@@ -338,11 +338,11 @@ describe("Interpreter", () => {
       const script = `
         a = 1
 
-        fn foo()
+        fun foo()
           outer a = 2
           b = 1
 
-          fn bar()
+          fun bar()
             c = 3
             return a + b + c
           end
@@ -367,7 +367,7 @@ describe("Interpreter", () => {
       const script = `
         a = 1
 
-        fn add()
+        fun add()
           return a + 1
         end
 
@@ -388,7 +388,7 @@ describe("Interpreter", () => {
       const script = `
         x = 1
 
-        fn foo(x)
+        fun foo(x)
           x = x + 1
 
           return x + 1
@@ -595,7 +595,7 @@ describe("Interpreter", () => {
 
     it("local inside a while body inside a function binds in the function scope", () => {
       const script = `
-        fn foo()
+        fun foo()
           i = 0
           while i < 1
             local x = 7
@@ -610,7 +610,7 @@ describe("Interpreter", () => {
 
     it("a return inside the body exits the enclosing function", () => {
       const script = `
-        fn foo()
+        fun foo()
           i = 0
           while true
             if i == 2
@@ -662,7 +662,7 @@ describe("Interpreter", () => {
 
     it("allows returning nothing from a function", () => {
       const script = `
-        fn foo()
+        fun foo()
           return nothing
         end
         foo()
@@ -675,7 +675,7 @@ describe("Interpreter", () => {
     it("bare write inside a function does not mutate outer binding", () => {
       const script = `
         x = 1
-        fn foo()
+        fun foo()
           x = 99
         end
         foo()
@@ -686,7 +686,7 @@ describe("Interpreter", () => {
 
     it("bare write inside a function rebinds the local on subsequent writes", () => {
       const script = `
-        fn foo()
+        fun foo()
           x = 1
           x = 2
           return x
@@ -699,7 +699,7 @@ describe("Interpreter", () => {
     it("local shadows an outer variable", () => {
       const script = `
         x = 1
-        fn foo()
+        fun foo()
           local x = 99
         end
         foo()
@@ -710,7 +710,7 @@ describe("Interpreter", () => {
 
     it("local can shadow a builtin inside a function", () => {
       const script = `
-        fn foo()
+        fun foo()
           local print = "shadowed"
           return print
         end
@@ -721,7 +721,7 @@ describe("Interpreter", () => {
 
     it("duplicate local in the same scope rebinds silently", () => {
       const script = `
-        fn foo()
+        fun foo()
           local x = 1
           local x = 2
           return x
@@ -734,7 +734,7 @@ describe("Interpreter", () => {
     it("outer mutates the top-level binding", () => {
       const script = `
         x = 1
-        fn foo()
+        fun foo()
           outer x = 99
         end
         foo()
@@ -744,7 +744,7 @@ describe("Interpreter", () => {
     });
 
     it("outer raises ScopeError when no enclosing binding exists", () => {
-      expect(() => run("fn foo()\n  outer y = 1\nend\nfoo()")).toThrow(
+      expect(() => run("fun foo()\n  outer y = 1\nend\nfoo()")).toThrow(
         ScopeError,
       );
     });
@@ -763,7 +763,7 @@ describe("Interpreter", () => {
     it("reads still walk the full scope chain", () => {
       const script = `
         x = 1
-        fn foo()
+        fun foo()
           return x
         end
         foo()
@@ -772,7 +772,7 @@ describe("Interpreter", () => {
     });
 
     it("builtins cannot be mutated via outer", () => {
-      expect(() => run(`fn foo()\n  outer print = "nope"\nend\nfoo()`)).toThrow(
+      expect(() => run(`fun foo()\n  outer print = "nope"\nend\nfoo()`)).toThrow(
         ScopeError,
       );
     });
@@ -781,7 +781,7 @@ describe("Interpreter", () => {
       const symbolTable = new SymbolTable();
       const script = `
         x = 1
-        fn foo()
+        fun foo()
           result = x
           local x = 2
           return result
@@ -943,7 +943,7 @@ describe("Interpreter", () => {
   describe("short-form lambda", () => {
     it("returns the result of a single expression", () => {
       const script = `
-        double = fn(x) x * 2
+        double = fun(x) x * 2
         double(3)
       `;
       expect(run(script)).toBe(6);
@@ -951,7 +951,7 @@ describe("Interpreter", () => {
 
     it("works with multiple parameters", () => {
       const script = `
-        add = fn(a, b) a + b
+        add = fun(a, b) a + b
         add(1, 2)
       `;
       expect(run(script)).toBe(3);
@@ -959,7 +959,7 @@ describe("Interpreter", () => {
 
     it("full-form function without return returns nothing", () => {
       const script = `
-        fn foo()
+        fun foo()
           1 + 2
         end
         foo()
@@ -969,10 +969,10 @@ describe("Interpreter", () => {
 
     it("short-form lambda as argument", () => {
       const script = `
-        fn apply(f, x)
+        fun apply(f, x)
           return f(x)
         end
-        apply(fn(x) x * 2, 5)
+        apply(fun(x) x * 2, 5)
       `;
       expect(run(script)).toBe(10);
     });

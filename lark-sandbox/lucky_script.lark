@@ -45,10 +45,10 @@ arith_expression   : term (("+" | "-") term)*
 
 assigment          : IDENTIFIER ("=" | "+=" | "-=" | "*=" | "/=") expression
 
-func_declaration   : "fn" IDENTIFIER "(" func_parameters ")" _NEWLINE? statements "end"
+func_declaration   : "fun" IDENTIFIER "(" func_parameters ")" _NEWLINE? statements "end"
 
-anonymous_func     : "fn" "(" func_parameters ")" _NEWLINE statements "end"
-                   | "fn" "(" func_parameters ")" expression
+anonymous_func     : "fun" "(" func_parameters ")" _NEWLINE statements "end"
+                   | "fun" "(" func_parameters ")" expression
 
 func_parameters    : (IDENTIFIER ("," IDENTIFIER)*)?
 

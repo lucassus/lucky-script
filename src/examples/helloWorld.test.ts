@@ -6,7 +6,7 @@ it("sayHello prints a personalised greeting", () => {
   const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
 
   run(`
-    fn sayHello(name)
+    fun sayHello(name)
       print("Hello, " + name + "!")
     end
 

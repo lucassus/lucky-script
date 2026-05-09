@@ -236,13 +236,13 @@ describe("Lexer", () => {
     });
   });
 
-  it("recognizes fn declaration", () => {
-    const lexer = new Lexer("fn add()\n  return 1 + 2\nend");
+  it("recognizes fun declaration", () => {
+    const lexer = new Lexer("fun add()\n  return 1 + 2\nend");
     const tokens = [...lexer.tokenize()];
 
     expect(tokens.length).toBe(12);
     expect(tokens).toEqual([
-      new Token(Keyword.Fn, anyLocation),
+      new Token(Keyword.Fun, anyLocation),
       new Token(Literal.Identifier, anyLocation, "add"),
       new Token(Delimiter.LeftBracket, anyLocation),
       new Token(Delimiter.RightBracket, anyLocation),
@@ -298,7 +298,7 @@ describe("Lexer", () => {
     ${"while"}    | ${Keyword.While}
     ${"break"}    | ${Keyword.Break}
     ${"continue"} | ${Keyword.Continue}
-    ${"fn"}       | ${Keyword.Fn}
+    ${"fun"}       | ${Keyword.Fun}
     ${"end"}      | ${Keyword.End}
     ${"then"}     | ${Keyword.Then}
     ${"elseif"}   | ${Keyword.ElseIf}

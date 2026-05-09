@@ -14,15 +14,15 @@ parser = Lark.open("lucky_script.lark", rel_to=__file__, start="program")
         "-123",
         "----+++123",
         "(1 + 2) * 3",
-        "fn foo()\nend",
-        "fn foo()\n  1 + 2 + 3\nend",
-        "fn foo()\n  return 123\nend",
-        "fn ()\n  return 123\nend",
-        "fn ()\nend",
-        "fn (x, y)\nend",
-        "x = fn (x)\n  return 123\nend",
-        "fn(x) 123",
-        "fn(x, y) x + y",
+        "fun foo()\nend",
+        "fun foo()\n  1 + 2 + 3\nend",
+        "fun foo()\n  return 123\nend",
+        "fun ()\n  return 123\nend",
+        "fun ()\nend",
+        "fun (x, y)\nend",
+        "x = fun (x)\n  return 123\nend",
+        "fun(x) 123",
+        "fun(x, y) x + y",
         "foo()",
         "foo(123)",
         "foo(1, 2, 1+2+3+4)",
@@ -107,12 +107,12 @@ def test_lucky_script_valid_syntax(script):
     "script",
     (
         "1 2 3",
-        "fn foo(1+2)\nend",
-        "x = fn bar()\nend",
-        "fn bar(,y)\nend",
-        "x = fn(, x, y)\nend",
-        "x = fn bar(, x, y)\nend",
-        "fn foo(fn(bar)\nend)\nend",
+        "fun foo(1+2)\nend",
+        "x = fun bar()\nend",
+        "fun bar(,y)\nend",
+        "x = fun(, x, y)\nend",
+        "x = fun bar(, x, y)\nend",
+        "fun foo(fun(bar)\nend)\nend",
         "while true 1 end",
     ),
 )
@@ -131,34 +131,34 @@ def test_lucky_script():
 
     y = -1 + 0.9999 * (3.5 + --+-4) ** 2 + x
 
-    fn add()
+    fun add()
       x + y
     end
 
-    fn foo()
+    fun foo()
       x = 1
       y = 2
 
       return 1 + 2 * 3 + -y ** -x
     end
 
-    fn bar()
+    fun bar()
     end
 
-    fn()
+    fun()
       return nothing
     end
 
-    bar = fn ()
+    bar = fun ()
       return nothing
     end
 
     add()
 
-    fn curry(x)
+    fun curry(x)
       z = 2
 
-      return fn (y)
+      return fun (y)
         return x + y * z
       end
     end

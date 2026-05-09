@@ -41,7 +41,7 @@ export class Keyword extends TokenType {
     Keyword.values.push(this);
   }
 
-  static Fn = new Keyword("fn");
+  static Fun = new Keyword("fun");
   static If = new Keyword("if");
   static Else = new Keyword("else");
   static ElseIf = new Keyword("elseif");
