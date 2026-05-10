@@ -5,7 +5,21 @@ import { test, expect, describe } from "vitest";
 
 const grammar = ohm.grammar(fs.readFileSync("src/grammar.ohm", "utf-8"));
 const semantics = grammar.createSemantics();
+const variables = new Map<string, number>();
+
 semantics.addOperation("eval", {
+  Program(exps) {
+    let result = 0;
+    for (const exp of exps.children) {
+      result = exp.eval();
+    }
+    return result;
+  },
+  Exp_assign(_let, ident, _eq, exp) {
+    const value = exp.eval();
+    variables.set(ident.sourceString, value);
+    return value;
+  },
   AddExp_plus(a, _, b) {
     return a.eval() + b.eval();
   },
@@ -29,6 +43,13 @@ semantics.addOperation("eval", {
   },
   PriExp_neg(_, e) {
     return -e.eval();
+  },
+  PriExp_varAccess(ident) {
+    const name = ident.sourceString;
+    if (!variables.has(name)) {
+      throw new Error(`Undefined variable: ${name}`);
+    }
+    return variables.get(name)!;
   },
   number(digits) {
     return parseFloat(digits.sourceString);
@@ -61,6 +82,9 @@ describe("grammar", () => {
     // Left associativity
     "10 - 2 - 3",
     "100 / 10 / 2",
+    // Variable assignment
+    "let x = 1 + 2",
+    "let myVar = 42",
   ])("matches %s", (expr) => {
     expect(grammar.match(expr).succeeded()).toBe(true);
   });
@@ -83,8 +107,58 @@ describe("grammar", () => {
     // Left associativity
     ["10 - 2 - 3", 5],
     ["100 / 10 / 2", 5],
+    // Variable assignment
+    ["let x = 1 + 2", 3],
+    ["let myVar = 42", 42],
   ])("evaluates %s to %f", (expr, expected) => {
     expect(evaluate(expr)).toEqual(expected);
+  });
+
+  describe("stateful features", () => {
+    test("variable assignment and math operations", () => {
+      variables.clear(); // Reset state
+      
+      expect(evaluate("let base = 10")).toBe(10);
+      expect(evaluate("let multiplier = 5")).toBe(5);
+      
+      // Basic read
+      expect(evaluate("base")).toBe(10);
+      
+      // Math with variables
+      expect(evaluate("base * multiplier")).toBe(50);
+      expect(evaluate("let result = base * multiplier + 2")).toBe(52);
+      
+      // More complex math
+      expect(evaluate("result / 2")).toBe(26);
+      expect(evaluate("(base + 2) ^ 2")).toBe(144);
+    });
+
+    test("feature-rich multiline script", () => {
+      variables.clear(); // Reset state
+      
+      const script = `
+        let initial = 10.5
+        let offset = -2.5
+        let factor = 3
+        
+        let adjusted = initial + offset
+        let scaled = adjusted * factor
+        
+        scaled ^ 2 / 2
+      `;
+      
+      // initial = 10.5
+      // offset = -2.5
+      // adjusted = 10.5 + (-2.5) = 8
+      // scaled = 8 * 3 = 24
+      // final = 24 ^ 2 / 2 = 576 / 2 = 288
+      
+      expect(evaluate(script)).toBe(288);
+      
+      // We can also assert that intermediate variables were saved properly
+      expect(variables.get("adjusted")).toBe(8);
+      expect(variables.get("scaled")).toBe(24);
+    });
   });
 
   describe("currently unsupported features", () => {

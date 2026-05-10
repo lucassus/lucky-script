@@ -1,5 +1,9 @@
 Arithmetic {
-    Exp = AddExp
+    Program = Exp+
+
+    Exp
+      = "let" ident "=" Exp -- assign
+      | AddExp
 
     // Handles low-precedence operations
     AddExp
@@ -21,9 +25,12 @@ Arithmetic {
       = "(" Exp ")" -- paren
       | "+" PriExp -- pos
       | "-" PriExp -- neg
+      | ident -- varAccess
       | number
 
     number
       = digit+ "." digit+ -- fraction
       | digit+ -- whole
+
+    ident = letter alnum*
 }
