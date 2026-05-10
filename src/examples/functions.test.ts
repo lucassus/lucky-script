@@ -38,6 +38,7 @@ it("evaluates complex lambda with full syntax", () => {
       let y = x * 2
       return y + 1
     end
+    
     process(10)
   `;
 
