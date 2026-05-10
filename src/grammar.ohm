@@ -1,11 +1,7 @@
 Arithmetic {
     Exp = AddExp
 
-    /*
-      Handles low-precedence operations
-      The rule is defined "above" multiplication, because it call MulExp,
-      the parser ensures that multiplication is grouped more tightly than addition
-    */
+    // Handles low-precedence operations
     AddExp
       = AddExp "+" MulExp -- plus
       | AddExp "-" MulExp -- minus
@@ -13,8 +9,12 @@ Arithmetic {
 
     // Handles high-precedence operations
     MulExp
-      = MulExp "*" PriExp -- times
-      | MulExp "/" PriExp -- divide
+      = MulExp "*" PowExp -- times
+      | MulExp "/" PowExp -- divide
+      | PowExp
+
+    PowExp
+      = PriExp "^" PowExp -- pow
       | PriExp
 
     PriExp

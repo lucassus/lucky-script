@@ -18,6 +18,9 @@ semantics.addOperation("eval", {
   MulExp_divide(a, _, b) {
     return a.eval() / b.eval();
   },
+  PowExp_pow(a, _, b) {
+    return a.eval() ** b.eval();
+  },
   PriExp_paren(_l, e, _r) {
     return e.eval();
   },
@@ -96,6 +99,13 @@ describe("grammar", () => {
       // Unary operators before parentheses
       "-(1+2)",
       "+(1+2)",
+      // Power operator
+      "2 ^ 3",
+      "(2 + 1) ^ 2",
+      "2 ^ (1 + 2)",
+      "(-2) ^ 3",
+      "-2 ^ 2",
+      "2 ^ 3 ^ 2",
     ])("matches %s", (expr) => {
       expect(grammar.match(expr).succeeded()).toBe(true);
     });
@@ -111,6 +121,13 @@ describe("grammar", () => {
       // Unary operators before parentheses
       ["-(1+2)", -3],
       ["+(1+2)", 3],
+      // Power operator
+      ["2 ^ 3", 8],
+      ["(2 + 1) ^ 2", 9],
+      ["2 ^ (1 + 2)", 8],
+      ["(-2) ^ 3", -8],
+      ["-2 ^ 2", 4],
+      ["2 ^ 3 ^ 2", 512],
     ])("evaluates %s to %f", (expr, expected) => {
       expect(evaluate(expr)).toEqual(expected);
     });
