@@ -15,14 +15,20 @@ semantics.addOperation("eval", {
   MulExp_times(a, _, b) {
     return a.eval() * b.eval();
   },
-  MulExp_div(a, _, b) {
+  MulExp_divide(a, _, b) {
     return a.eval() / b.eval();
   },
   PriExp_paren(_l, e, _r) {
     return e.eval();
   },
+  PriExp_pos(_, e) {
+    return e.eval();
+  },
+  PriExp_neg(_, e) {
+    return -e.eval();
+  },
   number(digits) {
-    return parseInt(digits.sourceString);
+    return parseFloat(digits.sourceString);
   },
 });
 
@@ -87,6 +93,9 @@ describe("grammar", () => {
       "0.5",
       "1.99",
       "-1.5 + 2",
+      // Unary operators before parentheses
+      "-(1+2)",
+      "+(1+2)",
     ])("matches %s", (expr) => {
       expect(grammar.match(expr).succeeded()).toBe(true);
     });
@@ -99,6 +108,9 @@ describe("grammar", () => {
       ["0.5", 0.5],
       ["1.99", 1.99],
       ["-1.5 + 2", 0.5],
+      // Unary operators before parentheses
+      ["-(1+2)", -3],
+      ["+(1+2)", 3],
     ])("evaluates %s to %f", (expr, expected) => {
       expect(evaluate(expr)).toEqual(expected);
     });

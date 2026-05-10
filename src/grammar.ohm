@@ -6,17 +6,24 @@ Arithmetic {
       The rule is defined "above" multiplication, because it call MulExp,
       the parser ensures that multiplication is grouped more tightly than addition
     */
-    AddExp = AddExp "+" MulExp -- plus
+    AddExp
+      = AddExp "+" MulExp -- plus
       | AddExp "-" MulExp -- minus
       | MulExp
 
     // Handles high-precedence operations
-    MulExp = MulExp "*" number -- times
-      | MulExp "/" number -- div
+    MulExp
+      = MulExp "*" PriExp -- times
+      | MulExp "/" PriExp -- divide
       | PriExp
 
-    PriExp = "(" Exp ")" -- paren
-     | number
+    PriExp
+      = "(" Exp ")" -- paren
+      | "+" PriExp -- pos
+      | "-" PriExp -- neg
+      | number
 
-    number = digit*
+    number
+      = digit+ "." digit+ -- fraction
+      | digit+ -- whole
 }
