@@ -6,6 +6,13 @@ import { test, expect, describe } from "vitest";
 const grammar = ohm.grammar(fs.readFileSync("src/grammar.ohm", "utf-8"));
 const semantics = grammar.createSemantics();
 const variables = new Map<string, number>();
+const functions = new Map<string, { params: string[], body: ohm.Node }>();
+
+class ReturnException extends Error {
+  constructor(public value: number) {
+    super();
+  }
+}
 
 semantics.addOperation("eval", {
   Program(exps) {
@@ -14,6 +21,14 @@ semantics.addOperation("eval", {
       result = exp.eval();
     }
     return result;
+  },
+  Exp_funDef(_fun, ident, _lparen, params, _rparen, body, _end) {
+    const paramNames = params.asIteration().children.map(c => c.sourceString);
+    functions.set(ident.sourceString, { params: paramNames, body });
+    return 0;
+  },
+  Exp_return(_return, exp) {
+    throw new ReturnException(exp.eval());
   },
   Exp_assign(_let, ident, _eq, exp) {
     const value = exp.eval();
@@ -34,6 +49,46 @@ semantics.addOperation("eval", {
   },
   PowExp_pow(a, _, b) {
     return a.eval() ** b.eval();
+  },
+  PriExp_funCall(ident, _lparen, args, _rparen) {
+    const name = ident.sourceString;
+    if (!functions.has(name)) {
+      throw new Error(`Undefined function: ${name}`);
+    }
+    const fn = functions.get(name)!;
+    const argValues = args.asIteration().children.map(c => c.eval());
+    
+    // Simplistic scope implementation
+    const previousValues = new Map<string, number>();
+    fn.params.forEach((param, i) => {
+      if (variables.has(param)) {
+        previousValues.set(param, variables.get(param)!);
+      }
+      variables.set(param, argValues[i]);
+    });
+    
+    let result = 0;
+    try {
+      for (const stmt of fn.body.children) {
+        result = stmt.eval();
+      }
+    } catch (e) {
+      if (e instanceof ReturnException) {
+        result = e.value;
+      } else {
+        throw e;
+      }
+    } finally {
+      // Restore outer scope variables
+      fn.params.forEach(param => {
+        if (previousValues.has(param)) {
+          variables.set(param, previousValues.get(param)!);
+        } else {
+          variables.delete(param);
+        }
+      });
+    }
+    return result;
   },
   PriExp_paren(_l, e, _r) {
     return e.eval();
@@ -131,6 +186,49 @@ describe("grammar", () => {
       // More complex math
       expect(evaluate("result / 2")).toBe(26);
       expect(evaluate("(base + 2) ^ 2")).toBe(144);
+    });
+
+    test("functions", () => {
+      variables.clear();
+      functions.clear();
+      
+      const script = `
+        fun add(a, b)
+          return a + b
+        end
+
+        fun factorial(n)
+          let result = 1
+          let current = n
+          return current * 2
+        end
+        
+        let x = 10
+        add(x, 5)
+      `;
+      expect(evaluate(script)).toBe(15);
+      
+      expect(evaluate(`
+        fun multiply(a, b)
+          let product = a * b
+          return product
+        end
+        multiply(3, 4)
+      `)).toBe(12);
+
+      // Recursive features not tested due to lack of conditionals, 
+      // but functions can be called directly
+      expect(evaluate(`
+        let foo123bar = 99
+        foo123bar + 1
+      `)).toBe(100);
+      
+      // We should also be able to use variables that *start* with keywords!
+      expect(evaluate(`
+        let letter = 10
+        let funny = 5
+        letter + funny
+      `)).toBe(15);
     });
 
     test("feature-rich multiline script", () => {

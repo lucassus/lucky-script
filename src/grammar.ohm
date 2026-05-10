@@ -2,7 +2,9 @@ Arithmetic {
     Program = Exp+
 
     Exp
-      = "let" ident "=" Exp -- assign
+      = "fun" ident "(" ListOf<ident, ","> ")" Exp* "end" -- funDef
+      | "return" Exp -- return
+      | "let" ident "=" Exp -- assign
       | AddExp
 
     // Handles low-precedence operations
@@ -22,7 +24,8 @@ Arithmetic {
       | PriExp
 
     PriExp
-      = "(" Exp ")" -- paren
+      = ident "(" ListOf<Exp, ","> ")" -- funCall
+      | "(" Exp ")" -- paren
       | "+" PriExp -- pos
       | "-" PriExp -- neg
       | ident -- varAccess
@@ -32,5 +35,6 @@ Arithmetic {
       = digit+ "." digit+ -- fraction
       | digit+ -- whole
 
-    ident = letter alnum*
+    keyword = ("fun" | "return" | "let" | "end") ~alnum
+    ident = ~keyword letter alnum*
 }
