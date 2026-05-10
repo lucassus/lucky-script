@@ -1,63 +1,106 @@
+import * as fs from "node:fs";
+
 import * as ohm from "ohm-js";
-import { describe, expect, it } from "vitest";
+import { test, expect, describe } from "vitest";
+
+const grammar = ohm.grammar(fs.readFileSync("src/grammar.ohm", "utf-8"));
+const semantics = grammar.createSemantics();
+semantics.addOperation("eval", {
+  AddExp_plus(a, _, b) {
+    return a.eval() + b.eval();
+  },
+  AddExp_minus(a, _, b) {
+    return a.eval() - b.eval();
+  },
+  MulExp_times(a, _, b) {
+    return a.eval() * b.eval();
+  },
+  MulExp_div(a, _, b) {
+    return a.eval() / b.eval();
+  },
+  PriExp_paren(_l, e, _r) {
+    return e.eval();
+  },
+  number(digits) {
+    return parseInt(digits.sourceString);
+  },
+});
+
+function evaluate(expr: string): number {
+  const matchResult = grammar.match(expr);
+  if (!matchResult.succeeded()) {
+    throw new Error(`Parse failed for: ${expr}`);
+  }
+  return semantics(matchResult).eval();
+}
 
 describe("grammar", () => {
-  it("MyGrammar", () => {
-    const grammar = ohm.grammar(String.raw`
-      MyGrammar {
-        greeting = "Hello" | "Hola"
-      }
-    `);
-
-    let result = grammar.match("Hello");
-    expect(result.succeeded()).toBe(true);
-
-    result = grammar.match("Hola");
-    expect(result.succeeded()).toBe(true);
-
-    result = grammar.match("Hi");
-    expect(result.succeeded()).toBe(false);
+  test.each([
+    // Numbers
+    "42",
+    "1",
+    // Basic operations
+    "1 + 2",
+    "5 - 3",
+    "4 * 2",
+    "10 / 2",
+    // Complex expressions
+    "1 + 2 * 3",
+    "99 - 2 + 1",
+    "(99 - 2) / 2",
+    "(1 + 2) * 2",
+    // Left associativity
+    "10 - 2 - 3",
+    "100 / 10 / 2",
+  ])("matches %s", (expr) => {
+    expect(grammar.match(expr).succeeded()).toBe(true);
   });
 
-  it("Arithmetics", () => {
-    const grammar = ohm.grammar(`
-      Arithmetic {
-        Exp = AddExp
-        
-        /* 
-          Handles low-precedence operations
-          The rule is defined "above" multiplication, because it call MulExp, 
-          the parser ensures that multiplication is grouped more tightly than addition
-        */
-        AddExp = AddExp "+" MulExp -- plus
-          | AddExp "-" MulExp -- minus
-          | MulExp
+  test.each([
+    // Numbers
+    ["42", 42],
+    ["1", 1],
+    // Basic operations
+    ["1 + 2", 3],
+    ["5 - 3", 2],
+    ["4 * 2", 8],
+    ["10 / 2", 5],
+    // Order of operations
+    ["1 + 2 * 3", 7],
+    ["2 * 3 + 1", 7],
+    // Parentheses grouping
+    ["(1 + 2) * 2", 6],
+    ["(99 - 2) / 2", 48.5],
+    // Left associativity
+    ["10 - 2 - 3", 5],
+    ["100 / 10 / 2", 5],
+  ])("evaluates %s to %f", (expr, expected) => {
+    expect(evaluate(expr)).toEqual(expected);
+  });
 
-        // Handles high-precedence operations
-        MulExp = MulExp "*" number -- times
-          | MulExp "/" number -- div
-          | PriExp
-          
-        PriExp = "(" Exp ")" -- paren
-         | number
+  describe("currently unsupported features", () => {
+    test.each([
+      // Signed numbers
+      "-2",
+      "+123",
+      // Fractional numbers
+      "0.5",
+      "1.99",
+      "-1.5 + 2",
+    ])("matches %s", (expr) => {
+      expect(grammar.match(expr).succeeded()).toBe(true);
+    });
 
-        number = digit*
-      }
-    `);
-
-    let result = grammar.match("42");
-    expect(result.succeeded()).toBe(true);
-
-    result = grammar.match("1");
-    expect(result.succeeded()).toBe(true);
-
-    result = grammar.match("1 + 2 * 3");
-    expect(result.succeeded()).toBe(true);
-
-    result = grammar.match("99 - 2 + 1");
-    expect(result.succeeded()).toBe(true);
-
-    result = grammar.match("(99 - 2) / 2");
-    expect(result.succeeded()).toBe(true);
+    test.each([
+      // Signed numbers
+      ["-2", -2],
+      ["+123", 123],
+      // Fractional numbers
+      ["0.5", 0.5],
+      ["1.99", 1.99],
+      ["-1.5 + 2", 0.5],
+    ])("evaluates %s to %f", (expr, expected) => {
+      expect(evaluate(expr)).toEqual(expected);
+    });
   });
 });
