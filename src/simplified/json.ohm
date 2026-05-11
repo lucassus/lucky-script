@@ -1,0 +1,34 @@
+JsonMini {
+  // JSON POC grammar: relaxed whitespace like typical JSON parsers (not Lucky token rules).
+  space := " " | "\t" | "\n" | "\r"
+
+  Json = Value
+
+  Value
+    = Object -- obj
+    | Array -- arr
+    | string -- str
+    | number -- num
+    | "true" -- true
+    | "false" -- false
+    | "null" -- null
+
+  Array = "[" (Value ("," Value)*)? "]"
+  Object = "{" (Pair ("," Pair)*)? "}"
+  Pair = string ":" Value
+
+  string = "\"" stringChar* "\""
+  stringChar
+    = "\\" any -- esc
+    | ~("\"" | "\\") any -- plain
+
+  // Loose signed decimal (good enough for this POC; mirrors SIGNED_NUMBER feel).
+  number = "-"? intPart fracPart? expPart?
+  intPart
+    = "0" -- zero
+    | nz digit* -- nzDigits
+  fracPart = "." digit+
+  expPart = ("e" | "E") ("+" | "-")? digit+
+
+  nz = "1".."9"
+}
