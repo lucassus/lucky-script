@@ -440,4 +440,72 @@ describe("Lexer", () => {
       column: 3,
     });
   });
+
+  // Reserved spellings must become Keyword tokens, not identifiers. (Mirrors keyword boundary
+  // rules in src/grammar.ohm — distinct from names that merely start with a keyword prefix.)
+
+  describe("reserved words tokenize as keywords", () => {
+    it.each([
+      ["fun", Keyword.Fun],
+      ["if", Keyword.If],
+      ["else", Keyword.Else],
+      ["elseif", Keyword.ElseIf],
+      ["while", Keyword.While],
+      ["return", Keyword.Return],
+      ["nothing", Keyword.Nothing],
+      ["true", Keyword.True],
+      ["false", Keyword.False],
+      ["and", Keyword.And],
+      ["or", Keyword.Or],
+      ["not", Keyword.Not],
+      ["local", Keyword.Local],
+      ["outer", Keyword.Outer],
+      ["break", Keyword.Break],
+      ["continue", Keyword.Continue],
+      ["end", Keyword.End],
+      ["then", Keyword.Then],
+      ["in", Keyword.In],
+    ] as const)("tokenizes %s as keyword", (source, kind) => {
+      const lexer = new Lexer(source);
+      expect(lexer.nextToken()).toEqual(new Token(kind, anyLocation));
+      expect(lexer.nextToken()).toEqual(new Token(Delimiter.Eof, anyLocation));
+    });
+  });
+
+  describe("identifiers that share a prefix with a reserved word", () => {
+    it.each([
+      "funny",
+      "iff",
+      "whilez",
+      "infinity",
+      "funin",
+      "andx",
+      "orx",
+      "notx",
+    ])("tokenizes %s as a single identifier", (word) => {
+      const lexer = new Lexer(word);
+      expect(lexer.nextToken()).toEqual(
+        new Token(Literal.Identifier, anyLocation, word),
+      );
+      expect(lexer.nextToken()).toEqual(new Token(Delimiter.Eof, anyLocation));
+    });
+  });
+
+  // TODO(grammar-ohm-followup): Lucky StringRecognizer accepts fewer escapes than Ohm-default;
+  // see openspec/changes/migrate-reference-grammar-to-ohm/
+
+  describe("Ohm grammar string escape probes", () => {
+    it.fails.each(['"\\t"', '"\\r"', '"\\0"', '"\\xFF"', '"\\u0041"'] as const)(
+      "Lexer currently rejects %s (Ohm/Lexer parity)",
+      (src) => {
+        const lexer = new Lexer(src);
+        expect(lexer.nextToken()).toEqual(
+          new Token(Literal.String, anyLocation, expect.any(String)),
+        );
+        expect(lexer.nextToken()).toEqual(
+          new Token(Delimiter.Eof, anyLocation),
+        );
+      },
+    );
+  });
 });
