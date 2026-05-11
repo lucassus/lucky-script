@@ -17,6 +17,7 @@ Ordered by priority. Items higher up are more foundational or higher-leverage; i
 
 **Later** — ergonomics, type safety, error handling:
 
+- Parallel multi-assignment (`let a, b = e1, e2`, bare `a, b = …`; swap `x, y = y, x`; parallel RHS evaluation, atomic commit)
 - Dot-notation method calls
 - Guard-`if` for early exit
 - Strict boolean conditions
@@ -42,9 +43,9 @@ Lucky Script is a small, functional-first scripting language. Block syntax uses 
 ### The basics
 
 ```
-greeting = "hello"
-n        = 1 + 2 * 3
-ok       = n > 5 and greeting == "hello"
+let greeting = "hello"
+let n        = 1 + 2 * 3
+let ok       = n > 5 and greeting == "hello"
 
 print(greeting)   # => hello
 ```
@@ -53,14 +54,14 @@ print(greeting)   # => hello
 
 ```
 fun makeCounter()
-  count = 0
+  let count = 0
   return fun()
     count += 1
     return count
   end
 end
 
-next = makeCounter()
+let next = makeCounter()
 next()   # => 1
 next()   # => 2
 ```
@@ -79,7 +80,7 @@ fun classify(x)
 end
 
 # guard-if: early exit from a loop
-i = 0
+let i = 0
 while true
   i += 1
   break if i >= 10
@@ -90,11 +91,11 @@ end
 ### Lists, lambdas, and pipelines
 
 ```
-nums = [1, 2, 3, 4, 5]
+let nums = [1, 2, 3, 4, 5]
 
-doubled   = nums |> map(x -> x * 2)             # => [2, 4, 6, 8, 10]
-positives = nums |> filter(x -> x > 2)           # => [3, 4, 5]
-total     = nums |> reduce((acc, x) -> acc + x, 0)   # => 15
+let doubled   = nums |> map(x -> x * 2)             # => [2, 4, 6, 8, 10]
+let positives = nums |> filter(x -> x > 2)          # => [3, 4, 5]
+let total     = nums |> reduce((acc, x) -> acc + x, 0)   # => 15
 ```
 
 ### Pattern matching
@@ -267,6 +268,8 @@ end
 
 Destructuring is intentionally a strict subset of `match` patterns — no guards, no literal patterns, no wildcards beyond `_`. If you need conditional logic, use `match`.
 
+**Relationship to parallel assignment.** A simpler comma-separated form (`let a, b = e1, e2` and `a, b = e1, e2`) is tracked separately under [Parallel multi-assignment](#parallel-multi-assignment) — identifier-only targets, strict arity, no duplicate names in one statement, all RHS evaluated before any write, failures leave no partial updates. Destructuring generalizes that idea once lists and pattern syntax exist.
+
 ### Pipeline operator
 
 `x |> f(a, b)` rewrites to `f(x, a, b)` — the left operand is inserted as the first argument. `x |> f` (without call parens) is sugar for `f(x)`.
@@ -303,6 +306,19 @@ empty = {}
 ---
 
 ## Later
+
+### Parallel multi-assignment
+
+Comma-separated declarations and reassignments where each left-hand side is a **bare identifier** (no patterns, no parentheses). Intended semantics:
+
+- `let a, b, … = expr1, expr2, …` — declare or rebind names in the current scope in one statement.
+- `a, b, … = expr1, expr2, …` — reassign existing bindings only (each name must already resolve); enables swap idioms like `x, y = y, x`.
+- **Parallel evaluation:** every right-hand expression runs (left to right) before **any** binding is written.
+- **Strict arity:** the number of targets must equal the number of expressions.
+- **No duplicate targets** in a single statement.
+- **Atomic commit:** if anything fails (arity, duplicate names, undeclared target on reassignment), **no** target from that statement is updated.
+
+This is orthogonal to full [destructuring](#destructuring-in-assignment-and-parameters) (list/dict patterns); it can ship earlier or be folded into the same implementation pass once list/tuple-shaped RHS values exist. OpenSpec draft: `openspec/changes/add-parallel-assignment/`.
 
 ### Dot-notation method calls
 
@@ -470,6 +486,36 @@ Struct-like objects with named fields and methods. Syntax and semantics TBD. Pat
 A debug-inspect built-in that prints the type and representation of any value, distinct from `print` which formats for human output.
 
 ### Multiline strings
+
+---
+
+## Learning Substrate (`src/simplified/`)
+
+A separate, deliberately small subset of Lucky Script for exploring alternative implementation techniques — hand-written lexers, Pratt parsers, bytecode virtual machines — without the complexity of the full language pipeline.
+
+The subset is specified as a **chain of Ohm grammars**, each inheriting from the previous via `<:`. The Ohm grammar at each stage acts as the reference oracle: any hand-written implementation must match it.
+
+### Stage hierarchy
+
+| Stage | Grammar | Adds |
+|---|---|---|
+| 1 — Core arithmetic | `ArithmeticCore` | numbers, `+` `-` `*` `/` `**`, parentheses, unary `+`/`-` |
+| 2 — Variables | `ArithmeticVars <: ArithmeticCore` | `let`, identifiers, bare assignment |
+| 3 — Functions | `ArithmeticFunctions <: ArithmeticVars` | `fun`, `return`, function calls |
+| 4 — Full simplified | `ArithmeticFull <: ArithmeticFunctions` | `if/else`, comparisons, `and`/`or`/`not`, `%`, comments |
+
+All four grammars live in one `.ohm` file, loaded together via `ohm.grammars()`. Each is independently testable — stage N tests only need the stage N grammar, not the full chain.
+
+### Learning goals by stage
+
+- **Stage 1** — recursive-descent or Pratt parser for a pure expression grammar; first bytecode VM with arithmetic instructions.
+- **Stage 2** — symbol tables; `LOAD`/`STORE` VM instructions; variable scoping.
+- **Stage 3** — call frames; `CALL`/`RETURN` VM instructions; function arity checking.
+- **Stage 4** — conditional branching; `JUMP`/`JUMP_IF_FALSE` VM instructions; logical short-circuit.
+
+### Syntax alignment
+
+The stage grammars use Lucky Script syntax throughout (`**` for power, `#` for comments, `fun … end`, `let`). The existing `src/simplified/grammar.ohm` (`Arithmetic`) predates this plan and diverges in places (`^`, `//` comments) — it stays as-is; the new stage hierarchy is additive.
 
 ---
 

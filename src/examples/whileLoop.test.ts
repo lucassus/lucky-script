@@ -13,10 +13,10 @@ import { run } from "../testingUtils";
 describe("while loop", () => {
   it("counts up to N with a mutating condition", () => {
     const script = `
-      n = 0
+      let n = 0
       
       while n < 5
-        n = n + 1
+        let n = n + 1
       end
       
       n
@@ -28,12 +28,12 @@ describe("while loop", () => {
   it("computes the sum of 1..N inside a function", () => {
     const script = `
       fun sumTo(n)
-        total = 0
-        i = 1
+        let total = 0
+        let i = 1
         
         while i <= n
-          total = total + i
-          i = i + 1
+          let total = total + i
+          let i = i + 1
         end
         
         return total
@@ -48,13 +48,13 @@ describe("while loop", () => {
   it("early-returns from inside a while body", () => {
     const script = `
       fun firstMultipleOf(n, limit)
-        i = 1
+        let i = 1
         
         while i < limit
           if i * n == 12
             return i
           end
-          i = i + 1
+          let i = i + 1
         end
         
         return 0
@@ -70,14 +70,14 @@ describe("while loop", () => {
 describe("break", () => {
   it("increments counter until 5 then breaks", () => {
     const script = `
-      i = 0
+      let i = 0
       
       while true
         if i == 5
           break
         end
         
-        i = i + 1
+        let i = i + 1
       end
       
       i
@@ -87,9 +87,9 @@ describe("break", () => {
 
   it("body executes once before break; variable visible after loop", () => {
     const script = `
-      x = 0
+      let x = 0
       while true
-        x = 99
+        let x = 99
         break
       end
       x
@@ -97,18 +97,18 @@ describe("break", () => {
     expect(run(script)).toBe(99);
   });
 
-  it("inner break exits inner loop only; outer loop runs its full course", () => {
+  it("inner break exits inner loop only; loop runs its full course", () => {
     const script = `
-      outerCount = 0
-      i = 0
+      let outerCount = 0
+      let i = 0
       
       while i < 3
-        i = i + 1
-        outerCount = outerCount + 1
-        j = 0
+        let i = i + 1
+        let outerCount = outerCount + 1
+        let j = 0
         
         while true
-          j = j + 1
+          let j = j + 1
           break
         end
       end
@@ -132,10 +132,10 @@ describe("continue", () => {
 
   it("prints 1-10 skipping 3", () => {
     const script = `
-      i = 0
+      let i = 0
       
       while i < 10
-        i = i + 1
+        let i = i + 1
         
         if i == 3
           continue
@@ -151,13 +151,13 @@ describe("continue", () => {
 
   it("loop with unconditional continue terminates; no side effects", () => {
     const script = `
-      i = 0
-      sideEffect = 0
+      let i = 0
+      let sideEffect = 0
       
       while i < 5
-        i = i + 1
+        let i = i + 1
         continue
-        sideEffect = sideEffect + 1
+        let sideEffect = sideEffect + 1
       end
       
       sideEffect
@@ -165,18 +165,18 @@ describe("continue", () => {
     expect(run(script)).toBe(0);
   });
 
-  it("inner continue skips only the inner iteration; outer loop unaffected", () => {
+  it("inner continue skips only the inner iteration; loop unaffected", () => {
     const script = `
-      outerCount = 0
-      i = 0
+      let outerCount = 0
+      let i = 0
       
       while i < 3
-        i = i + 1
-        outerCount = outerCount + 1
-        j = 0
+        let i = i + 1
+        let outerCount = outerCount + 1
+        let j = 0
         
         while j < 3
-          j = j + 1
+          let j = j + 1
           if j == 2
             continue
           end

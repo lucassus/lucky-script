@@ -8,7 +8,7 @@ LuckyScript {
   keyword
     = ("fun" | "if" | "else" | "elseif" | "while" | "return"
       | "nothing" | "true" | "false" | "and" | "or" | "not"
-      | "local" | "outer" | "break" | "continue" | "end" | "then" | "in") ~(letter | digit)
+      | "let" | "break" | "continue" | "end" | "then" | "in") ~(letter | digit)
 
   identifier = ~keyword letter alnum*
 
@@ -63,8 +63,7 @@ LuckyScript {
     | "break" -- break
     | "continue" -- continue
     | "return" Expression -- return
-    | "local" identifier AssignOp Expression -- localAssign
-    | "outer" identifier AssignOp Expression -- outerAssign
+    | "let" identifier AssignOp Expression -- letAssign
     | Expression -- exprStmt
 
   ElseIfChain = ("elseif" Expression condEnd BranchBody)*

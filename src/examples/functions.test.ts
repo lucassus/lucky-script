@@ -16,7 +16,7 @@ it("evaluates standard function with parameters and return", () => {
 
 it("evaluates short-form lambdas implicitly returning their expression", () => {
   const script = `
-    double = fun(x) x * 2
+    let double = fun(x) x * 2
     double(3)
   `;
 
@@ -25,7 +25,7 @@ it("evaluates short-form lambdas implicitly returning their expression", () => {
 
 it("evaluates short-form lambda with multiple arguments", () => {
   const script = `
-    add = fun(a, b) a + b
+    let add = fun(a, b) a + b
     add(5, 7)
   `;
 
@@ -34,10 +34,11 @@ it("evaluates short-form lambda with multiple arguments", () => {
 
 it("evaluates complex lambda with full syntax", () => {
   const script = `
-    process = fun(x)
-      local y = x * 2
+    let process = fun(x)
+      let y = x * 2
       return y + 1
     end
+    
     process(10)
   `;
 

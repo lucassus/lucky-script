@@ -4,7 +4,7 @@ import { run } from "../testingUtils";
 
 it("evaluates nothing (null) value", () => {
   const script = `
-    x = nothing
+    let x = nothing
     x
   `;
   // Assuming the `run` method returns `null` or a specific object representing `nothing`
@@ -13,8 +13,8 @@ it("evaluates nothing (null) value", () => {
 
 it("evaluates number literals with underscores and floats", () => {
   const script = `
-    a = 1_000_000
-    b = 0.5
+    let a = 1_000_000
+    let b = 0.5
     a * b
   `;
   expect(run(script)).toBe(500000);
@@ -22,6 +22,8 @@ it("evaluates number literals with underscores and floats", () => {
 
 it("evaluates assignment chaining", () => {
   const script = `
+    let x = 0
+    let y = 0
     x = y = 1
     x + y
   `;

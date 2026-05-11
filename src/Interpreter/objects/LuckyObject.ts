@@ -50,6 +50,9 @@ export abstract class LuckyObject {
 
   abstract display(): string;
 
+  /** User-visible name for `type(...)` and similar introspection. */
+  abstract typeName(): string;
+
   protected throwIllegalOperationError(): never {
     throw new RuntimeError("Illegal operation");
   }

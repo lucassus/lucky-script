@@ -24,6 +24,10 @@ export class LuckyString extends LuckyObject {
     return this.value;
   }
 
+  typeName(): string {
+    return "string";
+  }
+
   private ensureLuckyString(other: LuckyObject): asserts other is LuckyString {
     if (!(other instanceof LuckyString)) {
       this.throwIllegalOperationError();

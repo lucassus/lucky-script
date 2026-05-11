@@ -83,4 +83,8 @@ export class LuckyNumber extends LuckyObject {
   display(): string {
     return String(this.value);
   }
+
+  typeName(): string {
+    return "number";
+  }
 }

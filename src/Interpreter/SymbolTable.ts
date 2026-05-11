@@ -24,37 +24,19 @@ export class SymbolTable {
     this.parent = parent;
   }
 
-  setLocal(key: string, value: LuckyObject): void {
+  declare(key: string, value: LuckyObject): void {
     if (this.frozen) {
       throw new ScopeError(key);
     }
     this.locals.set(key, value);
   }
 
-  // Bare `x = e`: inside a function → write to the function boundary scope;
-  // at top level → write to the current scope.
-  setBare(key: string, value: LuckyObject): void {
-    const boundary = this.findNearestFunctionBoundary();
-    if (boundary) {
-      boundary.setLocal(key, value);
-    } else {
-      this.setLocal(key, value);
-    }
-  }
-
-  // `outer x = e`: write to the nearest enclosing scope past the current
-  // function boundary that already defines `x`. Frozen scopes are excluded.
-  // Throws ScopeError when no such scope exists.
-  setOuter(key: string, value: LuckyObject): void {
-    const boundary = this.findNearestFunctionBoundary();
-    if (!boundary?.parent) {
-      throw new ScopeError(key);
-    }
-    const scope = boundary.parent.findWritableScopeThatDefines(key);
+  reassign(key: string, value: LuckyObject): void {
+    const scope = this.findWritableScopeThatDefines(key);
     if (!scope) {
-      throw new ScopeError(key);
+      throw new NameError(key);
     }
-    scope.setLocal(key, value);
+    scope.declare(key, value);
   }
 
   lookup(key: string): LuckyObject {
@@ -86,11 +68,6 @@ export class SymbolTable {
     }
 
     return undefined;
-  }
-
-  private findNearestFunctionBoundary(): SymbolTable | undefined {
-    if (this.isFunctionBoundary) return this;
-    return this.parent?.findNearestFunctionBoundary();
   }
 
   private findWritableScopeThatDefines(key: string): SymbolTable | undefined {

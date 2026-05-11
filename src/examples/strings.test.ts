@@ -36,8 +36,8 @@ describe("string concatenation", () => {
   it("concatenates string variables", () => {
     expect(
       run(`
-      a = "foo"
-      b = "bar"
+      let a = "foo"
+      let b = "bar"
       a + b
     `),
     ).toBe("foobar");
@@ -70,11 +70,11 @@ describe("string in boolean context", () => {
   it("empty string is falsy — takes else branch", () => {
     expect(
       run(`
-      result = 0
+      let result = 0
       if ""
-        result = 1
+        let result = 1
       else
-        result = 2
+        let result = 2
       end
       result
     `),
@@ -84,9 +84,9 @@ describe("string in boolean context", () => {
   it("non-empty string is truthy — takes then branch", () => {
     expect(
       run(`
-      result = 0
+      let result = 0
       if "hello"
-        result = 1
+        let result = 1
       end
       result
     `),

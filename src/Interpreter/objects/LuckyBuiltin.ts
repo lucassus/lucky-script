@@ -20,6 +20,10 @@ export class LuckyBuiltin extends LuckyObject {
     return `<builtin ${this.name}>`;
   }
 
+  typeName(): string {
+    return "function";
+  }
+
   toBoolean(): LuckyBoolean {
     return LuckyBoolean.True;
   }

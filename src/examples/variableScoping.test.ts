@@ -1,18 +1,20 @@
 import { expect, it } from "vitest";
 
+import { NameError } from "../Interpreter/errors";
 import { run } from "../testingUtils";
 
 it("if and while blocks execute in the enclosing scope without creating a new one", () => {
   const script = `
-    a = 1
+    let a = 1
+    
     if true
-      a = 2
+      let a = 2
     end
     
-    i = 0
+    let i = 0
     while i < 1
-      a = 3
-      i = i + 1
+      let a = 3
+      let i = i + 1
     end
     
     a
@@ -21,12 +23,12 @@ it("if and while blocks execute in the enclosing scope without creating a new on
   expect(run(script)).toBe(3);
 });
 
-it("bare assignment inside a function creates a local variable", () => {
+it("bare assignment inside a function creates a let variable", () => {
   const script = `
-    a = 1
+    let a = 1
     
     fun foo()
-      a = 2
+      let a = 2
     end
     
     foo()
@@ -36,12 +38,12 @@ it("bare assignment inside a function creates a local variable", () => {
   expect(run(script)).toBe(1);
 });
 
-it("outer keyword explicitly mutates an outer variable", () => {
+it("assignment mutates an existing outer variable", () => {
   const script = `
-    a = 1
-    
+    let a = 1
+
     fun foo()
-      outer a = 2
+      a = 2
     end
     
     foo()
@@ -51,33 +53,33 @@ it("outer keyword explicitly mutates an outer variable", () => {
   expect(run(script)).toBe(2);
 });
 
-it("local keyword explicitly creates a local variable shadowing the outer one", () => {
+it("let keyword explicitly creates a let variable shadowing the one", () => {
   const script = `
-    b = 1
+    let b = 1
     
     fun foo()
-      local b = 3
+      let b = 3
       return b
     end
     
-    result = foo()
+    let result = foo()
     result + b
   `;
 
   expect(run(script)).toBe(4);
 });
 
-it("reads always walk the full scope chain and pick up updated outer values", () => {
+it("reads always walk the full scope chain and pick up updated values", () => {
   const script = `
-    x = 10
+    let x = 10
     
     fun double()
       return x * 2
     end
     
-    first = double()
-    x = 5
-    second = double()
+    let first = double()
+    let x = 5
+    let second = double()
     
     first + second
   `;
@@ -85,13 +87,21 @@ it("reads always walk the full scope chain and pick up updated outer values", ()
   expect(run(script)).toBe(30);
 });
 
-it("closures correctly persist and mutate state with the outer keyword", () => {
+it("assignment to undeclared top-level name raises NameError", () => {
+  expect(() => run("x = 1")).toThrow(new NameError("x"));
+});
+
+it("top-level reassignment of builtin without declaration raises NameError", () => {
+  expect(() => run('print = "x"')).toThrow(new NameError("print"));
+});
+
+it("closures correctly persist and mutate state with reassignment", () => {
   const script = `
     fun makeCounter()
-      local n = 0
-    
+      let n = 0
+
       fun inc()
-        outer n = n + 1
+        n = n + 1
       end
     
       fun get()

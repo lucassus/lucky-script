@@ -1,6 +1,11 @@
+.claude
+.cursor
 .idea
+.opencode
+.venv
+.yarn
+TODOs.md
 coverage
 dist
 node_modules
-.venv
 scratchpad.md
