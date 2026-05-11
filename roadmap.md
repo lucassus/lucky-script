@@ -17,6 +17,7 @@ Ordered by priority. Items higher up are more foundational or higher-leverage; i
 
 **Later** — ergonomics, type safety, error handling:
 
+- Parallel multi-assignment (`let a, b = e1, e2`, bare `a, b = …`; swap `x, y = y, x`; parallel RHS evaluation, atomic commit)
 - Dot-notation method calls
 - Guard-`if` for early exit
 - Strict boolean conditions
@@ -267,6 +268,8 @@ end
 
 Destructuring is intentionally a strict subset of `match` patterns — no guards, no literal patterns, no wildcards beyond `_`. If you need conditional logic, use `match`.
 
+**Relationship to parallel assignment.** A simpler comma-separated form (`let a, b = e1, e2` and `a, b = e1, e2`) is tracked separately under [Parallel multi-assignment](#parallel-multi-assignment) — identifier-only targets, strict arity, no duplicate names in one statement, all RHS evaluated before any write, failures leave no partial updates. Destructuring generalizes that idea once lists and pattern syntax exist.
+
 ### Pipeline operator
 
 `x |> f(a, b)` rewrites to `f(x, a, b)` — the left operand is inserted as the first argument. `x |> f` (without call parens) is sugar for `f(x)`.
@@ -303,6 +306,19 @@ empty = {}
 ---
 
 ## Later
+
+### Parallel multi-assignment
+
+Comma-separated declarations and reassignments where each left-hand side is a **bare identifier** (no patterns, no parentheses). Intended semantics:
+
+- `let a, b, … = expr1, expr2, …` — declare or rebind names in the current scope in one statement.
+- `a, b, … = expr1, expr2, …` — reassign existing bindings only (each name must already resolve); enables swap idioms like `x, y = y, x`.
+- **Parallel evaluation:** every right-hand expression runs (left to right) before **any** binding is written.
+- **Strict arity:** the number of targets must equal the number of expressions.
+- **No duplicate targets** in a single statement.
+- **Atomic commit:** if anything fails (arity, duplicate names, undeclared target on reassignment), **no** target from that statement is updated.
+
+This is orthogonal to full [destructuring](#destructuring-in-assignment-and-parameters) (list/dict patterns); it can ship earlier or be folded into the same implementation pass once list/tuple-shaped RHS values exist. OpenSpec draft: `openspec/changes/add-parallel-assignment/`.
 
 ### Dot-notation method calls
 
