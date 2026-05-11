@@ -19,4 +19,8 @@ export class LuckyNothing extends LuckyObject {
   display(): string {
     return "nothing";
   }
+
+  typeName(): string {
+    return "nothing";
+  }
 }

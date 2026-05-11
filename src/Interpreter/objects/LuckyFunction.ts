@@ -24,4 +24,8 @@ export class LuckyFunction extends LuckyObject {
   display(): string {
     return this.name ? `<function ${this.name}>` : "<function>";
   }
+
+  typeName(): string {
+    return "function";
+  }
 }
