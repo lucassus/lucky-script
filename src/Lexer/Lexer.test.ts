@@ -444,8 +444,7 @@ describe("Lexer", () => {
       ["and", Keyword.And],
       ["or", Keyword.Or],
       ["not", Keyword.Not],
-      ["local", Keyword.Local],
-      ["outer", Keyword.Outer],
+      ["let", Keyword.Let],
       ["break", Keyword.Break],
       ["continue", Keyword.Continue],
       ["end", Keyword.End],
@@ -468,6 +467,7 @@ describe("Lexer", () => {
       "andx",
       "orx",
       "notx",
+      "letter",
     ])("tokenizes %s as a single identifier", (word) => {
       const lexer = new Lexer(word);
       expect(lexer.nextToken()).toEqual(
