@@ -473,6 +473,36 @@ A debug-inspect built-in that prints the type and representation of any value, d
 
 ---
 
+## Learning Substrate (`src/simplified/`)
+
+A separate, deliberately small subset of Lucky Script for exploring alternative implementation techniques — hand-written lexers, Pratt parsers, bytecode virtual machines — without the complexity of the full language pipeline.
+
+The subset is specified as a **chain of Ohm grammars**, each inheriting from the previous via `<:`. The Ohm grammar at each stage acts as the reference oracle: any hand-written implementation must match it.
+
+### Stage hierarchy
+
+| Stage | Grammar | Adds |
+|---|---|---|
+| 1 — Core arithmetic | `ArithmeticCore` | numbers, `+` `-` `*` `/` `**`, parentheses, unary `+`/`-` |
+| 2 — Variables | `ArithmeticVars <: ArithmeticCore` | `let`, identifiers, bare assignment |
+| 3 — Functions | `ArithmeticFunctions <: ArithmeticVars` | `fun`, `return`, function calls |
+| 4 — Full simplified | `ArithmeticFull <: ArithmeticFunctions` | `if/else`, comparisons, `and`/`or`/`not`, `%`, comments |
+
+All four grammars live in one `.ohm` file, loaded together via `ohm.grammars()`. Each is independently testable — stage N tests only need the stage N grammar, not the full chain.
+
+### Learning goals by stage
+
+- **Stage 1** — recursive-descent or Pratt parser for a pure expression grammar; first bytecode VM with arithmetic instructions.
+- **Stage 2** — symbol tables; `LOAD`/`STORE` VM instructions; variable scoping.
+- **Stage 3** — call frames; `CALL`/`RETURN` VM instructions; function arity checking.
+- **Stage 4** — conditional branching; `JUMP`/`JUMP_IF_FALSE` VM instructions; logical short-circuit.
+
+### Syntax alignment
+
+The stage grammars use Lucky Script syntax throughout (`**` for power, `#` for comments, `fun … end`, `let`). The existing `src/simplified/grammar.ohm` (`Arithmetic`) predates this plan and diverges in places (`^`, `//` comments) — it stays as-is; the new stage hierarchy is additive.
+
+---
+
 ## Decisions
 
 ### `do` / `then` stay optional inline separators
