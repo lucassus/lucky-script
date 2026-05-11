@@ -1,8 +1,9 @@
 # My Own Simple Programming Language
 
-Lucky Script is a scripting language built from scratch in TypeScript. It has a hand-written lexer, recursive-descent parser, and tree-walking interpreter. Built as a learning project to understand how programming languages work from the ground up.
+Lucky Script is a scripting language built from scratch in TypeScript. It has a hand-written lexer, recursive-descent parser, and tree-walking interpreter. An Ohm reference grammar in `src/grammar.ohm` documents and smoke-tests surface syntax via `src/grammar.test.ts` (no separate Python grammar toolchain required).
 
 **Features:**
+
 - First-class functions and closures
 - Function-scoped variables with explicit `local` and `outer` binding
 - `if` / `elseif` / `else` control flow

@@ -15,9 +15,11 @@ The current scope rules let any bare assignment inside a function silently mutat
 ## Capabilities
 
 ### New Capabilities
+
 - `variable-scoping`: rules for how variable bindings are created, looked up, mutated, and shadowed across function, top-level, and block contexts; defines the `local` and `outer` keywords.
 
 ### Modified Capabilities
+
 <!-- None: scoping has no prior spec; behavior was implicit in the interpreter. -->
 
 ## Impact

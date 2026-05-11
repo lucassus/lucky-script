@@ -21,6 +21,9 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "test": "vitest run",
-    "build": "tsc"
+    "build": "tsc && mkdir -p dist/simplified && cp src/grammar.ohm dist/ && cp src/simplified/json.ohm dist/simplified/"
+  },
+  "dependencies": {
+    "ohm-js": "^17.5.0"
   }
 }

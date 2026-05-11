@@ -12,6 +12,7 @@ We want write semantics that match the Python/Ruby feel the rest of the language
 ## Goals / Non-Goals
 
 **Goals:**
+
 - Bare `x = e` inside a function is local to that function (Python semantics).
 - `local x = e` always binds in the current scope, shadowing anything visible from an outer scope (including builtins).
 - `outer x = e` writes to the nearest enclosing scope past the current function boundary; raises a runtime error when no such binding exists.
@@ -21,6 +22,7 @@ We want write semantics that match the Python/Ruby feel the rest of the language
 - Builtins live in a frozen layer that can never be mutated, only shadowed.
 
 **Non-Goals:**
+
 - A static resolver / name-binding analysis pass. Reads before a later same-name `local` will read the outer binding (no `UnboundLocalError` style behavior).
 - Fixing the loop closure trap. Adopting the Python footgun is an explicit, documented choice; per-iteration scoping can be revisited later.
 - Introducing `nonlocal` chains beyond a single hop. `outer` walks until it finds a binding; there is no per-level qualifier.
@@ -36,8 +38,9 @@ We want write semantics that match the Python/Ruby feel the rest of the language
 **Why:** The user wants a Python/Ruby feel. Python and Ruby do not introduce block scopes for control flow. Removing the `withScope(scope.createChild(), …)` calls in `visitIfStatement` simplifies both the interpreter and the mental model: "scopes are functions." It also makes `outer` easy to reason about — there is exactly one boundary to skip per function.
 
 **Alternatives considered:**
-- *JS-with-`let` block scoping (every block is a scope).* More precise, but inconsistent with Python feel and means `local x` inside an `if` evaporates after `end` — surprising in a scripty language.
-- *Hybrid (per-iteration scope for `for` only).* Avoids the loop closure trap but introduces an asymmetry that is hard to teach. The user accepted the Python footgun explicitly.
+
+- _JS-with-`let` block scoping (every block is a scope)._ More precise, but inconsistent with Python feel and means `local x` inside an `if` evaporates after `end` — surprising in a scripty language.
+- _Hybrid (per-iteration scope for `for` only)._ Avoids the loop closure trap but introduces an asymmetry that is hard to teach. The user accepted the Python footgun explicitly.
 
 ### Decision: Bare `x = e` inside a function is local
 
@@ -46,8 +49,9 @@ We want write semantics that match the Python/Ruby feel the rest of the language
 **Why:** This is the Python/Ruby default and what the user asked for. It also removes the worst current footgun: today, a stray `x = 0` inside a function quietly clobbers an outer `x`.
 
 **Alternatives considered:**
-- *Walk-up-then-fallback (current behavior).* Rejected: silently mutates outer state.
-- *JS strict-mode (require `local` for any new binding, `x = e` must hit an existing binding or error).* Rejected as too ceremonious for a scripty language; bare `x = e` should "just work" inside fresh functions.
+
+- _Walk-up-then-fallback (current behavior)._ Rejected: silently mutates outer state.
+- _JS strict-mode (require `local` for any new binding, `x = e` must hit an existing binding or error)._ Rejected as too ceremonious for a scripty language; bare `x = e` should "just work" inside fresh functions.
 
 ### Decision: `outer x = e` errors when no enclosing `x` exists
 
@@ -56,8 +60,9 @@ We want write semantics that match the Python/Ruby feel the rest of the language
 **Why:** `outer` is the explicit "I know this exists and I want to mutate it" tool. Allowing it to create a binding silently re-introduces the global-creation footgun this whole change is meant to remove. Mirrors Python's `nonlocal` (which is a `SyntaxError` if no enclosing binding exists).
 
 **Alternatives considered:**
-- *Create at top scope when missing (Python `global`).* Rejected: `outer` is meant to be the strict counterpart to `local`. Creating at top scope is a different operation; if we ever want it, it deserves a separate keyword.
-- *Create at the immediate parent function scope.* Rejected: hard to defend semantically — why would forgetting an outer var create one one level up?
+
+- _Create at top scope when missing (Python `global`)._ Rejected: `outer` is meant to be the strict counterpart to `local`. Creating at top scope is a different operation; if we ever want it, it deserves a separate keyword.
+- _Create at the immediate parent function scope._ Rejected: hard to defend semantically — why would forgetting an outer var create one one level up?
 
 ### Decision: Detect runtime errors at the moment of execution, not via a resolver
 
@@ -66,7 +71,8 @@ We want write semantics that match the Python/Ruby feel the rest of the language
 **Why:** Keeps the implementation tree-walking and minimal. A resolver pass is a significant addition to the pipeline (similar in shape to Crafting Interpreters' Lox resolver) and the user has explicitly asked to keep it simple for now. Trade-off accepted: typos in dead branches survive until that branch executes.
 
 **Alternatives considered:**
-- *Resolver pass between Parser and Interpreter.* Catches `outer` typos and "read before write" issues at parse time. Deferred — can be layered in later without changing the runtime contract.
+
+- _Resolver pass between Parser and Interpreter._ Catches `outer` typos and "read before write" issues at parse time. Deferred — can be layered in later without changing the runtime contract.
 
 ### Decision: Loop variables follow Python (function-scoped, leak after loop, single binding)
 
@@ -75,22 +81,26 @@ We want write semantics that match the Python/Ruby feel the rest of the language
 **Why:** Stays consistent with "function boundaries are the only scope-creating construct". Avoids the implementation cost and pedagogical cost of explaining a special block-scope rule that only applies to `for`.
 
 **Alternatives considered:**
-- *Per-iteration fresh binding (JS `let`).* Fixes the closure trap but breaks the "scopes = functions" rule. Documented and rejected for now.
+
+- _Per-iteration fresh binding (JS `let`)._ Fixes the closure trap but breaks the "scopes = functions" rule. Documented and rejected for now.
 
 ### Decision: Function-boundary marker on `SymbolTable`
 
 **Choice:** Add an `isFunctionBoundary: boolean` flag to `SymbolTable` (or a subclass / factory tag). Set to `true` on the scope created at the start of `visitFunctionCall`. Used by:
+
 - bare `x = e` inside a function: walk up only as far as the nearest function boundary; if `x` is not found there, `setLocal` on the boundary scope itself.
 - `outer x = e`: walk up past the nearest function boundary and search from its parent upward.
 
 **Why:** Once `if`/`while` no longer create scopes, the function-boundary check is what distinguishes "this scope" from "the outside." Encoding it on the scope object is cleaner than threading interpreter-side state and survives nested functions naturally. Ties closure capture and `outer` resolution to the same single concept.
 
 **Alternatives considered:**
-- *Track "are we inside a function" on the interpreter.* Works for the bare-`x` case but does not generalise to `outer` resolution across closures.
+
+- _Track "are we inside a function" on the interpreter._ Works for the bare-`x` case but does not generalise to `outer` resolution across closures.
 
 ### Decision: Builtins live in a frozen root scope
 
 **Choice:** Replace the current "set builtins as locals on the root scope" approach (`Interpreter.ts:33-38`) with a dedicated frozen scope that:
+
 - is the parent of the user-visible top-level scope,
 - rejects `setLocal` and `set` (raises a runtime error if anything tries to write to it),
 - is included in lookups so reads still find builtins.
@@ -100,7 +110,8 @@ We want write semantics that match the Python/Ruby feel the rest of the language
 **Why:** Removes the existing TODO at `Interpreter.ts:33` and makes the user's `local print = "asdf"` use case work cleanly without leaks. Keeping builtins frozen also means future tooling can rely on `print` actually being `print`.
 
 **Alternatives considered:**
-- *Leave builtins mutable (current state).* Rejected: defeats the purpose of giving users a safe shadow form.
+
+- _Leave builtins mutable (current state)._ Rejected: defeats the purpose of giving users a safe shadow form.
 
 ### Decision: Duplicate `local x` in the same scope silently rebinds
 

@@ -1,0 +1,74 @@
+Arithmetic {
+    Program = (FunDef | Stmt)+
+
+    FunDef = "fun" ident "(" ListOf<ident, ","> ")" Stmt* "end"
+
+    Stmt
+      = "if" Exp "then" Stmt* ("else" Stmt*)? "end"        -- if
+      | "return" Exp                                       -- return
+      | "let" ident "=" Exp                                -- varDecl
+      | ident "=" Exp                                      -- assign
+      | Exp                                                -- exprStmt
+
+    // 1. Logical OR
+    Exp = LogicOr
+
+    LogicOr
+      = LogicOr "or" LogicAnd -- or
+      | LogicAnd
+
+    // 2. Logical AND
+    LogicAnd
+      = LogicAnd "and" CompExp -- and
+      | CompExp
+
+    // 3. Comparisons
+    CompExp
+      = AddExp "==" AddExp -- eq
+      | AddExp "!=" AddExp -- neq
+      | AddExp "<=" AddExp -- lte
+      | AddExp ">=" AddExp -- gte
+      | AddExp "<"  AddExp -- lt
+      | AddExp ">"  AddExp -- gt
+      | AddExp
+
+    // 4. Add/Sub
+    AddExp
+      = AddExp "+" MulExp -- plus
+      | AddExp "-" MulExp -- minus
+      | MulExp
+
+    // 5. Mul/Div
+    MulExp
+      = MulExp "*" PowExp -- times
+      | MulExp "/" PowExp -- divide
+      | MulExp "%" PowExp -- mod
+      | PowExp
+
+    // 6. Power (Right associative)
+    PowExp
+      = PriExp "^" PowExp -- pow
+      | PriExp
+
+    // 7. Primitives
+    PriExp
+      = ident "(" ListOf<Exp, ","> ")" -- funCall
+      | "(" Exp ")"                    -- paren
+      | "+" PriExp                     -- pos
+      | "-" PriExp                     -- neg
+      | "not" PriExp                   -- not
+      | ident                          -- varAccess
+      | number
+      | "true"                         -- true
+      | "false"                        -- false
+
+    number
+      = digit+ "." digit+ -- fraction
+      | digit+ -- whole
+
+    keyword = ("fun" | "return" | "let" | "end" | "if" | "then" | "else" | "true" | "false" | "and" | "or" | "not") ~alnum
+    ident = ~keyword letter alnum*
+    
+    comment = "//" (~"\n" any)* "\n"?
+    space += comment
+}

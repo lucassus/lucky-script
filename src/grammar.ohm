@@ -1,0 +1,132 @@
+LuckyScript {
+  space := " " | comment
+
+  // --- Lexical ---
+  nl = "\n"+
+  comment = "#" (~"\n" any)*
+
+  keyword
+    = ("fun" | "if" | "else" | "elseif" | "while" | "return"
+      | "nothing" | "true" | "false" | "and" | "or" | "not"
+      | "local" | "outer" | "break" | "continue" | "end" | "then" | "in") ~(letter | digit)
+
+  identifier = ~keyword letter alnum*
+
+  // Micro-spec for numerals (mirrors NumeralRecognizer in src/Lexer)
+  sep = "_"
+  nz = "1".."9"
+  fracPart = digit+ (sep digit+)*
+
+  zeroNum
+    = "0" "." fracPart -- withDot
+    | "0" ~(digit | sep | ".") -- bare
+  intPart = nz digit* (sep digit+)*
+  intNum = intPart ("." fracPart)? ~(digit | sep | ".")
+  dotLeadNum = "." fracPart ~(digit | sep | ".")
+
+  number = zeroNum | intNum | dotLeadNum
+
+  string = "\"" stringChar* "\""
+  stringChar
+    = "\\" any -- esc
+    | ~"\"" any -- plain
+
+  // --- Helpers ---
+  StopBranch = nl* ("elseif" | "else" | "end")
+  ifKeyword = "if" ~(letter | digit)
+
+  ParamList = (identifier ("," identifier)*)?
+  ArgList = (Expression ("," Expression)*)?
+
+  condEnd
+    = "then" nl* -- withThen
+    | nl+ -- newlineOnly
+
+  BranchBody = (~StopBranch Stmt nl+)* FinalBranchStmt?
+
+  // Last stmt in a branch may be immediately followed by elseif/else/end (no newline).
+  FinalBranchStmt = ~StopBranch Stmt
+
+  BlockStmts = (Stmt nl+)* Stmt?
+
+  AssignOp = "=" | "+=" | "-=" | "*=" | "/="
+
+  CompareOp = "<=" | ">=" | "==" | "!=" | "<" | ">"
+
+  // --- Program ---
+  Program = nl* (Stmt (nl+ Stmt)*)? nl*
+
+  Stmt
+    = FunDecl -- funDecl
+    | "if" Expression condEnd BranchBody ElseIfChain OptElse "end" -- if
+    | "while" Expression condEnd BlockStmts "end" -- while
+    | "break" -- break
+    | "continue" -- continue
+    | "return" Expression -- return
+    | "local" identifier AssignOp Expression -- localAssign
+    | "outer" identifier AssignOp Expression -- outerAssign
+    | Expression -- exprStmt
+
+  ElseIfChain = ("elseif" Expression condEnd BranchBody)*
+
+  OptElse = ("else" nl* ~ifKeyword BlockStmts)?
+
+  FunDecl = "fun" identifier "(" ParamList ")" nl* BlockStmts "end"
+
+  // --- Expressions (left recursion where applicable) ---
+  Expression
+    = Assignment -- assign
+    | AnonymousFun -- anonFun
+    | OrExpr -- orExpr
+
+  Assignment = identifier AssignOp Expression
+
+  AnonymousFun = "fun" "(" ParamList ")" AnonSuffix
+
+  AnonSuffix
+    = "end" -- emptyBlock
+    | nl+ BlockStmts "end" -- blockForm
+    | Expression -- shortForm
+
+  OrExpr
+    = OrExpr "or" AndExpr -- or
+    | AndExpr -- pass
+
+  AndExpr
+    = AndExpr "and" NotExpr -- and
+    | NotExpr -- pass
+
+  NotExpr
+    = "not" NotExpr -- not
+    | CmpExpr -- cmp
+
+  CmpExpr = ArithExpr (CompareOp ArithExpr)*
+
+  ArithExpr
+    = ArithExpr ("+" | "-") Term -- addSub
+    | Term -- pass
+
+  Term
+    = Term ("*" | "/") Factor -- mulDiv
+    | Factor -- pass
+
+  Factor
+    = ("+" | "-") Factor -- unary
+    | Power -- pow
+
+  Power
+    = Atom "**" Factor -- pow
+    | Atom -- atom
+
+  Atom
+    = number -- num
+    | string -- str
+    | "nothing" -- nothing
+    | "true" -- true
+    | "false" -- false
+    | identifier "(" ArgList ")" -- call
+    | identifier -- ident
+    | "(" Expression ")" -- paren
+
+  numberLex = number
+}
