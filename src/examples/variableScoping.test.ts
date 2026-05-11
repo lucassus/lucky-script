@@ -1,5 +1,6 @@
 import { expect, it } from "vitest";
 
+import { NameError } from "../Interpreter/errors";
 import { run } from "../testingUtils";
 
 it("if and while blocks execute in the enclosing scope without creating a new one", () => {
@@ -84,6 +85,14 @@ it("reads always walk the full scope chain and pick up updated values", () => {
   `;
 
   expect(run(script)).toBe(30);
+});
+
+it("assignment to undeclared top-level name raises NameError", () => {
+  expect(() => run("x = 1")).toThrow(new NameError("x"));
+});
+
+it("top-level reassignment of builtin without declaration raises NameError", () => {
+  expect(() => run('print = "x"')).toThrow(new NameError("print"));
 });
 
 it("closures correctly persist and mutate state with reassignment", () => {

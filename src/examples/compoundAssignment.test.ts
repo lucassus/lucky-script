@@ -1,5 +1,7 @@
 import { expect, it } from "vitest";
 
+import { LuckyNumber } from "../Interpreter/objects";
+import { SymbolTable } from "../Interpreter/SymbolTable";
 import { run } from "../testingUtils";
 
 it("bare compound assignment at top level", () => {
@@ -42,6 +44,7 @@ it("bare compound assignment inside function mutates the nearest binding", () =>
 });
 
 it("let compound assignment reads then writes let", () => {
+  const symbolTable = new SymbolTable();
   const script = `
     let x = 10
 
@@ -53,7 +56,8 @@ it("let compound assignment reads then writes let", () => {
     foo()
   `;
 
-  expect(run(script)).toBe(15);
+  expect(run(script, symbolTable)).toBe(15);
+  expect(symbolTable.lookup("x")).toEqual(new LuckyNumber(10));
 });
 
 it("compound assignment mutates enclosing variable", () => {
