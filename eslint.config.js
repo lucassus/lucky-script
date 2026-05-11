@@ -6,7 +6,7 @@ const simpleImportSort = require("eslint-plugin-simple-import-sort");
 
 module.exports = [
   {
-    ignores: ["dist/**", "node_modules/**", "lark-sandbox/**"],
+    ignores: ["dist/**", "node_modules/**"],
   },
   tsPlugin.configs["flat/eslint-recommended"],
   ...tsPlugin.configs["flat/recommended-type-checked"],

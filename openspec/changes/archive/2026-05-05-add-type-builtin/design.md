@@ -5,9 +5,11 @@ Lucky Script's interpreter represents all values as `LuckyObject` subclasses. Bu
 ## Goals / Non-Goals
 
 **Goals:**
+
 - Add `type()` as a builtin that returns a string type name
 
 **Non-Goals:**
+
 - Type coercion or casting
 - Distinguishing user-defined functions from builtins (both return `"function"`)
 

@@ -5,11 +5,13 @@ The interpreter currently recognises only one callable type: `LuckyFunction`. `v
 ## Goals / Non-Goals
 
 **Goals:**
+
 - Add a `print(x)` built-in with arity 1
 - Establish an extensible pattern for future built-ins (zero changes to interpreter dispatch when adding a new one)
 - Enforce a `display(): string` contract on all runtime value types at compile time
 
 **Non-Goals:**
+
 - Variadic `print` (deferred until strings are added and multi-arg printing is useful)
 - Protecting built-ins from being overwritten by user code (TODO — current `set()` semantics allow it; acceptable for now)
 - A `local` / `global` keyword to control scoping of built-in redefinition
@@ -43,14 +45,14 @@ Existing `LuckyFunction` path is unchanged.
 
 TypeScript enforces implementation on every subclass. Display values:
 
-| Type | `display()` |
-|---|---|
-| `LuckyNumber` | `String(this.value)` |
-| `LuckyBoolean` | `"true"` / `"false"` |
-| `LuckyNothing` | `"nothing"` |
-| `LuckyString` | the raw string value (no quotes) |
+| Type            | `display()`                                         |
+| --------------- | --------------------------------------------------- |
+| `LuckyNumber`   | `String(this.value)`                                |
+| `LuckyBoolean`  | `"true"` / `"false"`                                |
+| `LuckyNothing`  | `"nothing"`                                         |
+| `LuckyString`   | the raw string value (no quotes)                    |
 | `LuckyFunction` | `"<function name>"` or `"<function>"` for anonymous |
-| `LuckyBuiltin` | `"<builtin name>"` |
+| `LuckyBuiltin`  | `"<builtin name>"`                                  |
 
 ### 5. Built-ins are seeded via `setLocal` in the `Interpreter` constructor
 

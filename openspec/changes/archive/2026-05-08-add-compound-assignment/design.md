@@ -3,6 +3,7 @@
 Lucky Script currently supports only simple assignment (`x = expr`). Compound assignment operators (`+=`, `-=`, `*=`, `/=`) are a common syntactic convenience in most languages that reduce verbosity in accumulator patterns.
 
 The language has three assignment modes:
+
 - **Bare**: `x = e` — inside functions, binds locally; at top-level, binds in current scope
 - **Local**: `local x = e` — always binds in current scope
 - **Outer**: `outer x = e` — binds to nearest enclosing scope past the current function boundary
@@ -10,11 +11,13 @@ The language has three assignment modes:
 ## Goals / Non-Goals
 
 **Goals:**
+
 - Add `+=`, `-=`, `*=`, `/=` operators for numeric compound assignment
 - Desugar at parse time so interpreter requires no changes
 - Preserve existing scope semantics for all assignment modes
 
 **Non-Goals:**
+
 - `**=` (power-assign) — not in initial scope
 - `%=` (modulo-assign) — defer until `%` operator is added
 - Indexed compound assignment (`arr[i] += 1`) — defer until lists are implemented
@@ -26,6 +29,7 @@ The language has three assignment modes:
 **Chosen**: Parser transforms `x += 5` into `VariableAssigment(name, BinaryOperation(VarAccess(name), "+", expr))`
 
 **Alternatives considered**:
+
 - Lexer desugaring: Would emit multiple tokens, complicates token stream
 - Interpreter handling: Would require new AST node type and interpreter logic
 
@@ -45,8 +49,8 @@ The language has three assignment modes:
 
 ## Risks / Trade-offs
 
-| Risk | Mitigation |
-|------|------------|
+| Risk                                                                     | Mitigation                                                |
+| ------------------------------------------------------------------------ | --------------------------------------------------------- |
 | `local x += 5` where `x` doesn't exist anywhere raises NameError on read | Document as expected behavior — same as `local x = x + 5` |
-| Users expect `**=` to work | Clear documentation of supported operators; can add later |
-| Future indexed compound may need different desugaring | Defer decision until lists are implemented |
+| Users expect `**=` to work                                               | Clear documentation of supported operators; can add later |
+| Future indexed compound may need different desugaring                    | Defer decision until lists are implemented                |

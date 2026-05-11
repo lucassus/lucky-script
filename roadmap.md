@@ -5,6 +5,7 @@ Ordered by priority. Items higher up are more foundational or higher-leverage; i
 ## Summary
 
 **Next** — foundational FP core:
+
 - Lists
 - Lambda function shorthand (`x -> x + 1`, `x, y -> x + y`)
 - `for-each` loop
@@ -15,6 +16,7 @@ Ordered by priority. Items higher up are more foundational or higher-leverage; i
 - Dicts
 
 **Later** — ergonomics, type safety, error handling:
+
 - Dot-notation method calls
 - Guard-`if` for early exit
 - Strict boolean conditions
@@ -26,6 +28,7 @@ Ordered by priority. Items higher up are more foundational or higher-leverage; i
 - Sets
 
 **Future** — OOP and polish:
+
 - User-defined classes / objects
 - `inspect(x)` debug inspect
 - Multiline strings
@@ -345,10 +348,10 @@ end
 
 **Disambiguation.** The parser decides between expression-`if` and guard-`if` by the position of `if`:
 
-| Position of `if`                                  | Form            | Has `else`? |
-|----------------------------------------------------|-----------------|-------------|
-| First token after `=` / `return` / argument slot   | expression-`if` | required    |
-| After a complete expression                        | guard-`if`      | forbidden   |
+| Position of `if`                                 | Form            | Has `else`? |
+| ------------------------------------------------ | --------------- | ----------- |
+| First token after `=` / `return` / argument slot | expression-`if` | required    |
+| After a complete expression                      | guard-`if`      | forbidden   |
 
 ### Strict boolean conditions
 

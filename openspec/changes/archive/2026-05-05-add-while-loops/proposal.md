@@ -16,9 +16,11 @@ Lucky Script has `if` for branching but no looping construct, so iterative algor
 ## Capabilities
 
 ### New Capabilities
+
 - `while-loops`: the syntax, evaluation rules, and scoping behavior of the `while` statement.
 
 ### Modified Capabilities
+
 <!-- None. This change consumes the existing `variable-scoping` rule that function
      calls are the only scope-creating construct, but does not change any
      requirement of that capability. -->

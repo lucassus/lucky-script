@@ -10,6 +10,7 @@ Lucky Script has no way to inspect a value's type at runtime. This makes it impo
 ## Capabilities
 
 ### New Capabilities
+
 - `type`: Returns the runtime type of a value as a string (`"number"`, `"string"`, `"boolean"`, `"nothing"`, `"function"`)
 
 ### Modified Capabilities

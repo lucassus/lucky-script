@@ -1623,6 +1623,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"ohm-js@npm:^17.5.0":
+  version: 17.5.0
+  resolution: "ohm-js@npm:17.5.0"
+  checksum: 10c0/5bee87a84084a68f636f575ae9a6460642a2584671751e717083f00efea900c402e5583056a0559eaec070cc28874a9ae9f69aa42020974822285bd1bdb60833
+  languageName: node
+  linkType: hard
+
 "optionator@npm:^0.9.3":
   version: 0.9.4
   resolution: "optionator@npm:0.9.4"
@@ -1983,6 +1990,7 @@ __metadata:
     eslint-config-prettier: "npm:10.1.8"
     eslint-plugin-prettier: "npm:5.5.5"
     eslint-plugin-simple-import-sort: "npm:^13.0.0"
+    ohm-js: "npm:^17.5.0"
     prettier: "npm:3.8.3"
     ts-node: "npm:10.9.2"
     typescript: "npm:6.0.3"

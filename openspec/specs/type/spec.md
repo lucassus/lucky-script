@@ -1,8 +1,11 @@
 # type Specification
 
 ## Purpose
+
 TBD - created by archiving change add-type-builtin. Update Purpose after archive.
+
 ## Requirements
+
 ### Requirement: type() returns the type name of a value
 
 The `type` builtin SHALL accept exactly one argument and return a string naming its runtime type.
@@ -46,4 +49,3 @@ The `type` builtin SHALL accept exactly one argument and return a string naming 
 
 - **WHEN** `type(1, 2)` is called with two arguments
 - **THEN** a RuntimeError is thrown
-

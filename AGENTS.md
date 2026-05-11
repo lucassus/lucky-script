@@ -14,8 +14,6 @@ yarn build          # compile to dist/
 ts-node src/repl.ts # interactive REPL
 ```
 
-See `lark-sandbox/CLAUDE.md` for lark-sandbox commands.
-
 ## Philosophy
 
 Lucky Script is a personal learning project. No one uses it in production systems, and it should not be used in production systems. Breaking changes to the language syntax or semantics are fine — don't let backward compatibility concerns block good design decisions.
@@ -26,7 +24,7 @@ After any code change, run `yarn lint`, `yarn typecheck`, and `yarn test`. Fix a
 
 ## Directory Structure
 
-- `lark-sandbox/` — reference grammar (Python/Lark) and syntax smoke tests; has its own CLAUDE.md
+- `src/grammar.ohm` — Ohm reference grammar for surface-syntax smoke checks (not used by the interpreter pipeline)
 - `src/Lexer/` — tokenizer
   - `Lexer.ts` — main tokenizer
   - `Recognizer/` — state-machine recognizers for complex tokens (identifiers, numbers, strings, comments)
@@ -79,9 +77,8 @@ When adding a new language feature, follow this TDD workflow. Only apply each st
 
 ### Step 1 — Grammar (only if the feature involves new syntax)
 
-1. Add test cases to `lark-sandbox/lucky_script_test.py`
-2. Update `lark-sandbox/lucky_script.lark` to make the tests green
-3. Run `cd lark-sandbox && make test` to verify
+1. Extend `src/grammar.ohm`, then add or adjust matching cases in `src/grammar.test.ts`
+2. Run `yarn test grammar` (or `yarn test`) to verify the Ohm grammar still matches the intended surface syntax
 
 ### Step 2 — TypeScript implementation (layer by layer)
 

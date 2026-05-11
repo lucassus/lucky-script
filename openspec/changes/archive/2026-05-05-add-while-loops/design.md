@@ -5,18 +5,21 @@ Lucky Script is a tree-walking interpreted language with three pipeline stages: 
 `if` already exists as the only branching construct (`if (expr) { block } [else ...]`) and serves as the structural template for `while`. The recently shipped `variable-scoping` capability established the rule that **function calls are the only scope-creating construct** — `if`/`else` execute in the enclosing scope. This rule must extend cleanly to `while`.
 
 Two earlier-merged conventions also constrain the design:
+
 - The `Return` control-flow signal is implemented by throwing a sentinel exception caught at the function call boundary in `visitFunctionCall`. Anything that propagates upward (return, future break/continue, runtime errors) reuses this pattern.
 - All runtime values are `LuckyObject` subclasses with a `toBoolean()` method used by `if` for truthiness; `while` should use the same coercion to keep conditional semantics uniform.
 
 ## Goals / Non-Goals
 
 **Goals:**
+
 - Add a `while` statement whose syntax mirrors `if` (parens around condition, brace-delimited body).
 - Reuse existing scope, truthiness, and control-flow conventions without inventing new mechanisms.
 - Produce a spec, AST node, and visitor that future loop constructs (`for-each`) can extend without rework.
 - Land a runnable integration test that exercises the canonical mutating-condition pattern.
 
 **Non-Goals:**
+
 - `break` and `continue` — separable feature, tracked in `TODOs.md` for a follow-up change.
 - Infinite-loop detection or step limits.
 - Loops as expressions — `while` is a statement that evaluates to `nothing`, not the value of the last iteration.
