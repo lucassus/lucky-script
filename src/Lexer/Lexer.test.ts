@@ -492,7 +492,7 @@ describe("Lexer", () => {
   });
 
   // TODO(grammar-ohm-followup): Lucky StringRecognizer accepts fewer escapes than Ohm-default;
-  // see openspec/changes/migrate-reference-grammar-to-ohm/
+  // see openspec/changes/archive/2026-05-11-migrate-reference-grammar-to-ohm/
 
   describe("Ohm grammar string escape probes", () => {
     it.fails.each(['"\\t"', '"\\r"', '"\\0"', '"\\xFF"', '"\\u0041"'] as const)(
