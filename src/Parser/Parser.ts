@@ -193,7 +193,7 @@ export class Parser {
     this.consume(Delimiter.LeftBracket);
     const parameters = this.functionParameters();
     this.consume(Delimiter.RightBracket);
-
+    this.consume(Keyword.Do);
     this.discardNewLines();
 
     const savedDepth = this.loopDepth;
@@ -212,10 +212,9 @@ export class Parser {
     const parameters = this.functionParameters();
     this.consume(Delimiter.RightBracket);
 
-    if (
-      this.currentToken.type === Delimiter.NewLine ||
-      this.currentToken.type === Keyword.End
-    ) {
+    if (this.currentToken.type === Keyword.Do) {
+      this.consume(Keyword.Do);
+      this.discardNewLines();
       const savedDepth = this.loopDepth;
       this.loopDepth = 0;
       try {
@@ -223,6 +222,18 @@ export class Parser {
       } finally {
         this.loopDepth = savedDepth;
       }
+    }
+
+    if (this.currentToken.type === Keyword.End) {
+      throw new SyntaxError(
+        "Expected 'do' before function body (use 'fun() do end' for an empty body).",
+      );
+    }
+
+    if (this.currentToken.type === Delimiter.NewLine) {
+      throw new SyntaxError(
+        "Expected 'do' after parameter list (full form is 'fun(args) do ... end').",
+      );
     }
 
     const expr = this.expression();
@@ -257,7 +268,8 @@ export class Parser {
     this.consume(Keyword.If);
 
     const condition = this.expression();
-    this.consumeConditionEnd();
+    this.consume(Keyword.Then);
+    this.discardNewLines();
 
     const thenBranch = this.statements([
       Keyword.ElseIf,
@@ -290,7 +302,8 @@ export class Parser {
     this.consume(Keyword.ElseIf);
 
     const condition = this.expression();
-    this.consumeConditionEnd();
+    this.consume(Keyword.Then);
+    this.discardNewLines();
 
     const body = this.statements([Keyword.ElseIf, Keyword.Else, Keyword.End]);
     this.discardNewLines();
@@ -335,7 +348,8 @@ export class Parser {
     this.consume(Keyword.While);
 
     const condition = this.expression();
-    this.consumeConditionEnd();
+    this.consume(Keyword.Do);
+    this.discardNewLines();
 
     this.loopDepth++;
     try {
@@ -349,18 +363,6 @@ export class Parser {
     const stmts = this.statements(Keyword.End);
     this.consume(Keyword.End);
     return stmts;
-  }
-
-  private consumeConditionEnd(): void {
-    if (this.currentToken.type === Keyword.Then) {
-      this.consume(Keyword.Then);
-      this.discardNewLines();
-    } else if (this.currentToken.type === Delimiter.NewLine) {
-      this.consume(Delimiter.NewLine);
-      this.discardNewLines();
-    } else {
-      throw new SyntaxError("Expected 'then' or newline after condition.");
-    }
   }
 
   private functionCall(): Expression {

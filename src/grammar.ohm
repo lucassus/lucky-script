@@ -6,9 +6,9 @@ LuckyScript {
   comment = "#" (~"\n" any)*
 
   keyword
-    = ("fun" | "if" | "else" | "elseif" | "while" | "return"
+    = ("fun" | "if" | "elseif" | "else" | "while" | "return"
       | "nothing" | "true" | "false" | "and" | "or" | "not"
-      | "let" | "break" | "continue" | "end" | "then" | "in") ~(letter | digit)
+      | "let" | "break" | "continue" | "end" | "then" | "do" | "in") ~(letter | digit)
 
   identifier = ~keyword letter alnum*
 
@@ -32,20 +32,10 @@ LuckyScript {
     | ~"\"" any -- plain
 
   // --- Helpers ---
-  StopBranch = nl* ("elseif" | "else" | "end")
   ifKeyword = "if" ~(letter | digit)
 
   ParamList = (identifier ("," identifier)*)?
   ArgList = (Expression ("," Expression)*)?
-
-  condEnd
-    = "then" nl* -- withThen
-    | nl+ -- newlineOnly
-
-  BranchBody = (~StopBranch Stmt nl+)* FinalBranchStmt?
-
-  // Last stmt in a branch may be immediately followed by elseif/else/end (no newline).
-  FinalBranchStmt = ~StopBranch Stmt
 
   BlockStmts = (Stmt nl+)* Stmt?
 
@@ -58,19 +48,19 @@ LuckyScript {
 
   Stmt
     = FunDecl -- funDecl
-    | "if" Expression condEnd BranchBody ElseIfChain OptElse "end" -- if
-    | "while" Expression condEnd BlockStmts "end" -- while
+    | "if" Expression "then" nl* BlockStmts ElseIfChain OptElse "end" -- if
+    | "while" Expression "do" nl* BlockStmts "end" -- while
     | "break" -- break
     | "continue" -- continue
     | "return" Expression -- return
     | "let" identifier AssignOp Expression -- letAssign
     | Expression -- exprStmt
 
-  ElseIfChain = ("elseif" Expression condEnd BranchBody)*
+  ElseIfChain = ("elseif" Expression "then" nl* BlockStmts)*
 
   OptElse = ("else" nl* ~ifKeyword BlockStmts)?
 
-  FunDecl = "fun" identifier "(" ParamList ")" nl* BlockStmts "end"
+  FunDecl = "fun" identifier "(" ParamList ")" "do" nl* BlockStmts "end"
 
   // --- Expressions (left recursion where applicable) ---
   Expression
@@ -83,8 +73,7 @@ LuckyScript {
   AnonymousFun = "fun" "(" ParamList ")" AnonSuffix
 
   AnonSuffix
-    = "end" -- emptyBlock
-    | nl+ BlockStmts "end" -- blockForm
+    = "do" nl* BlockStmts "end" -- blockForm
     | Expression -- shortForm
 
   OrExpr

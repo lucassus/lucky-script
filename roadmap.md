@@ -53,9 +53,9 @@ print(greeting)   # => hello
 ### Functions and closures
 
 ```
-fun makeCounter()
+fun makeCounter() do
   let count = 0
-  return fun()
+  return fun() do
     count += 1
     return count
   end
@@ -73,7 +73,7 @@ next()   # => 2
 abs = if x < 0 then -x else x
 
 # guard-if: early exit from a function
-fun classify(x)
+fun classify(x) do
   return "zero" if x == 0
   return "neg"  if x < 0
   return "pos"
@@ -81,7 +81,7 @@ end
 
 # guard-if: early exit from a loop
 let i = 0
-while true
+while true do
   i += 1
   break if i >= 10
   print(i)
@@ -101,7 +101,7 @@ let total     = nums |> reduce((acc, x) -> acc + x, 0)   # => 15
 ### Pattern matching
 
 ```
-fun describe(value)
+fun describe(value) do
   return match value
     case 0            then "zero"
     case n if n < 0   then "negative"
@@ -205,7 +205,7 @@ a = if condition then x else add(x)
 
 sign = if n < 0 then -1 elseif n == 0 then 0 else 1 end
 
-fun abs(x)
+fun abs(x) do
   return if x < 0 then -x else x
 end
 ```
@@ -339,7 +339,7 @@ nums.filter(x -> x > 1)      # => [2, 3]
 Postfix `if` is allowed on `return`, `break`, and `continue` only. It has **no `else`** — when the condition is false, control falls through to the next statement.
 
 ```
-fun classify(x)
+fun classify(x) do
   return nothing if x == nothing
   return 0       if x == 0
   return -x      if x < 0
@@ -347,7 +347,7 @@ fun classify(x)
 end
 
 i = 0
-while i <= 10
+while i <= 10 do
   i += 1
   continue if i == 3
   break    if i == 7
@@ -374,11 +374,11 @@ end
 `if` and `while` conditions must evaluate to `true` or `false`. Passing any other type (number, string, list) is a type error. This removes truthiness/falsiness and makes type errors visible early.
 
 ```
-if x > 0        # ok — comparison yields boolean
+if x > 0 then        # ok — comparison yields boolean
   ...
 end
 
-if x            # TypeError: condition must be boolean, got Number
+if x then        # TypeError: condition must be boolean, got Number
   ...
 end
 ```
@@ -388,16 +388,16 @@ end
 Parameters can declare a default expression, used when the caller omits that argument. Defaults are evaluated at call time, not definition time — each call that uses a default gets a fresh evaluation. Required parameters must come before parameters with defaults.
 
 ```
-fun greet(name, greeting = "Hello")
+fun greet(name, greeting = "Hello") do
   print(greeting + ", " + name)
 end
 
 greet("Alice")           # => Hello, Alice
 greet("Alice", "Hi")     # => Hi, Alice
 
-fun repeat(value, times = 2)
+fun repeat(value, times = 2) do
   i = 0
-  while i < times
+  while i < times do
     print(value)
     i += 1
   end
@@ -414,7 +414,7 @@ Omitting a required argument (one without a default) is a runtime error.
 Arguments can be passed by name at the call site. Keyword arguments can appear in any order and may be mixed with positional arguments — positional arguments must come first. Works naturally with default values: keyword args let callers skip over defaults they don't want to override.
 
 ```
-fun connect(host, port = 80, secure = false)
+fun connect(host, port = 80, secure = false) do
   ...
 end
 
@@ -521,13 +521,9 @@ The stage grammars use Lucky Script syntax throughout (`**` for power, `#` for c
 
 ## Decisions
 
-### `do` / `then` stay optional inline separators
+### Mandatory `do` / `then` block openers
 
-Considered making `do` (for `fun` and `while`) and `then` (for `if`) mandatory block-openers. Rejected: the multi-line form is unambiguous without them, so requiring them is pure verbosity tax. Current rule kept:
-
-- Multi-line: no separator needed.
-- Inline: `do`/`then` disambiguates header from body — `while ready do tick() end`, `if x > 0 then print(x) end`.
-- Functions: never need `do`. The newline-vs-expression rule already distinguishes short-form lambdas (`fun(x) x * 2`) from block functions.
+The reference grammar and parser require an explicit opener after the header: `then` for `if` / `elseif`, and `do` for `while` and full-form `fun` (named or `fun(...) do ... end`). A newline alone does not open a block. Short-form lambdas stay `fun(args) expression` with no `do`/`end`. This keeps block structure uniform and avoids overloading newlines as both statement separators and silent block delimiters.
 
 ### Postfix `if` with `else` (Python-style ternary)
 

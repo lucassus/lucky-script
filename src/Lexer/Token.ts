@@ -43,8 +43,8 @@ export class Keyword extends TokenType {
 
   static Fun = new Keyword("fun");
   static If = new Keyword("if");
-  static Else = new Keyword("else");
   static ElseIf = new Keyword("elseif");
+  static Else = new Keyword("else");
   static While = new Keyword("while");
   static Return = new Keyword("return");
   static Nothing = new Keyword("nothing");
@@ -58,6 +58,7 @@ export class Keyword extends TokenType {
   static Continue = new Keyword("continue");
   static End = new Keyword("end");
   static Then = new Keyword("then");
+  static Do = new Keyword("do");
   static In = new Keyword("in");
 
   static fromString(string: string): undefined | Keyword {

@@ -77,7 +77,7 @@ describe("if statement with boolean condition", () => {
       expect(
         run(`
         let result = 0
-        if ${condition}
+        if ${condition} then
           let result = 1
         end
         result
@@ -90,7 +90,7 @@ describe("if statement with boolean condition", () => {
     expect(
       run(`
         let result = 0
-        if false
+        if false then
           let result = 1
         else
           let result = 2
@@ -104,7 +104,7 @@ describe("if statement with boolean condition", () => {
     expect(
       run(`
         let result = 0
-        if 1 > 0 and true
+        if 1 > 0 and true then
           let result = 1
         end
         result

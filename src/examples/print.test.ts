@@ -59,7 +59,7 @@ describe("print builtin", () => {
   it("can be overwritten by user code", () => {
     run(`
       let called = 0
-      fun myPrint(x)
+      fun myPrint(x) do
         let called = 1
       end
       let print = myPrint
@@ -70,7 +70,7 @@ describe("print builtin", () => {
 
   it("let print inside a function does not affect print in other functions", () => {
     run(`
-      fun usesLocalPrint()
+      fun usesLocalPrint() do
         let print = "shadowed"
       end
       usesLocalPrint()

@@ -15,7 +15,7 @@ describe("while loop", () => {
     const script = `
       let n = 0
       
-      while n < 5
+      while n < 5 do
         let n = n + 1
       end
       
@@ -27,11 +27,11 @@ describe("while loop", () => {
 
   it("computes the sum of 1..N inside a function", () => {
     const script = `
-      fun sumTo(n)
+      fun sumTo(n) do
         let total = 0
         let i = 1
         
-        while i <= n
+        while i <= n do
           let total = total + i
           let i = i + 1
         end
@@ -47,11 +47,11 @@ describe("while loop", () => {
 
   it("early-returns from inside a while body", () => {
     const script = `
-      fun firstMultipleOf(n, limit)
+      fun firstMultipleOf(n, limit) do
         let i = 1
         
-        while i < limit
-          if i * n == 12
+        while i < limit do
+          if i * n == 12 then
             return i
           end
           let i = i + 1
@@ -72,8 +72,8 @@ describe("break", () => {
     const script = `
       let i = 0
       
-      while true
-        if i == 5
+      while true do
+        if i == 5 then
           break
         end
         
@@ -88,7 +88,7 @@ describe("break", () => {
   it("body executes once before break; variable visible after loop", () => {
     const script = `
       let x = 0
-      while true
+      while true do
         let x = 99
         break
       end
@@ -102,12 +102,12 @@ describe("break", () => {
       let outerCount = 0
       let i = 0
       
-      while i < 3
+      while i < 3 do
         let i = i + 1
         let outerCount = outerCount + 1
         let j = 0
         
-        while true
+        while true do
           let j = j + 1
           break
         end
@@ -134,10 +134,10 @@ describe("continue", () => {
     const script = `
       let i = 0
       
-      while i < 10
+      while i < 10 do
         let i = i + 1
         
-        if i == 3
+        if i == 3 then
           continue
         end
         
@@ -154,7 +154,7 @@ describe("continue", () => {
       let i = 0
       let sideEffect = 0
       
-      while i < 5
+      while i < 5 do
         let i = i + 1
         continue
         let sideEffect = sideEffect + 1
@@ -170,14 +170,14 @@ describe("continue", () => {
       let outerCount = 0
       let i = 0
       
-      while i < 3
+      while i < 3 do
         let i = i + 1
         let outerCount = outerCount + 1
         let j = 0
         
-        while j < 3
+        while j < 3 do
           let j = j + 1
-          if j == 2
+          if j == 2 then
             continue
           end
         end

@@ -124,7 +124,7 @@ describe("Interpreter", () => {
   describe("functions", () => {
     it("interprets function calls", () => {
       const script = `
-        fun foo()
+        fun foo() do
           return 1 + 2
         end
 
@@ -136,7 +136,7 @@ describe("Interpreter", () => {
 
     it("interprets function calls with arguments", () => {
       const script = `
-        fun add(x, y)
+        fun add(x, y) do
           return x + y
         end
 
@@ -148,11 +148,11 @@ describe("Interpreter", () => {
 
     it("interprets function calls with complex arguments", () => {
       const script = `
-        fun giveMeOne()
+        fun giveMeOne() do
           return 1
         end
 
-        fun add(x, f)
+        fun add(x, f) do
           return x + f()
         end
 
@@ -172,7 +172,7 @@ describe("Interpreter", () => {
         "raises an error when invalid number of arguments is given",
         ({ args }) => {
           const script = `
-            fun add(x, y)
+            fun add(x, y) do
               return x + y
             end
 
@@ -188,7 +188,7 @@ describe("Interpreter", () => {
 
       it("raises an error when anonymous function is called with invalid number of arguments", () => {
         const script = `
-          let foo = fun (x, y)
+          let foo = fun (x, y) do
             return x + y
           end
 
@@ -203,7 +203,7 @@ describe("Interpreter", () => {
 
     it("obeys the return statement", () => {
       const script = `
-        fun foo()
+        fun foo() do
           return 1 + 2
 
           3
@@ -219,7 +219,7 @@ describe("Interpreter", () => {
 
     it("returns nothing when the return statement is not present", () => {
       const script = `
-        fun foo()
+        fun foo() do
           123
         end
         foo()
@@ -230,8 +230,8 @@ describe("Interpreter", () => {
 
     it("interprets nested function declaration", () => {
       const script = `
-        fun foo()
-          fun bar()
+        fun foo() do
+          fun bar() do
             return 3
           end
 
@@ -246,10 +246,10 @@ describe("Interpreter", () => {
 
     it("interprets anonymous functions", () => {
       const script = `
-        let foo = fun ()
+        let foo = fun () do
           let x = 1
 
-          return fun ()
+          return fun () do
             return x + 2
           end
         end
@@ -263,7 +263,7 @@ describe("Interpreter", () => {
 
     it("raises an error on illegal binary operation", () => {
       const script = `
-        fun foo()
+        fun foo() do
           return 1
         end
 
@@ -283,7 +283,7 @@ describe("Interpreter", () => {
 
     it("raises an error on illegal unary operation", () => {
       const script = `
-        fun foo()
+        fun foo() do
           return 1
         end
 
@@ -316,7 +316,7 @@ describe("Interpreter", () => {
 
     it("allows to re-assign the function to a new identifier", () => {
       const script = `
-        fun foo()
+        fun foo() do
           return 41
         end
         let bar = foo
@@ -333,11 +333,11 @@ describe("Interpreter", () => {
       const script = `
         let a = 1
 
-        fun foo()
+        fun foo() do
           let a = 2
           let b = 1
 
-          fun bar()
+          fun bar() do
             let c = 3
             return a + b + c
           end
@@ -362,7 +362,7 @@ describe("Interpreter", () => {
       const script = `
         let a = 1
 
-        fun add()
+        fun add() do
           return a + 1
         end
 
@@ -383,7 +383,7 @@ describe("Interpreter", () => {
       const script = `
         let x = 1
 
-        fun foo(x)
+        fun foo(x) do
           let x = x + 1
 
           return x + 1
@@ -405,7 +405,7 @@ describe("Interpreter", () => {
       const script = `
         let x = 0
 
-        if x < 1
+        if x < 1 then
           let x = 1
         end
       `;
@@ -417,7 +417,7 @@ describe("Interpreter", () => {
     it("assignments inside if-block are visible in the enclosing scope", () => {
       const script = `
         let x = 1
-        if x < 2
+        if x < 2 then
           let y = 99
         end
         y
@@ -431,7 +431,7 @@ describe("Interpreter", () => {
       const script = `
         let x = 5
 
-        if x < 1
+        if x < 1 then
           let x = 1
         else
           let x = 99
@@ -447,7 +447,7 @@ describe("Interpreter", () => {
       const script = `
         let x = 0
 
-        if x < 1
+        if x < 1 then
           let x = 1
         else
           let x = 99
@@ -463,7 +463,7 @@ describe("Interpreter", () => {
       const script = `
         let x = 5
 
-        if x < 1
+        if x < 1 then
           let x = 1
         else
           let x = 99
@@ -479,9 +479,9 @@ describe("Interpreter", () => {
       const script = `
         let x = 5
 
-        if x < 1
+        if x < 1 then
           let x = 1
-        elseif x < 10
+        elseif x < 10 then
           let x = 10
         else
           let x = 99
@@ -495,7 +495,7 @@ describe("Interpreter", () => {
     it("assignments inside else-block are visible in the enclosing scope", () => {
       const script = `
         let x = 5
-        if x < 1
+        if x < 1 then
           let y = 1
         else
           let y = 99
@@ -512,7 +512,7 @@ describe("Interpreter", () => {
       const symbolTable = new SymbolTable();
       const script = `
         let count = 0
-        while false
+        while false do
         end
       `;
 
@@ -524,7 +524,7 @@ describe("Interpreter", () => {
       const symbolTable = new SymbolTable();
       const script = `
         let i = 0
-        while i < 3
+        while i < 3 do
           let i = i + 1
         end
       `;
@@ -537,7 +537,7 @@ describe("Interpreter", () => {
       const symbolTable = new SymbolTable();
       const script = `
         let n = 3
-        while n
+        while n do
           let n = n - 1
         end
       `;
@@ -551,7 +551,7 @@ describe("Interpreter", () => {
       const script = `
         let i = 0
         let i = i + 1
-        while false
+        while false do
         end
       `;
 
@@ -560,14 +560,14 @@ describe("Interpreter", () => {
     });
 
     it("evaluates to nothing", () => {
-      expect(run("while false\n  42\nend")).toBe(undefined);
+      expect(run("while false do\n  42\nend")).toBe(undefined);
     });
 
     it("a bare assignment inside the body persists after the loop", () => {
       const symbolTable = new SymbolTable();
       const script = `
         let n = 0
-        while n < 3
+        while n < 3 do
           let n = n + 1
         end
       `;
@@ -579,7 +579,7 @@ describe("Interpreter", () => {
     it("a new variable introduced inside the body is visible after the loop", () => {
       const script = `
         let i = 0
-        while i < 1
+        while i < 1 do
           let result = 42
           let i = i + 1
         end
@@ -590,9 +590,9 @@ describe("Interpreter", () => {
 
     it("let inside a while body inside a function binds in the function scope", () => {
       const script = `
-        fun foo()
+        fun foo() do
           let i = 0
-          while i < 1
+          while i < 1 do
             let x = 7
             let i = i + 1
           end
@@ -605,10 +605,10 @@ describe("Interpreter", () => {
 
     it("a return inside the body exits the enclosing function", () => {
       const script = `
-        fun foo()
+        fun foo() do
           let i = 0
-          while true
-            if i == 2
+          while true do
+            if i == 2 then
               return i
             end
             let i = i + 1
@@ -638,7 +638,7 @@ describe("Interpreter", () => {
       const symbolTable = new SymbolTable();
       const script = `
         let x = 1
-        if nothing
+        if nothing then
           let x = 2
         end
       `;
@@ -657,7 +657,7 @@ describe("Interpreter", () => {
 
     it("allows returning nothing from a function", () => {
       const script = `
-        fun foo()
+        fun foo() do
           return nothing
         end
         foo()
@@ -670,7 +670,7 @@ describe("Interpreter", () => {
     it("bare write inside a function does not mutate binding", () => {
       const script = `
         let x = 1
-        fun foo()
+        fun foo() do
           let x = 99
         end
         foo()
@@ -681,7 +681,7 @@ describe("Interpreter", () => {
 
     it("bare write inside a function rebinds the let on subsequent writes", () => {
       const script = `
-        fun foo()
+        fun foo() do
           let x = 1
           let x = 2
           return x
@@ -694,7 +694,7 @@ describe("Interpreter", () => {
     it("let shadows an variable", () => {
       const script = `
         let x = 1
-        fun foo()
+        fun foo() do
           let x = 99
         end
         foo()
@@ -705,7 +705,7 @@ describe("Interpreter", () => {
 
     it("let can shadow a builtin inside a function", () => {
       const script = `
-        fun foo()
+        fun foo() do
           let print = "shadowed"
           return print
         end
@@ -716,7 +716,7 @@ describe("Interpreter", () => {
 
     it("duplicate let in the same scope rebinds silently", () => {
       const script = `
-        fun foo()
+        fun foo() do
           let x = 1
           let x = 2
           return x
@@ -729,7 +729,7 @@ describe("Interpreter", () => {
     it("mutates the top-level binding", () => {
       const script = `
         let x = 1
-        fun foo()
+        fun foo() do
           x = 99
         end
         foo()
@@ -739,13 +739,13 @@ describe("Interpreter", () => {
     });
 
     it("raises NameError when no enclosing binding exists", () => {
-      expect(() => run("fun foo()\n  y = 1\nend\nfoo()")).toThrow(NameError);
+      expect(() => run("fun foo() do\n  y = 1\nend\nfoo()")).toThrow(NameError);
     });
 
     it("if and while bodies do not introduce a new scope", () => {
       const script = `
         let x = 0
-        if x == 0
+        if x == 0 then
           let y = 7
         end
         y
@@ -756,7 +756,7 @@ describe("Interpreter", () => {
     it("reads still walk the full scope chain", () => {
       const script = `
         let x = 1
-        fun foo()
+        fun foo() do
           return x
         end
         foo()
@@ -765,7 +765,7 @@ describe("Interpreter", () => {
     });
 
     it("builtins cannot be mutated without declaration", () => {
-      expect(() => run(`fun foo()\n  print = "nope"\nend\nfoo()`)).toThrow(
+      expect(() => run(`fun foo() do\n  print = "nope"\nend\nfoo()`)).toThrow(
         NameError,
       );
     });
@@ -774,7 +774,7 @@ describe("Interpreter", () => {
       const symbolTable = new SymbolTable();
       const script = `
         let x = 1
-        fun foo()
+        fun foo() do
           let result = x
           let x = 2
           return result
@@ -791,7 +791,7 @@ describe("Interpreter", () => {
       run(
         `
         let count = 0
-        while true
+        while true do
           let count = count + 1
           break
         end
@@ -806,8 +806,8 @@ describe("Interpreter", () => {
       run(
         `
         let i = 0
-        while true
-          if i == 5
+        while true do
+          if i == 5 then
             break
           end
           let i = i + 1
@@ -824,7 +824,7 @@ describe("Interpreter", () => {
       run(
         `
         let i = 0
-        while true
+        while true do
           break
         end
         let after = 42
@@ -840,11 +840,11 @@ describe("Interpreter", () => {
         `
         let outerCount = 0
         let i = 0
-        while i < 3
+        while i < 3 do
           let i = i + 1
           let outerCount = outerCount + 1
           let j = 0
-          while true
+          while true do
             let j = j + 1
             break
           end
@@ -860,7 +860,7 @@ describe("Interpreter", () => {
       run(
         `
         let sideEffect = 0
-        while true
+        while true do
           break
           let sideEffect = 99
         end
@@ -878,9 +878,9 @@ describe("Interpreter", () => {
         `
         let i = 0
         let sideEffect = 0
-        while i < 5
+        while i < 5 do
           let i = i + 1
-          if i == 3
+          if i == 3 then
             continue
           end
           let sideEffect = sideEffect + 1
@@ -897,7 +897,7 @@ describe("Interpreter", () => {
         `
         let i = 0
         let sideEffect = 0
-        while i < 5
+        while i < 5 do
           let i = i + 1
           continue
           let sideEffect = sideEffect + 1
@@ -915,13 +915,13 @@ describe("Interpreter", () => {
         `
         let outerCount = 0
         let i = 0
-        while i < 3
+        while i < 3 do
           let i = i + 1
           let outerCount = outerCount + 1
           let j = 0
-          while j < 3
+          while j < 3 do
             let j = j + 1
-            if j == 2
+            if j == 2 then
               continue
             end
           end
@@ -952,7 +952,7 @@ describe("Interpreter", () => {
 
     it("full-form function without return returns nothing", () => {
       const script = `
-        fun foo()
+        fun foo() do
           1 + 2
         end
         foo()
@@ -962,7 +962,7 @@ describe("Interpreter", () => {
 
     it("short-form lambda as argument", () => {
       const script = `
-        fun apply(f, x)
+        fun apply(f, x) do
           return f(x)
         end
         apply(fun(x) x * 2, 5)

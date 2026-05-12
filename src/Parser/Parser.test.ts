@@ -217,7 +217,7 @@ describe("Parser", () => {
     });
 
     it("parses let assignment inside a function body", () => {
-      const ast = parse("fun foo()\n  let x = 1\nend");
+      const ast = parse("fun foo() do\n  let x = 1\nend");
 
       expect(ast).toEqual(
         new Program([
@@ -331,7 +331,7 @@ describe("Parser", () => {
       });
 
       it("parses compound assignment inside function", () => {
-        const ast = parse("fun foo()\n  x *= 2\nend");
+        const ast = parse("fun foo() do\n  x *= 2\nend");
 
         expect(ast).toEqual(
           new Program([
@@ -377,7 +377,7 @@ describe("Parser", () => {
 
   describe("function declaration", () => {
     it("parses a declaration without arguments", () => {
-      const ast = parse("fun add()\n  x = 1\n  return x + 2\nend");
+      const ast = parse("fun add() do\n  x = 1\n  return x + 2\nend");
 
       expect(ast).toEqual(
         new Program([
@@ -400,7 +400,7 @@ describe("Parser", () => {
     });
 
     it("parses a declaration with arguments", () => {
-      const ast = parse("fun add(x, y)\n  return x + y\nend");
+      const ast = parse("fun add(x, y) do\n  return x + y\nend");
 
       expect(ast).toEqual(
         new Program([
@@ -423,8 +423,8 @@ describe("Parser", () => {
 
     it.each`
       input
-      ${"fun add()\nend"}
-      ${"fun add() end"}
+      ${"fun add() do\nend"}
+      ${"fun add() do end"}
     `("parses a declaration with empty body", ({ input }) => {
       const ast = parse(input);
 
@@ -434,7 +434,7 @@ describe("Parser", () => {
     });
 
     it("parses anonymous function declaration", () => {
-      const ast = parse("add = fun(a, b)\n  return a + b\nend");
+      const ast = parse("add = fun(a, b) do\n  return a + b\nend");
 
       expect(ast).toEqual(
         new Program([
@@ -466,10 +466,10 @@ describe("Parser", () => {
     });
 
     it.each`
-      script                  | message
-      ${"fun abc(,x,y)\nend"} | ${"Expected 'Identifier' literal but got ',' delimiter."}
-      ${"fun abc(x,)\nend"}   | ${"Expected 'Identifier' literal but got ')' delimiter."}
-      ${"fun abc(x,,)\nend"}  | ${"Expected 'Identifier' literal but got ',' delimiter."}
+      script                     | message
+      ${"fun abc(,x,y) do\nend"} | ${"Expected 'Identifier' literal but got ',' delimiter."}
+      ${"fun abc(x,) do\nend"}   | ${"Expected 'Identifier' literal but got ')' delimiter."}
+      ${"fun abc(x,,) do\nend"}  | ${"Expected 'Identifier' literal but got ',' delimiter."}
     `(
       "can't parse declaration with invalid arguments",
       ({ script, message }) => {
@@ -589,7 +589,7 @@ describe("Parser", () => {
 
   it("parses if statement", () => {
     const ast = parse(`
-      if x < 1
+      if x < 1 then
         x = 1
       end
     `);
@@ -606,7 +606,7 @@ describe("Parser", () => {
 
   it("parses if-else statement", () => {
     const ast = parse(`
-      if x < 1
+      if x < 1 then
         x = 1
       else
         x = 2
@@ -626,7 +626,7 @@ describe("Parser", () => {
 
   it("parses if-else statement with else on next line", () => {
     const ast = parse(`
-      if x < 1
+      if x < 1 then
         x = 1
 
       else
@@ -647,9 +647,9 @@ describe("Parser", () => {
 
   it("parses elseif chain", () => {
     const ast = parse(`
-      if x < 1
+      if x < 1 then
         x = 1
-      elseif x < 2
+      elseif x < 2 then
         x = 2
       else
         x = 3
@@ -680,7 +680,7 @@ describe("Parser", () => {
   describe("while statement", () => {
     it("parses a basic while statement", () => {
       const ast = parse(`
-        while true
+        while true do
           x = 1
         end
       `);
@@ -695,14 +695,14 @@ describe("Parser", () => {
     });
 
     it("parses a while statement with empty body", () => {
-      expect(parse("while false\nend")).toEqual(
+      expect(parse("while false do\nend")).toEqual(
         new Program([new WhileStatement(new BooleanLiteral(false), [])]),
       );
     });
 
     it("parses a while statement with a comparison condition", () => {
       const ast = parse(`
-        while i < 3
+        while i < 3 do
           i = i + 1
         end
       `);
@@ -728,8 +728,8 @@ describe("Parser", () => {
 
     it("parses nested while statements", () => {
       const ast = parse(`
-        while true
-          while false
+        while true do
+          while false do
             1
           end
         end
@@ -749,7 +749,7 @@ describe("Parser", () => {
     });
 
     it("rejects a while missing end", () => {
-      expect(() => parse("while true\n  1")).toThrow(SyntaxError);
+      expect(() => parse("while true do\n  1")).toThrow(SyntaxError);
     });
 
     it("rejects assigning to `while` (it is a reserved keyword)", () => {
@@ -881,7 +881,7 @@ describe("Parser", () => {
 
   describe("break statement", () => {
     it("parses 'break' inside a while loop", () => {
-      const ast = parse("while true\n  break\nend");
+      const ast = parse("while true do\n  break\nend");
       expect(ast).toEqual(
         new Program([
           new WhileStatement(new BooleanLiteral(true), [new BreakStatement()]),
@@ -890,7 +890,9 @@ describe("Parser", () => {
     });
 
     it("parses nested while loop with inner break", () => {
-      const ast = parse("while true\n  while false\n    break\n  end\nend");
+      const ast = parse(
+        "while true do\n  while false do\n    break\n  end\nend",
+      );
       expect(ast).toEqual(
         new Program([
           new WhileStatement(new BooleanLiteral(true), [
@@ -903,7 +905,7 @@ describe("Parser", () => {
     });
 
     it("parses 'break' inside if block within while", () => {
-      const ast = parse("while true\n  if true\n    break\n  end\nend");
+      const ast = parse("while true do\n  if true then\n    break\n  end\nend");
       expect(ast).toEqual(
         new Program([
           new WhileStatement(new BooleanLiteral(true), [
@@ -914,7 +916,7 @@ describe("Parser", () => {
     });
 
     it("parses statement before break in same block", () => {
-      const ast = parse("while true\n  x = 1\n  break\nend");
+      const ast = parse("while true do\n  x = 1\n  break\nend");
       expect(ast).toEqual(
         new Program([
           new WhileStatement(new BooleanLiteral(true), [
@@ -932,20 +934,20 @@ describe("Parser", () => {
     });
 
     it("throws SyntaxError for 'break' inside if without enclosing loop", () => {
-      expect(() => parse("if true\n  break\nend")).toThrow(
+      expect(() => parse("if true then\n  break\nend")).toThrow(
         new SyntaxError("'break' used outside a loop"),
       );
     });
 
     it("throws SyntaxError for 'break' inside named function", () => {
-      expect(() => parse("fun foo()\n  break\nend")).toThrow(
+      expect(() => parse("fun foo() do\n  break\nend")).toThrow(
         new SyntaxError("'break' used outside a loop"),
       );
     });
 
     it("throws SyntaxError for 'break' inside function nested in loop", () => {
       expect(() =>
-        parse("while true\n  fun foo()\n    break\n  end\nend"),
+        parse("while true do\n  fun foo() do\n    break\n  end\nend"),
       ).toThrow(new SyntaxError("'break' used outside a loop"));
     });
   });
@@ -953,7 +955,7 @@ describe("Parser", () => {
   describe("continue statement", () => {
     it("parses 'continue' inside a while loop with if", () => {
       const ast = parse(
-        "while i < 10\n  if i == 3\n    continue\n  end\n  i = i + 1\nend",
+        "while i < 10 do\n  if i == 3 then\n    continue\n  end\n  i = i + 1\nend",
       );
       expect(ast).toEqual(
         new Program([
@@ -987,7 +989,7 @@ describe("Parser", () => {
     });
 
     it("parses loop with both break and continue", () => {
-      const ast = parse("while true\n  break\n  continue\nend");
+      const ast = parse("while true do\n  break\n  continue\nend");
       expect(ast).toEqual(
         new Program([
           new WhileStatement(new BooleanLiteral(true), [
@@ -1000,7 +1002,7 @@ describe("Parser", () => {
 
     it("parses 'continue' inside else block within while", () => {
       const ast = parse(
-        "while true\n  if true\n    break\n  else\n    continue\n  end\nend",
+        "while true do\n  if true then\n    break\n  else\n    continue\n  end\nend",
       );
       expect(ast).toEqual(
         new Program([
@@ -1023,12 +1025,12 @@ describe("Parser", () => {
 
     it("throws SyntaxError for 'continue' inside anonymous function nested in loop", () => {
       expect(() =>
-        parse("while true\n  x = fun()\n    continue\n  end\nend"),
+        parse("while true do\n  x = fun() do\n    continue\n  end\nend"),
       ).toThrow(new SyntaxError("'continue' used outside a loop"));
     });
   });
 
-  describe("then keyword", () => {
+  describe("then and do keywords", () => {
     it("parses single-line if with then", () => {
       const ast = parse("if true then 1 end");
 
@@ -1039,8 +1041,8 @@ describe("Parser", () => {
       );
     });
 
-    it("parses single-line while with then", () => {
-      const ast = parse("while true then break end");
+    it("parses single-line while with do", () => {
+      const ast = parse("while true do break end");
 
       expect(ast).toEqual(
         new Program([
@@ -1052,7 +1054,7 @@ describe("Parser", () => {
 
   describe("elseif keyword", () => {
     it("parses if-elseif-else chain", () => {
-      const ast = parse("if a\n  1\nelseif b\n  2\nelse\n  3\nend");
+      const ast = parse("if a then\n  1\nelseif b then\n  2\nelse\n  3\nend");
 
       expect(ast).toEqual(
         new Program([
@@ -1072,7 +1074,9 @@ describe("Parser", () => {
     });
 
     it("parses multiple elseif branches", () => {
-      const ast = parse("if a\n  1\nelseif b\n  2\nelseif c\n  3\nend");
+      const ast = parse(
+        "if a then\n  1\nelseif b then\n  2\nelseif c then\n  3\nend",
+      );
 
       expect(ast).toEqual(
         new Program([
@@ -1092,7 +1096,7 @@ describe("Parser", () => {
     });
 
     it("rejects 'else if' as two separate keywords", () => {
-      expect(() => parse("if a\n  1\nelse if b\n  2\nend")).toThrow(
+      expect(() => parse("if a then\n  1\nelse if b\n  2\nend")).toThrow(
         SyntaxError,
       );
     });
@@ -1167,6 +1171,14 @@ describe("Parser", () => {
       );
     });
 
+    it("parses empty block anonymous function", () => {
+      const ast = parse("fun() do end");
+
+      expect(ast).toEqual(
+        new Program([new FunctionDeclaration(undefined, [], [])]),
+      );
+    });
+
     it("rejects 'end' after short-form lambda", () => {
       expect(() => parse("fun(x) x * 2 end")).toThrow(SyntaxError);
     });
@@ -1182,7 +1194,41 @@ describe("Parser", () => {
     });
 
     it("rejects function missing end", () => {
-      expect(() => parse("fun foo()\n  return 1")).toThrow(SyntaxError);
+      expect(() => parse("fun foo() do\n  return 1")).toThrow(SyntaxError);
+    });
+
+    it("rejects while using 'then' instead of 'do'", () => {
+      expect(() => parse("while true then break end")).toThrow(SyntaxError);
+    });
+
+    it("rejects anonymous function with newline body but no 'do'", () => {
+      expect(() => parse("fun()\n  return 1\nend")).toThrow(
+        new SyntaxError(
+          "Expected 'do' after parameter list (full form is 'fun(args) do ... end').",
+        ),
+      );
+    });
+
+    it("rejects anonymous empty body without 'do'", () => {
+      expect(() => parse("fun() end")).toThrow(
+        new SyntaxError(
+          "Expected 'do' before function body (use 'fun() do end' for an empty body).",
+        ),
+      );
+    });
+
+    it("rejects if condition with newline but no 'then'", () => {
+      expect(() => parse("if true\n  1\nend")).toThrow(SyntaxError);
+    });
+
+    it("rejects while condition with newline but no 'do'", () => {
+      expect(() => parse("while true\n  1\nend")).toThrow(SyntaxError);
+    });
+
+    it("rejects elseif without 'then'", () => {
+      expect(() => parse("if a then\n  1\nelseif b\n  2\nend")).toThrow(
+        SyntaxError,
+      );
     });
   });
 });

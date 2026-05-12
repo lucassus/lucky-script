@@ -4,14 +4,14 @@ import { run } from "../testingUtils";
 
 it("makeCounter closure using let and reassignment", () => {
   const script = `
-    fun makeCounter()
+    fun makeCounter() do
       let n = 0
 
-      fun inc()
+      fun inc() do
         n = n + 1
       end
 
-      fun get()
+      fun get() do
         return n
       end
 
@@ -28,14 +28,14 @@ it("makeCounter closure using let and reassignment", () => {
 
 it("two independent counters do not share state", () => {
   const script = `
-    fun makeCounter(initial)
+    fun makeCounter(initial) do
       let n = initial
 
-      fun inc()
+      fun inc() do
         n = n + 1
       end
 
-      fun get()
+      fun get() do
         return n
       end
 

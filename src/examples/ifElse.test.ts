@@ -4,10 +4,10 @@ import { run } from "../testingUtils";
 
 it("evaluates if, elseif, and else branches correctly", () => {
   const script = `
-    fun classify(n)
-      if n < 0
+    fun classify(n) do
+      if n < 0 then
         return -1
-      elseif n == 0
+      elseif n == 0 then
         return 0
       else
         return 1

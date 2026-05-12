@@ -19,7 +19,7 @@ it("evaluates unary operators correctly", () => {
 it("evaluates comparison operators correctly", () => {
   const script = `
     let result = 0
-    if 1 < 2 and 1 == 1 and 1 != 2
+    if 1 < 2 and 1 == 1 and 1 != 2 then
       let result = 42
     end
     result

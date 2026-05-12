@@ -4,7 +4,7 @@ import { run } from "../testingUtils";
 
 it("evaluates standard function with parameters and return", () => {
   const script = `
-    fun add(a, b)
+    fun add(a, b) do
       return a + b
     end
     
@@ -34,7 +34,7 @@ it("evaluates short-form lambda with multiple arguments", () => {
 
 it("evaluates complex lambda with full syntax", () => {
   const script = `
-    let process = fun(x)
+    let process = fun(x) do
       let y = x * 2
       return y + 1
     end

@@ -31,7 +31,7 @@ it("bare compound assignment inside function mutates the nearest binding", () =>
   const script = `
     let x = 1
 
-    fun foo()
+    fun foo() do
       x += 99
       return x
     end
@@ -48,7 +48,7 @@ it("let compound assignment reads then writes let", () => {
   const script = `
     let x = 10
 
-    fun foo()
+    fun foo() do
       let x += 5
       return x
     end
@@ -64,7 +64,7 @@ it("compound assignment mutates enclosing variable", () => {
   const script = `
     let x = 10
 
-    fun foo()
+    fun foo() do
       x += 5
     end
 
@@ -77,10 +77,10 @@ it("compound assignment mutates enclosing variable", () => {
 
 it("compound assignment in nested function", () => {
   const script = `
-    fun makeCounter()
+    fun makeCounter() do
       let n = 0
 
-      fun inc()
+      fun inc() do
         n += 1
       end
 
@@ -111,7 +111,7 @@ it("compound assignment in while loop", () => {
     let i = 0
     let sum = 0
 
-    while i < 5
+    while i < 5 do
       sum += i
       i += 1
     end
@@ -126,10 +126,10 @@ it("compound assignment with let in nested scopes", () => {
   const script = `
     let x = 100
 
-    fun outerFn()
+    fun outerFn() do
       let x = 10
 
-      fun inner()
+      fun inner() do
         let x += 5
         return x
       end

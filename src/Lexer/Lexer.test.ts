@@ -268,15 +268,15 @@ describe("Lexer", () => {
   });
 
   it("recognizes if expression", () => {
-    const lexer = new Lexer("if x < 1\n  return 123\nend");
+    const lexer = new Lexer("if x < 1 then\n  return 123\nend");
     const tokens = [...lexer.tokenize()];
 
-    expect(tokens.length).toBe(10);
     expect(tokens).toEqual([
       new Token(Keyword.If, anyLocation),
       new Token(Literal.Identifier, anyLocation, "x"),
       new Token(Operator.Lt, anyLocation),
       new Token(Literal.Number, anyLocation, "1"),
+      new Token(Keyword.Then, anyLocation),
       new Token(Delimiter.NewLine, anyLocation),
       new Token(Keyword.Return, anyLocation),
       new Token(Literal.Number, anyLocation, "123"),
@@ -300,6 +300,7 @@ describe("Lexer", () => {
     ${"fun"}      | ${Keyword.Fun}
     ${"end"}      | ${Keyword.End}
     ${"then"}     | ${Keyword.Then}
+    ${"do"}       | ${Keyword.Do}
     ${"elseif"}   | ${Keyword.ElseIf}
     ${"in"}       | ${Keyword.In}
   `("tokenizes '$input' as a keyword", ({ input, keyword }) => {
@@ -427,6 +428,21 @@ describe("Lexer", () => {
     });
   });
 
+  describe("do keyword boundary", () => {
+    it.each(["don", "doit", "done", "dot"])(
+      "tokenizes %s as a single identifier",
+      (word) => {
+        const lexer = new Lexer(word);
+        expect(lexer.nextToken()).toEqual(
+          new Token(Literal.Identifier, anyLocation, word),
+        );
+        expect(lexer.nextToken()).toEqual(
+          new Token(Delimiter.Eof, anyLocation),
+        );
+      },
+    );
+  });
+
   // Reserved spellings must become Keyword tokens, not identifiers. (Mirrors keyword boundary
   // rules in src/grammar.ohm — distinct from names that merely start with a keyword prefix.)
 
@@ -449,6 +465,7 @@ describe("Lexer", () => {
       ["continue", Keyword.Continue],
       ["end", Keyword.End],
       ["then", Keyword.Then],
+      ["do", Keyword.Do],
       ["in", Keyword.In],
     ] as const)("tokenizes %s as keyword", (source, kind) => {
       const lexer = new Lexer(source);

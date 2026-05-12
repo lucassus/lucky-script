@@ -11,39 +11,39 @@ x = 1
 
 y = -1 + 0.9999 * (3.5 + --+-4) ** 2 + x
 
-fun add()
+fun add() do
   x + y
 end
 
-fun foo()
+fun foo() do
   x = 1
   y = 2
 
   return 1 + 2 * 3 + -y ** -x
 end
 
-fun bar()
+fun bar() do
 end
 
-fun()
+fun() do
   return nothing
 end
 
-bar = fun ()
+bar = fun () do
   return nothing
 end
 
 add()
 
-fun curry(x)
+fun curry(x) do
   z = 2
 
-  return fun (y)
+  return fun (y) do
     return x + y * z
   end
 end
 
-if x < 0
+if x < 0 then
   x = 0
 end
 
@@ -102,6 +102,32 @@ describe("LuckyScript Ohm grammar", () => {
   it("accepts the kitchen-sink integration script", () => {
     expect(grammar.match(kitchenSinkSource, "Program").succeeded()).toBe(true);
   });
+
+  describe("then/do block openers (reference grammar)", () => {
+    it.each`
+      snippet
+      ${"if true then break end"}
+      ${"while true do break end"}
+      ${"if x < 1 then\n  print(x)\nelseif x == 1 then\n  print(1)\nelse\n  print(0)\nend"}
+      ${"fun () do end"}
+      ${"fun foo() do\n  1\nend"}
+    `("accepts: $snippet", ({ snippet }) => {
+      expect(grammar.match(snippet, "Program").succeeded()).toBe(true);
+    });
+
+    it.each`
+      snippet
+      ${"if true\n  1\nend"}
+      ${"while true\n  1\nend"}
+      ${"while true then 1 end"}
+      ${"fun () end"}
+      ${"if x then\n  1\nelseif y\n  2\nend"}
+      ${"fun (x)\n  return x\nend"}
+      ${"if x then\nelse if y then\nend\nend"}
+    `("rejects: $snippet", ({ snippet }) => {
+      expect(grammar.match(snippet, "Program").failed()).toBe(true);
+    });
+  });
 });
 
 const validSyntaxCases = [
@@ -112,29 +138,29 @@ const validSyntaxCases = [
   "-123",
   "----+++123",
   "(1 + 2) * 3",
-  "fun foo()\nend",
-  "fun foo()\n  1 + 2 + 3\nend",
-  "fun foo()\n  return 123\nend",
-  "fun ()\n  return 123\nend",
-  "fun ()\nend",
-  "fun (x, y)\nend",
-  "x = fun (x)\n  return 123\nend",
+  "fun foo() do\nend",
+  "fun foo() do\n  1 + 2 + 3\nend",
+  "fun foo() do\n  return 123\nend",
+  "fun () do\n  return 123\nend",
+  "fun () do\nend",
+  "fun (x, y) do\nend",
+  "x = fun (x) do\n  return 123\nend",
   "fun(x) 123",
   "fun(x, y) x + y",
   "foo()",
   "foo(123)",
   "foo(1, 2, 1+2+3+4)",
   "x = 123",
-  "if 123\nend",
-  "if x < 1\nend",
-  "if x <= 1\nend",
-  "if x == 1\nend",
-  "if x != 1\nend",
-  "if x > 1\nend",
-  "if x >= 1\nend",
-  "if x < 1 < 2\nend",
+  "if 123 then\nend",
+  "if x < 1 then\nend",
+  "if x <= 1 then\nend",
+  "if x == 1 then\nend",
+  "if x != 1 then\nend",
+  "if x > 1 then\nend",
+  "if x >= 1 then\nend",
+  "if x < 1 < 2 then\nend",
   "if x < 1 then print(x) end",
-  "if x < 1\n  print(x)\nelseif x == 1\n  print(1)\nelse\n  print(0)\nend",
+  "if x < 1 then\n  print(x)\nelseif x == 1 then\n  print(1)\nelse\n  print(0)\nend",
   "return 1234",
   '"hello"',
   '""',
@@ -165,17 +191,17 @@ const validSyntaxCases = [
   "true and false == false",
   "let x = 1",
   "let x = 1 + 2",
-  "while true\n  1\nend",
-  "while i < 3\n  i = i + 1\nend",
-  "while false\nend",
-  "while true\n  while false\n    1\n  end\nend",
-  "while true\n  break\nend",
-  "while i < 10\n  if i == 3\n    continue\n  end\n  i = i + 1\nend",
-  "while true\n  while false\n    break\n  end\nend",
-  "while true\n  if x > 0\n    break\n  else\n    continue\n  end\nend",
-  "while true\n  i = i + 1\n  break\nend",
-  "while true\n  break\n  continue\nend",
-  "while true then break end",
+  "while true do\n  1\nend",
+  "while i < 3 do\n  i = i + 1\nend",
+  "while false do\nend",
+  "while true do\n  while false do\n    1\n  end\nend",
+  "while true do\n  break\nend",
+  "while i < 10 do\n  if i == 3 then\n    continue\n  end\n  i = i + 1\nend",
+  "while true do\n  while false do\n    break\n  end\nend",
+  "while true do\n  if x > 0 then\n    break\n  else\n    continue\n  end\nend",
+  "while true do\n  i = i + 1\n  break\nend",
+  "while true do\n  break\n  continue\nend",
+  "while true do break end",
   "x += 1",
   "x -= 1",
   "x *= 1",
@@ -192,12 +218,12 @@ const validSyntaxCases = [
 
 const invalidSyntaxCases = [
   "1 2 3",
-  "fun foo(1+2)\nend",
-  "x = fun bar()\nend",
-  "fun bar(,y)\nend",
-  "x = fun(, x, y)\nend",
-  "x = fun bar(, x, y)\nend",
-  "fun foo(fun(bar)\nend)\nend",
+  "fun foo(1+2) do\nend",
+  "x = fun bar() do\nend",
+  "fun bar(,y) do\nend",
+  "x = fun(, x, y) do\nend",
+  "x = fun bar(, x, y) do\nend",
+  "fun foo(fun(bar) do\nend) do\nend",
   "while true 1 end",
 ] as const;
 

@@ -30,7 +30,7 @@ Lucky Script is a scripting language built from scratch in TypeScript. It has a 
 > 1 + 2 * 3 ** 5.2
 606.4252366531416
 
-> fun add(a, b)
+> fun add(a, b) do
   return a + b
 end
 nothing
@@ -49,7 +49,7 @@ SyntaxError: Expected 'end' keyword but got 'Identifier' literal.
 Functions use the `fun` keyword and `end` delimiter:
 
 ```
-fn add(a, b)
+fun add(a, b) do
   return a + b
 end
 
@@ -70,7 +70,7 @@ fun(a, b) a + b
 For anything more complex, use the full form:
 
 ```
-fun(x)
+fun(x) do
   let y = x * 2
   return y + 1
 end
@@ -78,13 +78,13 @@ end
 
 ## If / elseif / else
 
-Conditions are not wrapped in parentheses. The condition is terminated by a newline or the `then` keyword:
+Conditions are not wrapped in parentheses. After the condition, use `then` for `if`/`elseif` and `do` for `while` and full-form `fun` before the block body:
 
 ```
-fn classify(n)
-  if n < 0
+fun classify(n) do
+  if n < 0 then
     return -1
-  elseif n == 0
+  elseif n == 0 then
     return 0
   else
     return 1
@@ -102,16 +102,16 @@ if x > 0 then print(x) end
 
 ```
 let i = 0
-while i < 5
+while i < 5 do
   print(i)
   i = i + 1
 end
 ```
 
-Single-line with `then`:
+Single-line with `do`:
 
 ```
-while true then break end
+while true do break end
 ```
 
 ## break and continue
@@ -120,16 +120,16 @@ while true then break end
 
 ```
 let i = 0
-while true
+while true do
   if i == 5 then break end
   i = i + 1
 end
 # i == 5 after the loop
 
 let i = 0
-while i < 10
+while i < 10 do
   i = i + 1
-  if i == 3
+  if i == 3 then
     continue
   end
   print(i)
@@ -142,8 +142,8 @@ Both keywords are parse-time checked: using `break` or `continue` outside a loop
 ## It supports basic if statements and the recursion:
 
 ```
-fn fib(n)
-  if n < 2
+fun fib(n) do
+  if n < 2 then
     return n
   end
 
@@ -154,11 +154,11 @@ end
 ## Higher order functions are also supported:
 
 ```
-let foo = fun()
+let foo = fun() do
   let x = 1
 
   # Yes! It's a function that returns another function ;)
-  return fun()
+  return fun() do
     return x + 2
   end
 end
@@ -181,12 +181,12 @@ Only function calls create a new scope. `if`, `elseif`, `else`, and `while` exec
 ```
 let a = 1
 
-fn foo()
+fun foo() do
   let a = 2  # shadows the outer a
   a = 3      # reassigns the nearest existing binding (the local one)
 end
 
-fun bumpOuter()
+fun bumpOuter() do
   a = a + 1  # mutates outer a because no nearer declaration exists
 end
 ```
@@ -196,7 +196,7 @@ Reads always walk the full scope chain:
 ```
 let x = 10
 
-fn double()
+fun double() do
   return x * 2  # reads x from the enclosing scope
 end
 
@@ -208,14 +208,14 @@ double()  # => 10
 Closures with lexical reassignment:
 
 ```
-fn makeCounter()
+fun makeCounter() do
   let n = 0
 
-  fun inc()
+  fun inc() do
     n = n + 1
   end
 
-  fun get()
+  fun get() do
     return n
   end
 

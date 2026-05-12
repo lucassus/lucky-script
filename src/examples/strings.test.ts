@@ -71,7 +71,7 @@ describe("string in boolean context", () => {
     expect(
       run(`
       let result = 0
-      if ""
+      if "" then
         let result = 1
       else
         let result = 2
@@ -85,7 +85,7 @@ describe("string in boolean context", () => {
     expect(
       run(`
       let result = 0
-      if "hello"
+      if "hello" then
         let result = 1
       end
       result
