@@ -15,7 +15,7 @@ export class NumberLiteral extends Expr {
 }
 
 export class UnaryExpr extends Expr {
-  readonly op = "-" as const;
+  readonly operator = "-" as const;
 
   constructor(public readonly operand: Expr) {
     super();
@@ -24,7 +24,7 @@ export class UnaryExpr extends Expr {
 
 export class BinaryExpr extends Expr {
   constructor(
-    public readonly op: "+" | "-" | "*" | "/",
+    public readonly operator: "+" | "-" | "*" | "/",
     public readonly left: Expr,
     public readonly right: Expr,
   ) {
