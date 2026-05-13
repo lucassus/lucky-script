@@ -37,15 +37,6 @@ export function run(bytecode: Bytecode): number {
         break;
       }
 
-      case "dup": {
-        const top = stack[stack.length - 1];
-        if (top === undefined) {
-          throw new Error("Stack underflow");
-        }
-        stack.push(top);
-        break;
-      }
-
       case "add": {
         const right = stack.pop()!;
         const left = stack.pop()!;

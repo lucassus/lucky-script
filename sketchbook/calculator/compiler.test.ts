@@ -28,30 +28,6 @@ test("(1 + 2) * -3 compiles to expected bytecode", () => {
   expect<Bytecode>(bytecode).toEqual(expected);
 });
 
-test("let then load emits storePop between statements without dup", () => {
-  expect(compiled("let x = 1\nx")).toEqual({
-    constants: [1],
-    names: ["x"],
-    instructions: [
-      { op: "push", constantIndex: 0 },
-      { op: "storePop", nameIndex: 0 },
-      { op: "load", nameIndex: 0 },
-    ],
-  });
-});
-
-test("final let emits dup before storePop", () => {
-  expect(compiled("let y = 2")).toEqual({
-    constants: [2],
-    names: ["y"],
-    instructions: [
-      { op: "push", constantIndex: 0 },
-      { op: "dup" },
-      { op: "storePop", nameIndex: 0 },
-    ],
-  });
-});
-
 test("undefined variable rejects at compile time", () => {
   expect(() => compile(parse("x + 3"))).toThrow("Undefined variable 'x'");
 });

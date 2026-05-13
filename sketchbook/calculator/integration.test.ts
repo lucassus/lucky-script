@@ -5,7 +5,9 @@ import { parse } from "./parser";
 import { run } from "./vm";
 
 function evalExpr(source: string): number {
-  return run(compile(parse(source)));
+  const program = parse(source);
+  const bytecode = compile(program);
+  return run(bytecode);
 }
 
 test.each([
@@ -58,7 +60,7 @@ test.each([
 
   // let bindings
   ["let x = 2 + 3\nx * 4", 20],
-  ["let n = 5", 5],
+  ["let n = 5", undefined],
   ["let x = 1\nlet x = 40\nx + 3", 43],
   ["let lettings = 99\nlettings", 99],
 ] as const)("evalExpr(%s) === %s", (source, expected) => {

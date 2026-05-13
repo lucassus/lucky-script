@@ -60,14 +60,9 @@ export function compile(program: Program): Bytecode {
     }
   }
 
-  program.body.forEach((stmt, index) => {
-    const isLast = index === program.body.length - 1;
-
+  program.body.forEach((stmt) => {
     if (stmt instanceof LetStmt) {
       visitExpr(stmt.expr);
-      if (isLast) {
-        instructions.push({ op: "dup" });
-      }
       instructions.push({
         op: "storePop",
         nameIndex: symbolIndex(stmt.name),
@@ -77,7 +72,6 @@ export function compile(program: Program): Bytecode {
 
     if (stmt instanceof ExprStmt) {
       visitExpr(stmt.expr);
-      return;
     }
   });
 
