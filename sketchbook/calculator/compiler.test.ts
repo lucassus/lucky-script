@@ -10,20 +10,16 @@ function compiled(source: string): Bytecode {
 
 test("(1 + 2) * -3 compiles to expected bytecode", () => {
   const bytecode = compiled("(1 + 2) * -3");
-  expectTypeOf(bytecode).toMatchObjectType<Bytecode>();
+  expectTypeOf(bytecode).toMatchTypeOf<Bytecode>();
 
-  const expected: Bytecode = {
-    constants: [1, 2, 3],
-    names: [],
-    instructions: [
-      { op: "push", constantIndex: 0 },
-      { op: "push", constantIndex: 1 },
-      { op: "add" },
-      { op: "push", constantIndex: 2 },
-      { op: "neg" },
-      { op: "mul" },
-    ],
-  };
+  const expected: Bytecode = [
+    { op: "PUSH", value: 1 },
+    { op: "PUSH", value: 2 },
+    { op: "ADD" },
+    { op: "PUSH", value: 3 },
+    { op: "NEG" },
+    { op: "MUL" },
+  ];
 
   expect<Bytecode>(bytecode).toEqual(expected);
 });
@@ -35,143 +31,101 @@ test("undefined variable rejects at compile time", () => {
 test.each<{ source: string; expected: Bytecode }>([
   {
     source: "9",
-    expected: {
-      constants: [9],
-      names: [],
-      instructions: [{ op: "push", constantIndex: 0 }],
-    },
+    expected: [{ op: "PUSH", value: 9 }],
   },
   {
     source: "2.5",
-    expected: {
-      constants: [2.5],
-      names: [],
-      instructions: [{ op: "push", constantIndex: 0 }],
-    },
+    expected: [{ op: "PUSH", value: 2.5 }],
   },
   {
     source: "-4",
-    expected: {
-      constants: [4],
-      names: [],
-      instructions: [{ op: "push", constantIndex: 0 }, { op: "neg" }],
-    },
+    expected: [{ op: "PUSH", value: 4 }, { op: "NEG" }],
   },
   {
     source: "-(-1)",
-    expected: {
-      constants: [1],
-      names: [],
-      instructions: [
-        { op: "push", constantIndex: 0 },
-        { op: "neg" },
-        { op: "neg" },
-      ],
-    },
+    expected: [{ op: "PUSH", value: 1 }, { op: "NEG" }, { op: "NEG" }],
   },
   {
     source: "+8",
-    expected: {
-      constants: [8],
-      names: [],
-      instructions: [{ op: "push", constantIndex: 0 }],
-    },
+    expected: [{ op: "PUSH", value: 8 }],
   },
   {
     source: "5-2",
-    expected: {
-      constants: [5, 2],
-      names: [],
-      instructions: [
-        { op: "push", constantIndex: 0 },
-        { op: "push", constantIndex: 1 },
-        { op: "sub" },
-      ],
-    },
+    expected: [
+      { op: "PUSH", value: 5 },
+      { op: "PUSH", value: 2 },
+      { op: "SUB" },
+    ],
   },
   {
     source: "8/2",
-    expected: {
-      constants: [8, 2],
-      names: [],
-      instructions: [
-        { op: "push", constantIndex: 0 },
-        { op: "push", constantIndex: 1 },
-        { op: "div" },
-      ],
-    },
+    expected: [
+      { op: "PUSH", value: 8 },
+      { op: "PUSH", value: 2 },
+      { op: "DIV" },
+    ],
   },
   {
     source: "2+3*4",
-    expected: {
-      constants: [2, 3, 4],
-      names: [],
-      instructions: [
-        { op: "push", constantIndex: 0 },
-        { op: "push", constantIndex: 1 },
-        { op: "push", constantIndex: 2 },
-        { op: "mul" },
-        { op: "add" },
-      ],
-    },
+    expected: [
+      { op: "PUSH", value: 2 },
+      { op: "PUSH", value: 3 },
+      { op: "PUSH", value: 4 },
+      { op: "MUL" },
+      { op: "ADD" },
+    ],
   },
   {
     source: "(2+3)*4",
-    expected: {
-      constants: [2, 3, 4],
-      names: [],
-      instructions: [
-        { op: "push", constantIndex: 0 },
-        { op: "push", constantIndex: 1 },
-        { op: "add" },
-        { op: "push", constantIndex: 2 },
-        { op: "mul" },
-      ],
-    },
+    expected: [
+      { op: "PUSH", value: 2 },
+      { op: "PUSH", value: 3 },
+      { op: "ADD" },
+      { op: "PUSH", value: 4 },
+      { op: "MUL" },
+    ],
   },
   {
     source: "10-3-2",
-    expected: {
-      constants: [10, 3, 2],
-      names: [],
-      instructions: [
-        { op: "push", constantIndex: 0 },
-        { op: "push", constantIndex: 1 },
-        { op: "sub" },
-        { op: "push", constantIndex: 2 },
-        { op: "sub" },
-      ],
-    },
+    expected: [
+      { op: "PUSH", value: 10 },
+      { op: "PUSH", value: 3 },
+      { op: "SUB" },
+      { op: "PUSH", value: 2 },
+      { op: "SUB" },
+    ],
   },
   {
     source: "12/3/2",
-    expected: {
-      constants: [12, 3, 2],
-      names: [],
-      instructions: [
-        { op: "push", constantIndex: 0 },
-        { op: "push", constantIndex: 1 },
-        { op: "div" },
-        { op: "push", constantIndex: 2 },
-        { op: "div" },
-      ],
-    },
+    expected: [
+      { op: "PUSH", value: 12 },
+      { op: "PUSH", value: 3 },
+      { op: "DIV" },
+      { op: "PUSH", value: 2 },
+      { op: "DIV" },
+    ],
   },
   {
     source: "1+1\n3*4",
-    expected: {
-      constants: [1, 1, 3, 4],
-      names: [],
-      instructions: [
-        { op: "push", constantIndex: 0 },
-        { op: "push", constantIndex: 1 },
-        { op: "add" },
-        { op: "push", constantIndex: 2 },
-        { op: "push", constantIndex: 3 },
-        { op: "mul" },
-      ],
-    },
+    expected: [
+      { op: "PUSH", value: 1 },
+      { op: "PUSH", value: 1 },
+      { op: "ADD" },
+      { op: "POP" },
+      { op: "PUSH", value: 3 },
+      { op: "PUSH", value: 4 },
+      { op: "MUL" },
+    ],
   },
 ])("compile(%j) matches bytecode snapshot", ({ source, expected }) => {
   expect(compiled(source)).toEqual(expected);
+});
+
+test("let x = 10 + 2 uses inline PUSH and STORE", () => {
+  expect(compiled("let x = 10 + 2")).toEqual([
+    { op: "PUSH", value: 10 },
+    { op: "PUSH", value: 2 },
+    { op: "ADD" },
+    { op: "STORE", name: "x" },
+  ]);
 });

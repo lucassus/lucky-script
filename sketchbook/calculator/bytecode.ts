@@ -1,15 +1,13 @@
 export type Instruction =
-  | { op: "push"; constantIndex: number }
-  | { op: "load"; nameIndex: number }
-  | { op: "storePop"; nameIndex: number }
-  | { op: "add" }
-  | { op: "sub" }
-  | { op: "neg" }
-  | { op: "mul" }
-  | { op: "div" };
+  | { op: "PUSH"; value: number }
+  | { op: "LOAD"; name: string }
+  | { op: "STORE"; name: string }
+  | { op: "POP" }
+  | { op: "ADD" }
+  | { op: "SUB" }
+  | { op: "MUL" }
+  | { op: "DIV" }
+  | { op: "NEG" };
 
-export type Bytecode = {
-  constants: number[];
-  names: string[];
-  instructions: Instruction[];
-};
+/** Flat, self-contained instruction stream. */
+export type Bytecode = Instruction[];
