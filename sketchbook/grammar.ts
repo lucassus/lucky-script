@@ -1,4 +1,5 @@
 import fs from "node:fs";
+import path from "node:path";
 
 import * as ohm from "ohm-js";
 
@@ -6,7 +7,7 @@ import * as ohm from "ohm-js";
 /* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-argument */
 
 export const grammar = ohm.grammar(
-  fs.readFileSync("src/simplified/grammar.ohm", "utf-8"),
+  fs.readFileSync(path.join(__dirname, "grammar.ohm"), "utf-8"),
 );
 
 type FnDef = { params: string[]; body: ohm.Node };
