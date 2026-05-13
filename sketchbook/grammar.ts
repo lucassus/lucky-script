@@ -195,14 +195,23 @@ function addEvalOperation(
       }
       return variables.get(name)!;
     },
-    PriExp_true(_) {
+    PriExp_lit(lit) {
+      return lit.eval();
+    },
+    literal_true(_) {
       return 1;
     },
-    PriExp_false(_) {
+    literal_false(_) {
       return 0;
     },
-    number(digits) {
-      return parseFloat(digits.sourceString);
+    literal_null(_) {
+      return 0;
+    },
+    number_sci(_mantissa, _e, _sign, _exp) {
+      return parseFloat(this.sourceString);
+    },
+    number_plain(_mantissa) {
+      return parseFloat(this.sourceString);
     },
   });
 }

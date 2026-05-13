@@ -28,7 +28,12 @@ describe("grammar", () => {
     "+123",
     // Fractional numbers
     "0.5",
+    ".5",
+    "5.",
     "1.99",
+    "1e10",
+    "1.5e-2",
+    ".5e2",
     "-1.5 + 2",
     // Unary before parentheses
     "-(1+2)",
@@ -95,7 +100,12 @@ describe("grammar", () => {
       ["+123", 123],
       // Fractional numbers
       ["0.5", 0.5],
+      [".5", 0.5],
+      ["5.", 5],
       ["1.99", 1.99],
+      ["1e10", 1e10],
+      ["1.5e-2", 0.015],
+      [".5e2", 50],
       ["-1.5 + 2", 0.5],
       // Unary before parentheses
       ["-(1+2)", -3],

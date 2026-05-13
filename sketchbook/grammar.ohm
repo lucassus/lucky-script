@@ -1,42 +1,39 @@
 Arithmetic {
-    Program = (FunDef | Stmt)+
-
-    FunDef = "fun" funName "(" Params ")" "do" Block "end"
-    funName = ident ~space &"("
-    Params = ListOf<ident, ",">
-    Args = ListOf<Exp, ",">
+    Program = Stmt*
 
     Stmt
-      = "if" Exp "then" Block ElseIfChain ElseBranch? "end" -- if
+      = FunDef
+      | "if" Exp "then" Block ElseIfChain ElseBranch? "end" -- if
       | "return" Exp                                        -- return
       | "let" ident "=" Exp                                 -- varDecl
       | ident "=" Exp                                       -- assign
       | Exp                                                 -- exprStmt
 
+    funName = ident ~space &"("
+    FunDef = "fun" funName "(" Params ")" "do" Block "end"
+    Params = ListOf<ident, ",">
+    Args = ListOf<Exp, ",">
+
     ElseIfChain = ElseIfBranch*
     ElseIfBranch = "elseif" Exp "then" Block
     ElseBranch = "else" Block
-
     Block = Stmt*
 
-    // 1. Logical OR
+    // Expressions hierarchy (standard c-style precedence)
     Exp = LogicOr
 
     LogicOr
       = LogicOr "or" LogicAnd -- or
       | LogicAnd
 
-    // 2. Logical AND
     LogicAnd
       = LogicAnd "and" NotExp -- and
       | NotExp
 
-    // 3. Logical NOT
     NotExp
       = "not" NotExp -- not
       | CompExp
 
-    // 4. Comparisons
     CompExp
       = AddExp "==" AddExp -- eq
       | AddExp "!=" AddExp -- neq
@@ -46,43 +43,57 @@ Arithmetic {
       | AddExp ">"  AddExp -- gt
       | AddExp
 
-    // 5. Add/Sub
     AddExp
       = AddExp "+" MulExp -- plus
       | AddExp "-" MulExp -- minus
       | MulExp
 
-    // 6. Mul/Div
     MulExp
       = MulExp "*" UnaryExp -- times
       | MulExp "/" UnaryExp -- divide
       | MulExp "%" UnaryExp -- mod
       | UnaryExp
 
-    // 7. Power (Right associative)
     PowExp
       = PriExp "^" UnaryExp -- pow
       | PriExp
 
-    // 8. Unary +/-
     UnaryExp
       = "+" UnaryExp -- pos
       | "-" UnaryExp -- neg
       | PowExp
 
-    // 9. Primitives
     PriExp
       = funName "(" Args ")" -- funCall
-      | "(" Exp ")"         -- paren
-      | ident               -- varAccess
-      | number
-      | "true"              -- true
-      | "false"             -- false
+      | "(" Exp ")"          -- paren
+      | ident                -- varAccess
+      | literal -- lit
 
-    number = digit+ ("." digit+)? -- number
+    literal
+      = number
+      | "true"  -- true
+      | "false" -- false
+      | "null"  -- null
 
-    keyword = ("fun" | "return" | "let" | "end" | "if" | "elseif" | "then" | "else" | "do" | "true" | "false" | "and" | "or" | "not") ~alnum
+    // Lexical layer
+
+    mantissa
+      = digit+ "." digit*  -- frac
+      | "." digit+         -- leadingDot
+      | digit+             -- whole
+
+    number
+      = mantissa ("e" | "E") ("+" | "-")? digit+ -- sci
+      | mantissa                                 -- plain
+
+    // Identifiers: Reserved keywords cannot be used as variable names
     ident = ~keyword letter alnum*
+
+    keyword = (
+        "fun" | "return" | "let" | "end" | "if" | "elseif" |
+        "then" | "else" | "do" | "true" | "false" |
+        "and" | "or" | "not"
+    ) ~alnum
 
     comment = "//" (~"\n" any)* "\n"?
     space += comment
