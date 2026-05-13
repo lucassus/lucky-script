@@ -44,6 +44,20 @@ describe("grammar", () => {
     expect(grammar.match(expr).succeeded()).toBe(true);
   });
 
+  test.each(["foo()", "add(1, 2)"])(
+    "allows function call without space: %s",
+    (expr) => {
+      expect(grammar.match(expr).succeeded()).toBe(true);
+    },
+  );
+
+  test.each(["foo ()", "add (1, 2)", "fun bar () do end"])(
+    "rejects space before call parentheses: %s",
+    (expr) => {
+      expect(grammar.match(expr).succeeded()).toBe(false);
+    },
+  );
+
   describe("evaluation", () => {
     let evaluate: GrammarRuntime["evaluate"];
     let variables: GrammarRuntime["variables"];
@@ -115,11 +129,11 @@ describe("grammar", () => {
 
       test("functions", () => {
         const script = `
-        fun add(a, b)
+        fun add(a, b) do
           return a + b
         end
 
-        fun factorial(n)
+        fun factorial(n) do
           let result = 1
           let current = n
           return current * 2
@@ -132,7 +146,7 @@ describe("grammar", () => {
 
         expect(
           evaluate(`
-        fun multiply(a, b)
+        fun multiply(a, b) do
           let product = a * b
           return product
         end
@@ -273,6 +287,66 @@ describe("grammar", () => {
             b
       `),
         ).toBe(1);
+      });
+
+      test("elseif", () => {
+        expect(
+          evaluate(`
+            let x = 15
+            if x > 10 then
+              x = 100
+            elseif x > 5 then
+              x = 200
+            else
+              x = 300
+            end
+            x
+          `),
+        ).toBe(100);
+
+        expect(
+          evaluate(`
+            let x = 7
+            if x > 10 then
+              x = 100
+            elseif x > 5 then
+              x = 200
+            else
+              x = 300
+            end
+            x
+          `),
+        ).toBe(200);
+
+        expect(
+          evaluate(`
+            let x = 1
+            if x > 10 then
+              x = 100
+            elseif x > 5 then
+              x = 200
+            else
+              x = 300
+            end
+            x
+          `),
+        ).toBe(300);
+
+        expect(
+          evaluate(`
+            let x = 2
+            if x > 10 then
+              x = 1
+            elseif x > 5 then
+              x = 2
+            elseif x > 1 then
+              x = 3
+            else
+              x = 4
+            end
+            x
+          `),
+        ).toBe(3);
       });
 
       test("comments", () => {

@@ -18,6 +18,14 @@ class ReturnException extends Error {
   }
 }
 
+function evalStmts(stmts: ohm.Node): number {
+  let result = 0;
+  for (const stmt of stmts.children) {
+    result = stmt.eval();
+  }
+  return result;
+}
+
 function addEvalOperation(
   semantics: ohm.Semantics,
   variables: Map<string, number>,
@@ -31,28 +39,34 @@ function addEvalOperation(
       }
       return result;
     },
-    FunDef(_fun, ident, _lparen, params, _rparen, body, _end) {
+    FunDef(_fun, nameLParen, params, _rparen, _do, body, _end) {
       const paramNames = params
         .asIteration()
         .children.map((c) => c.sourceString);
-      functions.set(ident.sourceString, { params: paramNames, body });
+      functions.set(nameLParen.children[0]!.sourceString, { params: paramNames, body });
       return 0;
     },
-    Stmt_if(_if, exp, _then, thenStmts, _else, elseStmts, _end) {
+    Block(stmts) {
+      return evalStmts(stmts);
+    },
+    Stmt_if(_if, exp, _then, thenBlock, elseifChain, elseBranch, _end) {
       if (exp.eval()) {
-        let result = 0;
-        for (const stmt of thenStmts.children) {
-          result = stmt.eval();
-        }
-        return result;
-      } else if (elseStmts.children.length > 0) {
-        const elseBlock = elseStmts.children[0]!;
-        let result = 0;
-        for (const stmt of elseBlock.children) {
-          result = stmt.eval();
-        }
-        return result;
+        return thenBlock.eval();
       }
+
+      const elseifBranches = elseifChain.children[0]!.asIteration().children;
+      for (const branch of elseifBranches) {
+        const branchExp = branch.children[1]!;
+        const branchBlock = branch.children[3]!;
+        if (branchExp.eval()) {
+          return branchBlock.eval();
+        }
+      }
+
+      if (elseBranch.numChildren > 0) {
+        return elseBranch.children[0]!.children[1]!.eval();
+      }
+
       return 0;
     },
     Stmt_return(_return, exp) {
@@ -117,8 +131,8 @@ function addEvalOperation(
     PowExp_pow(a, _, b) {
       return a.eval() ** b.eval();
     },
-    PriExp_funCall(ident, _lparen, args, _rparen) {
-      const name = ident.sourceString;
+    PriExp_funCall(nameLParen, args, _rparen) {
+      const name = nameLParen.children[0]!.sourceString;
       if (!functions.has(name)) {
         throw new Error(`Undefined function: ${name}`);
       }
@@ -136,9 +150,7 @@ function addEvalOperation(
 
       let result = 0;
       try {
-        for (const stmt of fn.body.children) {
-          result = stmt.eval();
-        }
+        result = fn.body.eval();
       } catch (e) {
         if (e instanceof ReturnException) {
           result = e.value;

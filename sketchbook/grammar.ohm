@@ -1,14 +1,22 @@
 Arithmetic {
     Program = (FunDef | Stmt)+
 
-    FunDef = "fun" ident "(" ListOf<ident, ","> ")" Stmt* "end"
+    FunDef = "fun" nameLParen Params ")" "do" Block "end"
+    Params = ListOf<ident, ",">
+    Args = ListOf<Exp, ",">
 
     Stmt
-      = "if" Exp "then" Stmt* ("else" Stmt*)? "end"        -- if
-      | "return" Exp                                       -- return
-      | "let" ident "=" Exp                                -- varDecl
-      | ident "=" Exp                                      -- assign
-      | Exp                                                -- exprStmt
+      = "if" Exp "then" Block ElseIfChain ElseBranch? "end" -- if
+      | "return" Exp                                        -- return
+      | "let" ident "=" Exp                                 -- varDecl
+      | ident "=" Exp                                       -- assign
+      | Exp                                                 -- exprStmt
+
+    ElseIfChain = ElseIfBranch*
+    ElseIfBranch = "elseif" Exp "then" Block
+    ElseBranch = "else" Block
+
+    Block = Stmt*
 
     // 1. Logical OR
     Exp = LogicOr
@@ -52,22 +60,21 @@ Arithmetic {
 
     // 7. Primitives
     PriExp
-      = ident "(" ListOf<Exp, ","> ")" -- funCall
-      | "(" Exp ")"                    -- paren
-      | "+" PriExp                     -- pos
-      | "-" PriExp                     -- neg
-      | "not" PriExp                   -- not
-      | ident                          -- varAccess
+      = nameLParen Args ")" -- funCall
+      | "(" Exp ")"                     -- paren
+      | "+" PriExp                      -- pos
+      | "-" PriExp                      -- neg
+      | "not" PriExp                    -- not
+      | ident                           -- varAccess
       | number
-      | "true"                         -- true
-      | "false"                        -- false
+      | "true"                          -- true
+      | "false"                         -- false
 
-    number
-      = digit+ "." digit+ -- fraction
-      | digit+ -- whole
+    number = digit+ ("." digit+)? -- number
 
-    keyword = ("fun" | "return" | "let" | "end" | "if" | "then" | "else" | "true" | "false" | "and" | "or" | "not") ~alnum
+    keyword = ("fun" | "return" | "let" | "end" | "if" | "elseif" | "then" | "else" | "do" | "true" | "false" | "and" | "or" | "not") ~alnum
     ident = ~keyword letter alnum*
+    nameLParen = ident "("
     
     comment = "//" (~"\n" any)* "\n"?
     space += comment
