@@ -1,6 +1,7 @@
 import { expect, expectTypeOf, test } from "vitest";
 
-import { type Bytecode, compile } from "./compiler";
+import type { Bytecode } from "./bytecode";
+import { compile } from "./compiler";
 import { parse } from "./parser";
 
 function compiled(source: string): Bytecode {
@@ -13,6 +14,7 @@ test("(1 + 2) * -3 compiles to expected bytecode", () => {
 
   const expected: Bytecode = {
     constants: [1, 2, 3],
+    names: [],
     instructions: [
       { op: "push", constantIndex: 0 },
       { op: "push", constantIndex: 1 },
@@ -26,11 +28,40 @@ test("(1 + 2) * -3 compiles to expected bytecode", () => {
   expect<Bytecode>(bytecode).toEqual(expected);
 });
 
+test("let then load emits storePop between statements without dup", () => {
+  expect(compiled("let x = 1\nx")).toEqual({
+    constants: [1],
+    names: ["x"],
+    instructions: [
+      { op: "push", constantIndex: 0 },
+      { op: "storePop", nameIndex: 0 },
+      { op: "load", nameIndex: 0 },
+    ],
+  });
+});
+
+test("final let emits dup before storePop", () => {
+  expect(compiled("let y = 2")).toEqual({
+    constants: [2],
+    names: ["y"],
+    instructions: [
+      { op: "push", constantIndex: 0 },
+      { op: "dup" },
+      { op: "storePop", nameIndex: 0 },
+    ],
+  });
+});
+
+test("undefined variable rejects at compile time", () => {
+  expect(() => compile(parse("x + 3"))).toThrow("Undefined variable 'x'");
+});
+
 test.each<{ source: string; expected: Bytecode }>([
   {
     source: "9",
     expected: {
       constants: [9],
+      names: [],
       instructions: [{ op: "push", constantIndex: 0 }],
     },
   },
@@ -38,6 +69,7 @@ test.each<{ source: string; expected: Bytecode }>([
     source: "2.5",
     expected: {
       constants: [2.5],
+      names: [],
       instructions: [{ op: "push", constantIndex: 0 }],
     },
   },
@@ -45,6 +77,7 @@ test.each<{ source: string; expected: Bytecode }>([
     source: "-4",
     expected: {
       constants: [4],
+      names: [],
       instructions: [{ op: "push", constantIndex: 0 }, { op: "neg" }],
     },
   },
@@ -52,6 +85,7 @@ test.each<{ source: string; expected: Bytecode }>([
     source: "-(-1)",
     expected: {
       constants: [1],
+      names: [],
       instructions: [
         { op: "push", constantIndex: 0 },
         { op: "neg" },
@@ -63,6 +97,7 @@ test.each<{ source: string; expected: Bytecode }>([
     source: "+8",
     expected: {
       constants: [8],
+      names: [],
       instructions: [{ op: "push", constantIndex: 0 }],
     },
   },
@@ -70,6 +105,7 @@ test.each<{ source: string; expected: Bytecode }>([
     source: "5-2",
     expected: {
       constants: [5, 2],
+      names: [],
       instructions: [
         { op: "push", constantIndex: 0 },
         { op: "push", constantIndex: 1 },
@@ -81,6 +117,7 @@ test.each<{ source: string; expected: Bytecode }>([
     source: "8/2",
     expected: {
       constants: [8, 2],
+      names: [],
       instructions: [
         { op: "push", constantIndex: 0 },
         { op: "push", constantIndex: 1 },
@@ -92,6 +129,7 @@ test.each<{ source: string; expected: Bytecode }>([
     source: "2+3*4",
     expected: {
       constants: [2, 3, 4],
+      names: [],
       instructions: [
         { op: "push", constantIndex: 0 },
         { op: "push", constantIndex: 1 },
@@ -105,6 +143,7 @@ test.each<{ source: string; expected: Bytecode }>([
     source: "(2+3)*4",
     expected: {
       constants: [2, 3, 4],
+      names: [],
       instructions: [
         { op: "push", constantIndex: 0 },
         { op: "push", constantIndex: 1 },
@@ -118,6 +157,7 @@ test.each<{ source: string; expected: Bytecode }>([
     source: "10-3-2",
     expected: {
       constants: [10, 3, 2],
+      names: [],
       instructions: [
         { op: "push", constantIndex: 0 },
         { op: "push", constantIndex: 1 },
@@ -131,6 +171,7 @@ test.each<{ source: string; expected: Bytecode }>([
     source: "12/3/2",
     expected: {
       constants: [12, 3, 2],
+      names: [],
       instructions: [
         { op: "push", constantIndex: 0 },
         { op: "push", constantIndex: 1 },
@@ -144,6 +185,7 @@ test.each<{ source: string; expected: Bytecode }>([
     source: "1+1\n3*4",
     expected: {
       constants: [1, 1, 3, 4],
+      names: [],
       instructions: [
         { op: "push", constantIndex: 0 },
         { op: "push", constantIndex: 1 },

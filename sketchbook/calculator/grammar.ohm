@@ -1,7 +1,9 @@
 Arithmetic {
   Program = Stmt+
 
-  Stmt = Exp
+  Stmt
+    = "let" ident "=" Exp -- letBind
+    | Exp -- exprOnly
 
   Exp = AddExp
 
@@ -23,6 +25,11 @@ Arithmetic {
   PriExp
     = "(" Exp ")" -- paren
     | number -- lit
+    | ident -- var
+
+  keyword = "let" ~alnum
+
+  ident = ~keyword letter alnum*
 
   // Lexical: do not allow space inside a numeral
   number = digit+ ("." digit+)?

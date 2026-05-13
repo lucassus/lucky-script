@@ -55,6 +55,12 @@ test.each([
   // multi-statement programs: VM returns the last expression's value
   ["1\n2+3", 5],
   ["1+1\n3*4", 12],
+
+  // let bindings
+  ["let x = 2 + 3\nx * 4", 20],
+  ["let n = 5", 5],
+  ["let x = 1\nlet x = 40\nx + 3", 43],
+  ["let lettings = 99\nlettings", 99],
 ] as const)("evalExpr(%s) === %s", (source, expected) => {
   expect(evalExpr(source)).toBe(expected);
 });

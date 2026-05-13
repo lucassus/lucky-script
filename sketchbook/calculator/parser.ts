@@ -3,42 +3,19 @@ import path from "node:path";
 
 import * as ohmNs from "ohm-js";
 
+import type { Expr } from "./ast";
+import {
+  BinaryExpr,
+  ExprStmt,
+  Identifier,
+  LetStmt,
+  NumberLiteral,
+  Program,
+  UnaryExpr,
+} from "./ast";
+
 /* ohm-js operation callbacks use dynamically-typed `.toAst()`; keep unsafe rules off for this file. */
 /* eslint-disable @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-return */
-
-export abstract class Expr {}
-
-export class NumberLiteral extends Expr {
-  constructor(public readonly value: number) {
-    super();
-  }
-}
-
-export class UnaryExpr extends Expr {
-  readonly operator = "-" as const;
-
-  constructor(public readonly operand: Expr) {
-    super();
-  }
-}
-
-export class BinaryExpr extends Expr {
-  constructor(
-    public readonly operator: "+" | "-" | "*" | "/",
-    public readonly left: Expr,
-    public readonly right: Expr,
-  ) {
-    super();
-  }
-}
-
-export class Stmt {
-  constructor(public readonly expr: Expr) {}
-}
-
-export class Program {
-  constructor(public readonly body: Stmt[] = []) {}
-}
 
 const grammar = ohmNs.grammar(
   fs.readFileSync(path.join(__dirname, "grammar.ohm"), "utf-8"),
@@ -46,12 +23,17 @@ const grammar = ohmNs.grammar(
 
 const semantics = grammar.createSemantics();
 
-semantics.addOperation<Program | Stmt | Expr>("toAst", {
+semantics.addOperation<Program | ExprStmt | LetStmt | Expr | string>("toAst", {
   Program(stmts) {
-    return new Program(stmts.children.map((stmt) => stmt.toAst() as Stmt));
+    return new Program(
+      stmts.children.map((stmt) => stmt.toAst() as ExprStmt | LetStmt),
+    );
   },
-  Stmt(expr) {
-    return new Stmt(expr.toAst() as Expr);
+  Stmt_letBind(_letKw, identNode, _eq, expr) {
+    return new LetStmt(identNode.toAst() as string, expr.toAst() as Expr);
+  },
+  Stmt_exprOnly(expr) {
+    return new ExprStmt(expr.toAst() as Expr);
   },
   Exp(add) {
     return add.toAst() as Expr;
@@ -89,9 +71,15 @@ semantics.addOperation<Program | Stmt | Expr>("toAst", {
   PriExp_lit(num) {
     return num.toAst() as Expr;
   },
+  PriExp_var(identNode) {
+    return new Identifier(identNode.toAst() as string);
+  },
   // Ohm expands `digit+ ("." digit+)?` into three child nodes for this action dict.
   number(_digits, _dotDigitsOpt1, _dotDigitsOpt2) {
     return new NumberLiteral(Number(this.sourceString));
+  },
+  ident(_notKeyword, _rest) {
+    return this.sourceString;
   },
 });
 

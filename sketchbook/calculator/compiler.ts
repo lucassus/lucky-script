@@ -1,27 +1,41 @@
-import type { Expr, Program, Stmt } from "./parser";
-import { BinaryExpr, NumberLiteral, UnaryExpr } from "./parser";
-
-type Instruction =
-  | { op: "push"; constantIndex: number }
-  | { op: "add" }
-  | { op: "sub" }
-  | { op: "neg" }
-  | { op: "mul" }
-  | { op: "div" };
-
-export type Bytecode = {
-  constants: number[];
-  instructions: Instruction[];
-};
+import type { Expr, Program } from "./ast";
+import {
+  BinaryExpr,
+  ExprStmt,
+  Identifier,
+  LetStmt,
+  NumberLiteral,
+  UnaryExpr,
+} from "./ast";
+import type { Bytecode, Instruction } from "./bytecode";
 
 export function compile(program: Program): Bytecode {
   const constants: number[] = [];
+  const names: string[] = [];
   const instructions: Instruction[] = [];
+  const defined = new Set<string>();
 
-  function visit(expr: Expr): void {
+  function symbolIndex(symbol: string): number {
+    const existing = names.indexOf(symbol);
+    if (existing !== -1) {
+      return existing;
+    }
+    names.push(symbol);
+    return names.length - 1;
+  }
+
+  function visitExpr(expr: Expr): void {
+    if (expr instanceof Identifier) {
+      if (!defined.has(expr.name)) {
+        throw new Error(`Undefined variable '${expr.name}'`);
+      }
+      instructions.push({ op: "load", nameIndex: symbolIndex(expr.name) });
+      return;
+    }
+
     if (expr instanceof BinaryExpr) {
-      visit(expr.left);
-      visit(expr.right);
+      visitExpr(expr.left);
+      visitExpr(expr.right);
       const op =
         expr.operator === "+"
           ? "add"
@@ -31,11 +45,13 @@ export function compile(program: Program): Bytecode {
               ? "mul"
               : "div";
       instructions.push({ op });
+      return;
     }
 
     if (expr instanceof UnaryExpr) {
-      visit(expr.operand);
+      visitExpr(expr.operand);
       instructions.push({ op: "neg" });
+      return;
     }
 
     if (expr instanceof NumberLiteral) {
@@ -44,7 +60,26 @@ export function compile(program: Program): Bytecode {
     }
   }
 
-  program.body.forEach((stmt: Stmt) => visit(stmt.expr));
+  program.body.forEach((stmt, index) => {
+    const isLast = index === program.body.length - 1;
 
-  return { constants, instructions };
+    if (stmt instanceof LetStmt) {
+      visitExpr(stmt.expr);
+      if (isLast) {
+        instructions.push({ op: "dup" });
+      }
+      instructions.push({
+        op: "storePop",
+        nameIndex: symbolIndex(stmt.name),
+      });
+      defined.add(stmt.name);
+    }
+
+    if (stmt instanceof ExprStmt) {
+      visitExpr(stmt.expr);
+      return;
+    }
+  });
+
+  return { constants, names, instructions };
 }
