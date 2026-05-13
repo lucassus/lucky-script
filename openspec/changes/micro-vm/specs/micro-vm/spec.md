@@ -52,12 +52,28 @@ The compiler and VM SHALL use global slots for top-level bindings and per-frame 
 - **WHEN** compilation would require reading an enclosing function's local slot from an inner function
 - **THEN** compilation fails with a clear unsupported error
 
+#### Scenario: Globals are readable inside functions
+- **WHEN** a function references a name that is not a parameter or in-function `let` but is bound at the top level
+- **THEN** compilation emits a global load and the VM reads the current top-level value
+
+#### Scenario: Globals are writable from inside functions
+- **WHEN** an `Assign` inside a function targets a name not bound locally but bound at the top level
+- **THEN** compilation emits a global store and the VM updates the top-level slot
+
+#### Scenario: Unknown name fails at compile time
+- **WHEN** a `Var` or `Assign` references a name that is neither a local nor a global
+- **THEN** compilation fails with an error naming the missing identifier
+
 ### Requirement: Program entry via synthetic main
 The compiler SHALL wrap top-level statements in a synthetic function proto at index `0` named `__main` with arity `0`, and the module entry point SHALL reference that function.
 
 #### Scenario: Function defs do not run at load time
 - **WHEN** a script defines functions and ends with an expression statement
 - **THEN** only `__main` executes at startup and function bodies run when called
+
+#### Scenario: Forward function references resolve
+- **WHEN** a function body calls another top-level function defined later in the source, or calls itself recursively
+- **THEN** compilation succeeds and the call resolves to the correct function proto index
 
 ### Requirement: v1 supported sketchbook surface
 The micro-vm v1 compiler and VM SHALL support this sketchbook AST subset:
@@ -87,6 +103,10 @@ The compiler SHALL reject unsupported sketchbook AST constructs with explicit er
 - **WHEN** the AST contains `%`, `^`, `and`, `or`, `not`, or comparisons other than `<` and `==`
 - **THEN** compilation fails with an error naming the unsupported feature
 
+#### Scenario: Boolean and null literals rejected in v1
+- **WHEN** the AST contains a `Literal` whose value is `true`, `false`, or `null`
+- **THEN** compilation fails with an error naming the unsupported literal kind
+
 ### Requirement: v1 instruction set
 The VM SHALL implement at minimum these opcodes: `CONST`, `LOAD_G`, `STORE_G`, `LOAD_L`, `STORE_L`, `ADD`, `SUB`, `MUL`, `DIV`, `LT`, `EQ`, `JUMP`, `JUMP_IF_ZERO`, `CALL`, `RETURN`, `POP`.
 
@@ -110,5 +130,20 @@ The system SHALL include tests at three levels: compile golden fixtures, isolate
 - **THEN** individual opcode families are verified independent of the full compiler
 
 #### Scenario: Parity coverage
-- **WHEN** supported multi-statement programs are run through both backends
+- **WHEN** supported multi-statement programs whose last top-level statement is an `ExprStmt` are run through both backends
 - **THEN** `run(compile(parse(source)))` equals `evaluate(source)`
+
+#### Scenario: Parity test scope is documented
+- **WHEN** a parity test is authored
+- **THEN** the source ends with an `ExprStmt` so the VM's `__main` returns the same value as `evaluate()`'s last-statement result
+
+### Requirement: Typed runtime errors
+The VM SHALL surface runtime failures using dedicated error types so tests can assert on the type rather than on message strings.
+
+#### Scenario: Stack underflow throws StackUnderflowError
+- **WHEN** an opcode attempts to pop from an empty operand stack
+- **THEN** the VM throws a `StackUnderflowError` whose message begins with `micro-vm runtime:`
+
+#### Scenario: Compile errors are distinguishable from runtime errors
+- **WHEN** an error is raised during compilation
+- **THEN** the thrown error's message begins with `micro-vm compile:` and is NOT a `StackUnderflowError`

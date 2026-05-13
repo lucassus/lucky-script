@@ -13,8 +13,8 @@ The sketchbook pipeline (`grammar.ohm` → `parse()` → tree-walking `evaluate(
   - `If` with optional `else` (no `elseif` in v1)
   - arithmetic: `+`, `-`, `*`, `/`
   - comparisons: `<`, `==`
-  - literals: numbers (booleans/null compile to `0`/`1` only when encountered; v1 tests focus on numeric programs)
-- Reject unsupported AST nodes at compile time with clear errors (`elseif`, `%`, `^`, `and`/`or`/`not`, extra comparisons, unary ops, etc.)
+  - literals: numbers only (boolean and `null` literals rejected in v1)
+- Reject unsupported AST nodes at compile time with clear errors (`elseif`, `%`, `^`, `and`/`or`/`not`, extra comparisons, unary ops, boolean/null literals, etc.)
 - Add layered tests: compile golden fixtures, per-opcode VM tests, and parity with `evaluate()` on supported programs
 - Keep `evaluate()` unchanged as the reference backend for the sketchbook
 

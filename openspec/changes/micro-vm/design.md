@@ -85,13 +85,24 @@ The production Lucky Script pipeline (`Lexer` → `Parser` → `Interpreter`) is
 
 **Rationale:** Standard pattern; same label pool extends to `elseif` and short-circuit logic later.
 
-### D8: Function epilogue with implicit zero return
+### D8: Function epilogue and statement stack discipline
 
-**Choice:** After body emission, if the stack may be empty, emit `CONST 0`; always end functions with `RETURN`. Explicit `return expr` compiles to expression + `RETURN`.
+**Choice:** Every statement is net-zero stack effect, with one exception: the **last** top-level statement of `__main` is allowed to be an `ExprStmt` that leaves its value on TOS so the implicit `RETURN` returns it.
 
-**Alternatives:** Compile error on missing return; implicit return of TOS only.
+- `Let` / `Assign`: `compileExpr` pushes the value, then `STORE_G` / `STORE_L` pops it. Net: 0.
+- `ExprStmt` (not last in `__main`): `compileExpr` pushes the value, then `POP`. Net: 0.
+- `ExprStmt` (last in `__main`): `compileExpr` pushes the value; the epilogue's `RETURN` consumes it. Net: +1 at epilogue.
+- `Return expr`: `compileExpr` pushes, then `RETURN`.
+- Other stmts (`FunDef` at top level): no instructions emitted into `__main`.
 
-**Rationale:** Low friction for `__main` and early learning; explicit returns already used in fibonacci.
+Function epilogue:
+
+- `__main` whose last source stmt is an `ExprStmt`: emit `RETURN` only.
+- `__main` otherwise, and every user function without a guaranteed explicit `Return` on every path: emit `CONST 0; RETURN`.
+
+**Alternatives:** Always pop `ExprStmt` and track "last value" via a dedicated slot; compile error on missing return.
+
+**Rationale:** Keeps stack discipline simple to assert in tests, matches the way `evaluate()`'s `evalStmts` returns the last value when that value is an expression, and avoids a per-VM "result register."
 
 ### D9: Slot indices in instructions; names in module metadata
 
@@ -134,6 +145,59 @@ sketchbook/vm/
 **Alternatives:** End-to-end parity only; instruction trace assertions.
 
 **Rationale:** Isolates compile bugs from VM bugs while staying maintainable.
+
+### D13: Parity test scope constrained to ExprStmt-tailed programs
+
+**Choice:** `evaluate()` returns the value of the last evaluated statement (including `Let`/`Assign` which return the bound value). The VM, per D8, only returns a non-zero `__main` result when the last statement is an `ExprStmt`. Parity tests therefore MUST use programs whose last top-level statement is an `ExprStmt`.
+
+**Alternatives:** Make every statement compute a "last value" slot to match `evaluate()` exactly; weaken the parity claim to "side effects equal."
+
+**Rationale:** Avoids dragging an extra result slot through every opcode; the constraint is trivial to satisfy in tests (append `fib(n)` or similar at the end) and matches how a user would actually drive the VM.
+
+### D14: Name resolution inside functions: locals first, globals as fallback
+
+**Choice:** Compiler maintains a per-function local symbol table over a single module-level global table.
+
+- `Var name`: look up in current function's locals; on miss, look up in globals; otherwise compile error `Unknown name: <name>`.
+- `Assign name = expr`: same resolution order; emit `STORE_L` or `STORE_G` accordingly; unknown name → compile error.
+- `Let name = expr`: always allocates in the current scope's table (function locals when inside a `FunDef`, globals when at top level). Re-declaring an existing name in the same scope is a compile error.
+- No closures: a function CANNOT read or write locals belonging to an outer function. Resolution never walks the function-frame stack.
+
+**Alternatives:** Globals-only (matches `evaluate()`'s single `Map`); locals-only with no global fallback inside functions (would break fibonacci patterns that read top-level constants).
+
+**Rationale:** Real call-frame semantics for parameters/locals plus a familiar "globals are visible inside functions" rule. The remaining behavioral gap with `evaluate()` is that the VM does NOT save/restore globals on call (the param-save trick in `evaluate()`); this is acceptable because params now live on the frame, not in the global `Map`.
+
+### D15: Two-pass `FunDef` compilation for forward references
+
+**Choice:** Compilation is two passes over the program body.
+
+- Pass 1: walk top-level statements; for every `FunDef`, allocate a `FunctionProto` (name, arity, empty `code`) and register `name → index` in the module's function table. Also pre-register a global slot for every top-level `Let`.
+- Pass 2: compile bodies. `Call` resolves the callee via the table populated in pass 1, so a function may call any other top-level function regardless of source order, including itself.
+
+**Alternatives:** Single pass with a "pending call patch list"; require source-order declaration before use.
+
+**Rationale:** Recursion and mutual recursion both work with no patching. Compile error `Unknown function: <name>` if the callee isn't in the table at the end of pass 1.
+
+### D16: Boolean and null literals rejected in v1
+
+**Choice:** Any `Literal` whose `value` is `true`, `false`, or `null` fails at compile time with `Unsupported in micro-vm v1: boolean literal` / `Unsupported in micro-vm v1: null literal`.
+
+**Alternatives:** Map `true → 1`, `false → 0`, `null → 0`.
+
+**Rationale:** v1 is number-only. Half-supporting booleans invites silent semantic drift with `evaluate()` once short-circuit `and`/`or` lands later. Rejecting now is cheap; lifting the restriction is a one-line change in v1.1.
+
+### D17: Error conventions
+
+**Choice:** Two error families with stable message prefixes.
+
+- Compile errors: `Error("micro-vm compile: <message>")` thrown from `compile.ts`. Used for unsupported nodes, unknown names, unknown functions, duplicate `let`.
+- Runtime errors: dedicated subclasses thrown from `vm.ts`:
+  - `StackUnderflowError extends Error` — message `"micro-vm runtime: stack underflow"`.
+  - Other runtime conditions use `Error("micro-vm runtime: <message>")` (e.g. division by zero if we ever check, frame stack overflow).
+
+**Alternatives:** A single `MicroVmError` class with a `kind` tag; plain `Error` for everything.
+
+**Rationale:** Tests can assert on the `StackUnderflowError` type without string-matching, while the rest of the error surface stays cheap. The prefix convention keeps unprefixed message matching reliable for compile errors.
 
 ## Data Model
 
@@ -212,10 +276,10 @@ endLabel:
 
 ## Risks / Trade-offs
 
-- **[Semantic drift vs `evaluate()`]** → Parity tests on v1 subset; document that VM uses real locals while eval uses a shared variable `Map` with param save/restore
-- **[Scope differences inside functions]** → Future `let` inside functions may diverge; acceptable for sketchbook; spec calls out VM rules explicitly
-- **[Extensibility pressure]** → Unsupported nodes error at compile time rather than partial runtime behavior
-- **[No binary format]** → Structured records only; encoding can be a later change without altering VM semantics
+- **[Semantic drift vs `evaluate()`]** → Parity tests on v1 subset and constrained to ExprStmt-tailed programs (D13); VM uses real locals while eval uses a shared `Map` with param save/restore.
+- **[Top-level mutation from inside functions]** → Globals are readable inside functions and writable via `Assign` (D14). A program that mutates a top-level binding from a function will produce correct numeric results, but the order of side effects differs from `evaluate()`'s shared-`Map` model. Not exercised by v1 parity tests.
+- **[Extensibility pressure]** → Unsupported nodes error at compile time rather than partial runtime behavior; boolean/null are explicitly rejected in v1 (D16).
+- **[No binary format]** → Structured records only; encoding can be a later change without altering VM semantics.
 
 ## Migration Plan
 
