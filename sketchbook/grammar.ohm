@@ -1,7 +1,8 @@
 Arithmetic {
     Program = (FunDef | Stmt)+
 
-    FunDef = "fun" nameLParen Params ")" "do" Block "end"
+    FunDef = "fun" funName "(" Params ")" "do" Block "end"
+    funName = ident ~space &"("
     Params = ListOf<ident, ",">
     Args = ListOf<Exp, ",">
 
@@ -27,10 +28,15 @@ Arithmetic {
 
     // 2. Logical AND
     LogicAnd
-      = LogicAnd "and" CompExp -- and
+      = LogicAnd "and" NotExp -- and
+      | NotExp
+
+    // 3. Logical NOT
+    NotExp
+      = "not" NotExp -- not
       | CompExp
 
-    // 3. Comparisons
+    // 4. Comparisons
     CompExp
       = AddExp "==" AddExp -- eq
       | AddExp "!=" AddExp -- neq
@@ -40,42 +46,44 @@ Arithmetic {
       | AddExp ">"  AddExp -- gt
       | AddExp
 
-    // 4. Add/Sub
+    // 5. Add/Sub
     AddExp
       = AddExp "+" MulExp -- plus
       | AddExp "-" MulExp -- minus
       | MulExp
 
-    // 5. Mul/Div
+    // 6. Mul/Div
     MulExp
-      = MulExp "*" PowExp -- times
-      | MulExp "/" PowExp -- divide
-      | MulExp "%" PowExp -- mod
-      | PowExp
+      = MulExp "*" UnaryExp -- times
+      | MulExp "/" UnaryExp -- divide
+      | MulExp "%" UnaryExp -- mod
+      | UnaryExp
 
-    // 6. Power (Right associative)
+    // 7. Power (Right associative)
     PowExp
-      = PriExp "^" PowExp -- pow
+      = PriExp "^" UnaryExp -- pow
       | PriExp
 
-    // 7. Primitives
+    // 8. Unary +/-
+    UnaryExp
+      = "+" UnaryExp -- pos
+      | "-" UnaryExp -- neg
+      | PowExp
+
+    // 9. Primitives
     PriExp
-      = nameLParen Args ")" -- funCall
-      | "(" Exp ")"                     -- paren
-      | "+" PriExp                      -- pos
-      | "-" PriExp                      -- neg
-      | "not" PriExp                    -- not
-      | ident                           -- varAccess
+      = funName "(" Args ")" -- funCall
+      | "(" Exp ")"         -- paren
+      | ident               -- varAccess
       | number
-      | "true"                          -- true
-      | "false"                         -- false
+      | "true"              -- true
+      | "false"             -- false
 
     number = digit+ ("." digit+)? -- number
 
     keyword = ("fun" | "return" | "let" | "end" | "if" | "elseif" | "then" | "else" | "do" | "true" | "false" | "and" | "or" | "not") ~alnum
     ident = ~keyword letter alnum*
-    nameLParen = ident "("
-    
+
     comment = "//" (~"\n" any)* "\n"?
     space += comment
 }

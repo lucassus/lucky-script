@@ -35,6 +35,7 @@ describe("grammar", () => {
     "+(1+2)",
     // Power
     "2 ^ 3",
+    "2 ^ -3",
     "(2 + 1) ^ 2",
     "2 ^ (1 + 2)",
     "(-2) ^ 3",
@@ -101,10 +102,11 @@ describe("grammar", () => {
       ["+(1+2)", 3],
       // Power
       ["2 ^ 3", 8],
+      ["2 ^ -3", 0.125],
       ["(2 + 1) ^ 2", 9],
       ["2 ^ (1 + 2)", 8],
       ["(-2) ^ 3", -8],
-      ["-2 ^ 2", 4],
+      ["-2 ^ 2", -4],
       ["2 ^ 3 ^ 2", 512],
     ])("evaluates %s to %f", (expr, expected) => {
       expect(evaluate(expr)).toEqual(expected);
@@ -242,6 +244,7 @@ describe("grammar", () => {
         // not
         expect(evaluate("not true")).toBe(0);
         expect(evaluate("not false")).toBe(1);
+        expect(evaluate("not 10 == 5")).toBe(1);
         expect(evaluate("not (10 > 5)")).toBe(0);
         expect(evaluate("not (5 > 10)")).toBe(1);
 

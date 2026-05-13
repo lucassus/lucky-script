@@ -39,11 +39,17 @@ function addEvalOperation(
       }
       return result;
     },
-    FunDef(_fun, nameLParen, params, _rparen, _do, body, _end) {
+    FunDef(_fun, name, _lparen, params, _rparen, _do, body, _end) {
       const paramNames = params
         .asIteration()
         .children.map((c) => c.sourceString);
-      functions.set(nameLParen.children[0]!.sourceString, { params: paramNames, body });
+
+      const funName = name.children[0]!.sourceString;
+      functions.set(funName, {
+        params: paramNames,
+        body,
+      });
+
       return 0;
     },
     Block(stmts) {
@@ -95,6 +101,9 @@ function addEvalOperation(
     LogicAnd_and(a, _, b) {
       return a.eval() !== 0 && b.eval() !== 0 ? 1 : 0;
     },
+    NotExp_not(_, e) {
+      return e.eval() === 0 ? 1 : 0;
+    },
     CompExp_eq(a, _, b) {
       return a.eval() === b.eval() ? 1 : 0;
     },
@@ -131,12 +140,19 @@ function addEvalOperation(
     PowExp_pow(a, _, b) {
       return a.eval() ** b.eval();
     },
-    PriExp_funCall(nameLParen, args, _rparen) {
-      const name = nameLParen.children[0]!.sourceString;
-      if (!functions.has(name)) {
-        throw new Error(`Undefined function: ${name}`);
+    UnaryExp_pos(_, e) {
+      return e.eval();
+    },
+    UnaryExp_neg(_, e) {
+      return -e.eval();
+    },
+    PriExp_funCall(name, _lparen, args, _rparen) {
+      const funName = name.children[0]!.sourceString;
+
+      if (!functions.has(funName)) {
+        throw new Error(`Undefined function: ${funName}`);
       }
-      const fn = functions.get(name)!;
+      const fn = functions.get(funName)!;
       const argValues = args.asIteration().children.map((c) => c.eval());
 
       // Simplistic scope implementation
@@ -171,15 +187,6 @@ function addEvalOperation(
     },
     PriExp_paren(_l, e, _r) {
       return e.eval();
-    },
-    PriExp_pos(_, e) {
-      return e.eval();
-    },
-    PriExp_neg(_, e) {
-      return -e.eval();
-    },
-    PriExp_not(_, e) {
-      return e.eval() === 0 ? 1 : 0;
     },
     PriExp_varAccess(ident) {
       const name = ident.sourceString;
