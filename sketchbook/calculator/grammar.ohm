@@ -1,0 +1,29 @@
+Arithmetic {
+  Program = Stmt+
+
+  Stmt = Exp
+
+  Exp = AddExp
+
+  AddExp
+    = AddExp "+" MulExp -- plus
+    | AddExp "-" MulExp -- minus
+    | MulExp -- mul
+
+  MulExp
+    = MulExp "*" UnaryExp -- times
+    | MulExp "/" UnaryExp -- divide
+    | UnaryExp -- unary
+
+  UnaryExp
+    = "+" UnaryExp -- pos
+    | "-" UnaryExp -- neg
+    | PriExp -- pri
+
+  PriExp
+    = "(" Exp ")" -- paren
+    | number -- lit
+
+  // Lexical: do not allow space inside a numeral
+  number = digit+ ("." digit+)?
+}
