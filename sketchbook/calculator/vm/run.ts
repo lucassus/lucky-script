@@ -1,4 +1,4 @@
-import type { Bytecode } from "../bytecode";
+import { Bytecode, Instruction } from "../bytecode";
 import { UndefinedVariable } from "./errors";
 import { OperandStack } from "./OperandStack";
 
@@ -8,6 +8,17 @@ export type RunOptions = {
   /** Max stack slots; default {@link DEFAULT_MAX_STACK_DEPTH}. */
   maxStackDepth?: number;
 };
+
+function fetch(
+  bytecode: Bytecode,
+  ip: number,
+): { instruction: Instruction; nextIp: number } {
+  if (ip < 0 || ip >= bytecode.length) {
+    throw new Error(`Invalid instruction pointer: ${ip}`);
+  }
+
+  return { instruction: bytecode[ip]!, nextIp: ip + 1 };
+}
 
 export function run(
   bytecode: Bytecode,
@@ -21,71 +32,71 @@ export function run(
   let ip = 0;
 
   while (ip < bytecode.length) {
-    const instr = bytecode[ip]!;
-    ip += 1;
+    const { instruction, nextIp } = fetch(bytecode, ip);
+    ip = nextIp;
 
-    switch (instr.op) {
+    switch (instruction.op) {
       case "PUSH": {
-        stack.push(instr.value);
+        stack.push(instruction.value);
         break;
       }
 
       case "LOAD": {
-        const value = bindings.get(instr.name);
+        const value = bindings.get(instruction.name);
         if (value === undefined) {
-          throw new UndefinedVariable(instr.name);
+          throw new UndefinedVariable(instruction.name);
         }
         stack.push(value);
         break;
       }
 
       case "STORE": {
-        const popped = stack.pop(instr.op);
-        bindings.set(instr.name, popped);
+        const popped = stack.pop(instruction.op);
+        bindings.set(instruction.name, popped);
         break;
       }
 
       case "POP": {
-        stack.pop(instr.op);
+        stack.pop(instruction.op);
         break;
       }
 
       case "ADD": {
-        const right = stack.pop(instr.op);
-        const left = stack.pop(instr.op);
+        const right = stack.pop(instruction.op);
+        const left = stack.pop(instruction.op);
         stack.push(left + right);
         break;
       }
 
       case "SUB": {
-        const right = stack.pop(instr.op);
-        const left = stack.pop(instr.op);
+        const right = stack.pop(instruction.op);
+        const left = stack.pop(instruction.op);
         stack.push(left - right);
         break;
       }
 
       case "MUL": {
-        const right = stack.pop(instr.op);
-        const left = stack.pop(instr.op);
+        const right = stack.pop(instruction.op);
+        const left = stack.pop(instruction.op);
         stack.push(left * right);
         break;
       }
 
       case "DIV": {
-        const right = stack.pop(instr.op);
-        const left = stack.pop(instr.op);
+        const right = stack.pop(instruction.op);
+        const left = stack.pop(instruction.op);
         stack.push(left / right);
         break;
       }
 
       case "NEG": {
-        const value = stack.pop(instr.op);
+        const value = stack.pop(instruction.op);
         stack.push(-value);
         break;
       }
 
       default: {
-        instr satisfies never;
+        instruction satisfies never;
       }
     }
   }

@@ -1,0 +1,11 @@
+- [ ] Variable re-assigment
+- [ ] Logic and branching
+  - [ ] Operators
+  - [ ] Control flow jumps
+  - [ ] Basic if statements
+  - [ ] else elseif statements (optionally)
+  - [ ] Logical operators (and, or)
+- [ ] While loops
+- [ ] Functions
+  - [ ] CallFrame architecture
+  - [ ] Function invocation and returns 

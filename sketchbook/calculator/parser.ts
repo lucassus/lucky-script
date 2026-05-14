@@ -1,8 +1,3 @@
-import fs from "node:fs";
-import path from "node:path";
-
-import * as ohmNs from "ohm-js";
-
 import type { Expr } from "./ast";
 import {
   BinaryExpr,
@@ -13,13 +8,10 @@ import {
   Program,
   UnaryExpr,
 } from "./ast";
+import grammar from "./grammar.ohm-bundle";
 
 /* ohm-js operation callbacks use dynamically-typed `.toAst()`; keep unsafe rules off for this file. */
 /* eslint-disable @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-return */
-
-const grammar = ohmNs.grammar(
-  fs.readFileSync(path.join(__dirname, "grammar.ohm"), "utf-8"),
-);
 
 const semantics = grammar.createSemantics();
 
