@@ -1,6 +1,8 @@
 export type Instruction =
   /** Push a number literal onto the operand stack. */
   | { op: "PUSH"; value: number }
+  /** Duplicate the top value on the stack. */
+  | { op: "DUP" }
   /** Look up a variable by name and push its value; undefined names are a runtime error. */
   | { op: "LOAD"; name: string }
   /** Pop the top value and store it under `name` in the runtime binding map. */

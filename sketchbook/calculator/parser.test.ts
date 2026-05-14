@@ -1,10 +1,10 @@
 import { expect, test } from "vitest";
 
 import {
+  AssignExpr,
   BinaryExpr,
   ExprStmt,
   Identifier,
-  LetStmt,
   NumberLiteral,
   Program,
   UnaryExpr,
@@ -106,20 +106,26 @@ test("multiple statements", () => {
   );
 });
 
-test("let binding and identifier reference", () => {
-  expect(parse("let x = 40 + 2\nx")).toEqual(
+test("assignment to identifier", () => {
+  expect(parse("x = 40 + 2\nx")).toEqual(
     new Program([
-      new LetStmt(
-        "x",
-        new BinaryExpr("+", new NumberLiteral(40), new NumberLiteral(2)),
+      new ExprStmt(
+        new AssignExpr(
+          "x",
+          new BinaryExpr("+", new NumberLiteral(40), new NumberLiteral(2)),
+        ),
       ),
       new ExprStmt(new Identifier("x")),
     ]),
   );
 });
 
-test("identifiers that start with keyword prefix letter are not reserved", () => {
-  expect(parse("lettings")).toEqual(
-    new Program([new ExprStmt(new Identifier("lettings"))]),
+test("chained assignment is right-associative", () => {
+  expect(parse("x = y = 1")).toEqual(
+    new Program([
+      new ExprStmt(
+        new AssignExpr("x", new AssignExpr("y", new NumberLiteral(1))),
+      ),
+    ]),
   );
 });

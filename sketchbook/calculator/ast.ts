@@ -30,17 +30,19 @@ export class BinaryExpr extends Expr {
   }
 }
 
+export class AssignExpr extends Expr {
+  constructor(
+    public readonly name: string,
+    public readonly value: Expr,
+  ) {
+    super();
+  }
+}
+
 export class ExprStmt {
   constructor(public readonly expr: Expr) {}
 }
 
-export class LetStmt {
-  constructor(
-    public readonly name: string,
-    public readonly expr: Expr,
-  ) {}
-}
-
 export class Program {
-  constructor(public readonly body: (ExprStmt | LetStmt)[] = []) {}
+  constructor(public readonly body: ExprStmt[] = []) {}
 }

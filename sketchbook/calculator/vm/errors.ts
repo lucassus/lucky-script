@@ -7,10 +7,7 @@ export class VmError extends Error {
 export class StackUnderflow extends VmError {
   override readonly name = "StackUnderflow";
 
-  constructor(
-    readonly op: string,
-    message = `stack underflow while executing ${op}`,
-  ) {
+  constructor(message = `stack underflow`) {
     super(message);
   }
 }

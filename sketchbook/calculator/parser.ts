@@ -1,9 +1,9 @@
 import type { Expr } from "./ast";
 import {
+  AssignExpr,
   BinaryExpr,
   ExprStmt,
   Identifier,
-  LetStmt,
   NumberLiteral,
   Program,
   UnaryExpr,
@@ -15,20 +15,24 @@ import grammar from "./grammar.ohm-bundle";
 
 const semantics = grammar.createSemantics();
 
-semantics.addOperation<Program | ExprStmt | LetStmt | Expr | string>("toAst", {
+semantics.addOperation<Program | ExprStmt | Expr | string>("toAst", {
   Program(stmts) {
-    return new Program(
-      stmts.children.map((stmt) => stmt.toAst() as ExprStmt | LetStmt),
+    return new Program(stmts.children.map((stmt) => stmt.toAst() as ExprStmt));
+  },
+  Stmt(exp) {
+    return new ExprStmt(exp.toAst() as Expr);
+  },
+  Exp(assignExp) {
+    return assignExp.toAst() as Expr;
+  },
+  AssignExp_assign(identNode, _eq, exprNode) {
+    return new AssignExpr(
+      identNode.toAst() as string,
+      exprNode.toAst() as Expr,
     );
   },
-  Stmt_letBind(_letKw, identNode, _eq, expr) {
-    return new LetStmt(identNode.toAst() as string, expr.toAst() as Expr);
-  },
-  Stmt_exprOnly(expr) {
-    return new ExprStmt(expr.toAst() as Expr);
-  },
-  Exp(add) {
-    return add.toAst() as Expr;
+  AssignExp_add(addExp) {
+    return addExp.toAst() as Expr;
   },
   AddExp_plus(left, _plus, right) {
     return new BinaryExpr("+", left.toAst() as Expr, right.toAst() as Expr);
@@ -70,7 +74,7 @@ semantics.addOperation<Program | ExprStmt | LetStmt | Expr | string>("toAst", {
   number(_digits, _dotDigitsOpt1, _dotDigitsOpt2) {
     return new NumberLiteral(Number(this.sourceString));
   },
-  ident(_notKeyword, _rest) {
+  ident(_first, _rest) {
     return this.sourceString;
   },
 });

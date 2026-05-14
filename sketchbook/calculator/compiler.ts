@@ -1,9 +1,9 @@
 import type { Expr, Program } from "./ast";
 import {
+  AssignExpr,
   BinaryExpr,
   ExprStmt,
   Identifier,
-  LetStmt,
   NumberLiteral,
   UnaryExpr,
 } from "./ast";
@@ -11,13 +11,16 @@ import type { Bytecode, Instruction } from "./bytecode";
 
 export function compile(program: Program): Bytecode {
   const instructions: Instruction[] = [];
-  const defined = new Set<string>();
 
   function visitExpr(expr: Expr): void {
+    if (expr instanceof AssignExpr) {
+      visitExpr(expr.value);
+      instructions.push({ op: "DUP" });
+      instructions.push({ op: "STORE", name: expr.name });
+      return;
+    }
+
     if (expr instanceof Identifier) {
-      if (!defined.has(expr.name)) {
-        throw new Error(`Undefined variable '${expr.name}'`);
-      }
       instructions.push({ op: "LOAD", name: expr.name });
       return;
     }
@@ -51,15 +54,6 @@ export function compile(program: Program): Bytecode {
   const stmts = program.body;
   stmts.forEach((stmt, index) => {
     const isLast = index === stmts.length - 1;
-
-    if (stmt instanceof LetStmt) {
-      visitExpr(stmt.expr);
-      instructions.push({
-        op: "STORE",
-        name: stmt.name,
-      });
-      defined.add(stmt.name);
-    }
 
     if (stmt instanceof ExprStmt) {
       visitExpr(stmt.expr);

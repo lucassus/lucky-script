@@ -1,4 +1,4 @@
-import { Bytecode, Instruction } from "../bytecode";
+import type { Bytecode, Instruction } from "../bytecode";
 import { UndefinedVariable } from "./errors";
 import { OperandStack } from "./OperandStack";
 
@@ -41,6 +41,13 @@ export function run(
         break;
       }
 
+      case "DUP": {
+        const top = stack.pop();
+        stack.push(top);
+        stack.push(top);
+        break;
+      }
+
       case "LOAD": {
         const value = bindings.get(instruction.name);
         if (value === undefined) {
@@ -51,46 +58,46 @@ export function run(
       }
 
       case "STORE": {
-        const popped = stack.pop(instruction.op);
+        const popped = stack.pop();
         bindings.set(instruction.name, popped);
         break;
       }
 
       case "POP": {
-        stack.pop(instruction.op);
+        stack.pop();
         break;
       }
 
       case "ADD": {
-        const right = stack.pop(instruction.op);
-        const left = stack.pop(instruction.op);
+        const right = stack.pop();
+        const left = stack.pop();
         stack.push(left + right);
         break;
       }
 
       case "SUB": {
-        const right = stack.pop(instruction.op);
-        const left = stack.pop(instruction.op);
+        const right = stack.pop();
+        const left = stack.pop();
         stack.push(left - right);
         break;
       }
 
       case "MUL": {
-        const right = stack.pop(instruction.op);
-        const left = stack.pop(instruction.op);
+        const right = stack.pop();
+        const left = stack.pop();
         stack.push(left * right);
         break;
       }
 
       case "DIV": {
-        const right = stack.pop(instruction.op);
-        const left = stack.pop(instruction.op);
+        const right = stack.pop();
+        const left = stack.pop();
         stack.push(left / right);
         break;
       }
 
       case "NEG": {
-        const value = stack.pop(instruction.op);
+        const value = stack.pop();
         stack.push(-value);
         break;
       }

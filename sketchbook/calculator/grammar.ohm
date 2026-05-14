@@ -1,11 +1,13 @@
 Arithmetic {
   Program = Stmt+
 
-  Stmt
-    = "let" ident "=" Exp -- letBind
-    | Exp -- exprOnly
+  Stmt = Exp
 
-  Exp = AddExp
+  Exp = AssignExp
+
+  AssignExp
+    = ident "=" AssignExp -- assign
+    | AddExp              -- add
 
   AddExp
     = AddExp "+" MulExp -- plus
@@ -27,10 +29,7 @@ Arithmetic {
     | number -- lit
     | ident -- var
 
-  keyword = "let" ~alnum
-
-  ident = ~keyword letter alnum*
-
   // Lexical: do not allow space inside a numeral
   number = digit+ ("." digit+)?
+  ident = letter alnum*
 }

@@ -13,10 +13,10 @@ export class OperandStack {
     this.slots.push(value);
   }
 
-  pop(op: string): number {
+  pop(): number {
     const value = this.slots.pop();
     if (value === undefined) {
-      throw new StackUnderflow(op);
+      throw new StackUnderflow();
     }
     return value;
   }

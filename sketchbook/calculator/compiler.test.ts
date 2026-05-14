@@ -24,8 +24,24 @@ test("(1 + 2) * -3 compiles to expected bytecode", () => {
   expect<Bytecode>(bytecode).toEqual(expected);
 });
 
-test("undefined variable rejects at compile time", () => {
-  expect(() => compile(parse("x + 3"))).toThrow("Undefined variable 'x'");
+test("x = 10 + 2 compiles to DUP and STORE", () => {
+  expect(compiled("x = 10 + 2")).toEqual([
+    { op: "PUSH", value: 10 },
+    { op: "PUSH", value: 2 },
+    { op: "ADD" },
+    { op: "DUP" },
+    { op: "STORE", name: "x" },
+  ]);
+});
+
+test("x = y = 2 compiles to nested DUP+STORE (right-associative)", () => {
+  expect(compiled("x = y = 2")).toEqual([
+    { op: "PUSH", value: 2 },
+    { op: "DUP" },
+    { op: "STORE", name: "y" },
+    { op: "DUP" },
+    { op: "STORE", name: "x" },
+  ]);
 });
 
 test.each<{ source: string; expected: Bytecode }>([
@@ -119,13 +135,4 @@ test.each<{ source: string; expected: Bytecode }>([
   },
 ])("compile(%j) matches bytecode snapshot", ({ source, expected }) => {
   expect(compiled(source)).toEqual(expected);
-});
-
-test("let x = 10 + 2 uses inline PUSH and STORE", () => {
-  expect(compiled("let x = 10 + 2")).toEqual([
-    { op: "PUSH", value: 10 },
-    { op: "PUSH", value: 2 },
-    { op: "ADD" },
-    { op: "STORE", name: "x" },
-  ]);
 });

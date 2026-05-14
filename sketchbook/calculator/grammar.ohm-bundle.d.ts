@@ -8,82 +8,34 @@ import {
   Node,
   NonterminalNode,
   Semantics,
-  TerminalNode,
-} from "ohm-js";
+  TerminalNode
+} from 'ohm-js';
 
 export interface ArithmeticActionDict<T> extends BaseActionDict<T> {
   Program?: (this: NonterminalNode, arg0: IterationNode) => T;
-  Stmt_letBind?: (
-    this: NonterminalNode,
-    arg0: TerminalNode,
-    arg1: NonterminalNode,
-    arg2: TerminalNode,
-    arg3: NonterminalNode,
-  ) => T;
-  Stmt_exprOnly?: (this: NonterminalNode, arg0: NonterminalNode) => T;
   Stmt?: (this: NonterminalNode, arg0: NonterminalNode) => T;
   Exp?: (this: NonterminalNode, arg0: NonterminalNode) => T;
-  AddExp_plus?: (
-    this: NonterminalNode,
-    arg0: NonterminalNode,
-    arg1: TerminalNode,
-    arg2: NonterminalNode,
-  ) => T;
-  AddExp_minus?: (
-    this: NonterminalNode,
-    arg0: NonterminalNode,
-    arg1: TerminalNode,
-    arg2: NonterminalNode,
-  ) => T;
+  AssignExp_assign?: (this: NonterminalNode, arg0: NonterminalNode, arg1: TerminalNode, arg2: NonterminalNode) => T;
+  AssignExp_add?: (this: NonterminalNode, arg0: NonterminalNode) => T;
+  AssignExp?: (this: NonterminalNode, arg0: NonterminalNode) => T;
+  AddExp_plus?: (this: NonterminalNode, arg0: NonterminalNode, arg1: TerminalNode, arg2: NonterminalNode) => T;
+  AddExp_minus?: (this: NonterminalNode, arg0: NonterminalNode, arg1: TerminalNode, arg2: NonterminalNode) => T;
   AddExp_mul?: (this: NonterminalNode, arg0: NonterminalNode) => T;
   AddExp?: (this: NonterminalNode, arg0: NonterminalNode) => T;
-  MulExp_times?: (
-    this: NonterminalNode,
-    arg0: NonterminalNode,
-    arg1: TerminalNode,
-    arg2: NonterminalNode,
-  ) => T;
-  MulExp_divide?: (
-    this: NonterminalNode,
-    arg0: NonterminalNode,
-    arg1: TerminalNode,
-    arg2: NonterminalNode,
-  ) => T;
+  MulExp_times?: (this: NonterminalNode, arg0: NonterminalNode, arg1: TerminalNode, arg2: NonterminalNode) => T;
+  MulExp_divide?: (this: NonterminalNode, arg0: NonterminalNode, arg1: TerminalNode, arg2: NonterminalNode) => T;
   MulExp_unary?: (this: NonterminalNode, arg0: NonterminalNode) => T;
   MulExp?: (this: NonterminalNode, arg0: NonterminalNode) => T;
-  UnaryExp_pos?: (
-    this: NonterminalNode,
-    arg0: TerminalNode,
-    arg1: NonterminalNode,
-  ) => T;
-  UnaryExp_neg?: (
-    this: NonterminalNode,
-    arg0: TerminalNode,
-    arg1: NonterminalNode,
-  ) => T;
+  UnaryExp_pos?: (this: NonterminalNode, arg0: TerminalNode, arg1: NonterminalNode) => T;
+  UnaryExp_neg?: (this: NonterminalNode, arg0: TerminalNode, arg1: NonterminalNode) => T;
   UnaryExp_pri?: (this: NonterminalNode, arg0: NonterminalNode) => T;
   UnaryExp?: (this: NonterminalNode, arg0: NonterminalNode) => T;
-  PriExp_paren?: (
-    this: NonterminalNode,
-    arg0: TerminalNode,
-    arg1: NonterminalNode,
-    arg2: TerminalNode,
-  ) => T;
+  PriExp_paren?: (this: NonterminalNode, arg0: TerminalNode, arg1: NonterminalNode, arg2: TerminalNode) => T;
   PriExp_lit?: (this: NonterminalNode, arg0: NonterminalNode) => T;
   PriExp_var?: (this: NonterminalNode, arg0: NonterminalNode) => T;
   PriExp?: (this: NonterminalNode, arg0: NonterminalNode) => T;
-  keyword?: (this: NonterminalNode, arg0: TerminalNode) => T;
-  ident?: (
-    this: NonterminalNode,
-    arg0: NonterminalNode,
-    arg1: IterationNode,
-  ) => T;
-  number?: (
-    this: NonterminalNode,
-    arg0: IterationNode,
-    arg1: IterationNode,
-    arg2: IterationNode,
-  ) => T;
+  number?: (this: NonterminalNode, arg0: IterationNode, arg1: IterationNode, arg2: IterationNode) => T;
+  ident?: (this: NonterminalNode, arg0: NonterminalNode, arg1: IterationNode) => T;
 }
 
 export interface ArithmeticSemantics extends Semantics {
@@ -100,3 +52,4 @@ export interface ArithmeticGrammar extends Grammar {
 
 declare const grammar: ArithmeticGrammar;
 export default grammar;
+

@@ -4,7 +4,7 @@ import { compile } from "./compiler";
 import { parse } from "./parser";
 import { run } from "./vm";
 
-function evalExpr(source: string): number {
+function evalExpr(source: string): number | undefined {
   const program = parse(source);
   const bytecode = compile(program);
   return run(bytecode);
@@ -58,11 +58,16 @@ test.each([
   ["1\n2+3", 5],
   ["1+1\n3*4", 12],
 
-  // let bindings
-  ["let x = 2 + 3\nx * 4", 20],
-  ["let n = 5", undefined],
-  ["let x = 1\nlet x = 40\nx + 3", 43],
-  ["let lettings = 99\nlettings", 99],
+  // assignment: returns the assigned value
+  ["x = 2 + 3\nx * 4", 20],
+  ["x = 5", 5],
+  ["x = 1\nx = 40\nx + 3", 43],
+  ["lettings = 99\nlettings", 99],
+
+  // chained assignment: x = y = v assigns v to both, evaluates to v
+  ["x = y = 1\nx", 1],
+  ["x = y = 1\ny", 1],
+  ["x = y = 7\nx + y", 14],
 ] as const)("evalExpr(%s) === %s", (source, expected) => {
   expect(evalExpr(source)).toBe(expected);
 });
