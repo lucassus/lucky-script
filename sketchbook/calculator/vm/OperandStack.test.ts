@@ -1,7 +1,7 @@
 import { expect, test } from "vitest";
 
-import { OperandStack } from "./OperandStack";
 import { StackOverflow, StackUnderflow } from "./errors";
+import { OperandStack } from "./OperandStack";
 
 test("OperandStack push then pop", () => {
   const s = new OperandStack(10);

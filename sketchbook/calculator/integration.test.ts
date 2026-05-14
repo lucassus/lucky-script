@@ -128,6 +128,12 @@ test.each([
   ["not 3 > 2", 0],
   ["not 3 > 4", 1],
 
+  // if / end (condition line must end before body)
+  ["x = 1\nif 0\nx = 9\nend\nx", 1],
+  ["x = 1\nif 1\nx = 9\nend\nx", 9],
+  ["x = 0\nif x > 0\nx = 2\nend\nx", 0],
+  ["x = 1\nif x > 0\nx = 3\nend\nx", 3],
+
   // keywords are not valid identifiers (tested via parse errors above)
   // variables whose names start with keywords are valid
   ["android = 7\nandroid", 7],

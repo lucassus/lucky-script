@@ -12,6 +12,8 @@ export type Expr =
   | { kind: "Compare"; op: CompareOp; left: Expr; right: Expr }
   | { kind: "Logical"; op: LogicalOp; left: Expr; right: Expr };
 
-export type Stmt = { kind: "ExprStmt"; expr: Expr };
+export type Stmt =
+  | { kind: "ExprStmt"; expr: Expr }
+  | { kind: "IfStmt"; condition: Expr; body: Stmt[] };
 
 export type Program = Stmt[];

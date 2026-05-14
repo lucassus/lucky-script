@@ -1,4 +1,4 @@
-import type { Bytecode, Instruction } from "../bytecode";
+import type { Bytecode, Instruction } from "../compiler";
 import { UndefinedVariable } from "./errors";
 import { OperandStack } from "./OperandStack";
 
@@ -10,20 +10,17 @@ export type RunOptions = {
 };
 
 function fetch(
-  bytecode: Bytecode,
+  code: Bytecode,
   ip: number,
 ): { instruction: Instruction; nextIp: number } {
-  if (ip < 0 || ip >= bytecode.length) {
+  if (ip < 0 || ip >= code.length) {
     throw new Error(`Invalid instruction pointer: ${ip}`);
   }
 
-  return { instruction: bytecode[ip]!, nextIp: ip + 1 };
+  return { instruction: code[ip]!, nextIp: ip + 1 };
 }
 
-export function run(
-  bytecode: Bytecode,
-  options?: RunOptions,
-): number | undefined {
+export function run(code: Bytecode, options?: RunOptions): number | undefined {
   const stack = new OperandStack(
     options?.maxStackDepth ?? DEFAULT_MAX_STACK_DEPTH,
   );
@@ -31,11 +28,11 @@ export function run(
 
   let ip = 0;
 
-  while (ip < bytecode.length) {
-    const { instruction, nextIp } = fetch(bytecode, ip);
+  while (ip < code.length) {
+    const { instruction, nextIp } = fetch(code, ip);
     ip = nextIp;
 
-    switch (instruction.op) {
+    switch (instruction.opcode) {
       case "PUSH": {
         stack.push(instruction.value);
         break;
@@ -164,6 +161,14 @@ export function run(
       case "NOT": {
         const value = stack.pop();
         stack.push(value === 0 ? 1 : 0);
+        break;
+      }
+
+      case "JMP_IF_ZERO": {
+        const value = stack.pop();
+        if (value === 0) {
+          ip = instruction.target;
+        }
         break;
       }
 

@@ -1,41 +1,46 @@
 export type Instruction =
   /** Push a number literal onto the operand stack. */
-  | { op: "PUSH"; value: number }
+  | { opcode: "PUSH"; value: number }
   /** Duplicate the top value on the stack. */
-  | { op: "DUP" }
+  | { opcode: "DUP" }
   /** Look up a variable by name and push its value; undefined names are a runtime error. */
-  | { op: "LOAD"; name: string }
+  | { opcode: "LOAD"; name: string }
   /** Pop the top value and store it under `name` in the runtime binding map. */
-  | { op: "STORE"; name: string }
+  | { opcode: "STORE"; name: string }
   /** Pop the top value and discard it (e.g. for expression statements). */
-  | { op: "POP" }
+  | { opcode: "POP" }
   /** Pop `right`, then `left`, push `left + right`. */
-  | { op: "ADD" }
+  | { opcode: "ADD" }
   /** Pop `right`, then `left`, push `left - right`. */
-  | { op: "SUB" }
+  | { opcode: "SUB" }
   /** Pop `right`, then `left`, push `left * right`. */
-  | { op: "MUL" }
+  | { opcode: "MUL" }
   /** Pop `right`, then `left`, push `left / right`. */
-  | { op: "DIV" }
+  | { opcode: "DIV" }
   /** Pop one value and push its arithmetic negation. */
-  | { op: "NEG" }
+  | { opcode: "NEG" }
   /** Pop `right`, then `left`, push 1 if `left > right`, else 0. */
-  | { op: "GT" }
+  | { opcode: "GT" }
   /** Pop `right`, then `left`, push 1 if `left < right`, else 0. */
-  | { op: "LT" }
+  | { opcode: "LT" }
   /** Pop `right`, then `left`, push 1 if `left >= right`, else 0. */
-  | { op: "GTE" }
+  | { opcode: "GTE" }
   /** Pop `right`, then `left`, push 1 if `left <= right`, else 0. */
-  | { op: "LTE" }
+  | { opcode: "LTE" }
   /** Pop `right`, then `left`, push 1 if `left === right`, else 0. */
-  | { op: "EQ" }
+  | { opcode: "EQ" }
   /** Pop `right`, then `left`, push 1 if `left !== right`, else 0. */
-  | { op: "NEQ" }
+  | { opcode: "NEQ" }
   /** Pop `right`, then `left`, push 1 if both are non-zero, else 0. */
-  | { op: "AND" }
+  | { opcode: "AND" }
   /** Pop `right`, then `left`, push 1 if either is non-zero, else 0. */
-  | { op: "OR" }
+  | { opcode: "OR" }
   /** Pop one value, push 1 if it is zero, else 0. */
-  | { op: "NOT" };
+  | { opcode: "NOT" }
+  /**
+   * Pop the top value; if it is zero, set the instruction pointer to `target`
+   * (absolute index of the next instruction to run).
+   */
+  | { opcode: "JMP_IF_ZERO"; target: number };
 
 export type Bytecode = Instruction[];

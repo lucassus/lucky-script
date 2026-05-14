@@ -1,6 +1,6 @@
 import { expect, test } from "vitest";
 
-import { parse } from "./parser";
+import { parse } from ".";
 
 test("precedence: addition below multiplication", () => {
   expect(parse("1 + 2 * 3")).toEqual([
@@ -122,6 +122,11 @@ test("decimal numerals", () => {
       },
     },
   ]);
+});
+
+test("empty program", () => {
+  expect(parse("")).toEqual([]);
+  expect(parse("\n\n")).toEqual([]);
 });
 
 test("multiple statements", () => {
@@ -377,4 +382,91 @@ test("assignment rhs can contain a comparison", () => {
       },
     },
   ]);
+});
+
+test("if end: empty body", () => {
+  expect(parse("if 1 > 0\nend")).toEqual([
+    {
+      kind: "IfStmt",
+      condition: {
+        kind: "Compare",
+        op: ">",
+        left: { kind: "Literal", value: 1 },
+        right: { kind: "Literal", value: 0 },
+      },
+      body: [],
+    },
+  ]);
+});
+
+test("if end: body with assignment", () => {
+  expect(parse("if 1 > 0\nx = 2\nend")).toEqual([
+    {
+      kind: "IfStmt",
+      condition: {
+        kind: "Compare",
+        op: ">",
+        left: { kind: "Literal", value: 1 },
+        right: { kind: "Literal", value: 0 },
+      },
+      body: [
+        {
+          kind: "ExprStmt",
+          expr: {
+            kind: "Assign",
+            name: "x",
+            value: { kind: "Literal", value: 2 },
+          },
+        },
+      ],
+    },
+  ]);
+});
+
+test("nested if", () => {
+  expect(parse("if 1 > 0\nif 2 > 1\nx = 1\nend\nend")).toEqual([
+    {
+      kind: "IfStmt",
+      condition: {
+        kind: "Compare",
+        op: ">",
+        left: { kind: "Literal", value: 1 },
+        right: { kind: "Literal", value: 0 },
+      },
+      body: [
+        {
+          kind: "IfStmt",
+          condition: {
+            kind: "Compare",
+            op: ">",
+            left: { kind: "Literal", value: 2 },
+            right: { kind: "Literal", value: 1 },
+          },
+          body: [
+            {
+              kind: "ExprStmt",
+              expr: {
+                kind: "Assign",
+                name: "x",
+                value: { kind: "Literal", value: 1 },
+              },
+            },
+          ],
+        },
+      ],
+    },
+  ]);
+});
+
+test("if after condition must start on a new line", () => {
+  expect(() => parse("if 1 > 0 x = 1 end")).toThrow();
+});
+
+test("if and end are not identifiers", () => {
+  expect(() => parse("if = 1")).toThrow();
+  expect(() => parse("end = 1")).toThrow();
+});
+
+test("if is not valid on rhs of assignment", () => {
+  expect(() => parse("x = if 1 > 0\nend")).toThrow();
 });

@@ -1,7 +1,14 @@
 Arithmetic {
-  Program = Stmt+
+  Program = Block
+  Block = nl* StmtList? nl*
 
-  Stmt = Exp
+  StmtList = Stmt (nl+ Stmt)*
+
+  Stmt = IfStmt | ExpStmt
+
+  IfStmt = if_kw Exp nl+ Block end_kw
+
+  ExpStmt = Exp
 
   Exp = AssignExp
 
@@ -33,22 +40,22 @@ Arithmetic {
   AddExp
     = AddExp "+" MulExp -- plus
     | AddExp "-" MulExp -- minus
-    | MulExp -- mul
+    | MulExp            -- mul
 
   MulExp
     = MulExp "*" UnaryExp -- times
     | MulExp "/" UnaryExp -- divide
-    | UnaryExp -- unary
+    | UnaryExp            -- unary
 
   UnaryExp
     = "+" UnaryExp -- pos
     | "-" UnaryExp -- neg
-    | PriExp -- pri
+    | PriExp       -- pri
 
   PriExp
     = "(" Exp ")" -- paren
-    | number -- lit
-    | ident -- var
+    | number      -- lit
+    | ident       -- var
 
   number = digit+ ("." digit+)?
 
@@ -56,7 +63,15 @@ Arithmetic {
   and_kw = "and" ~alnum
   or_kw  = "or"  ~alnum
   not_kw = "not" ~alnum
-  keyword = and_kw | or_kw | not_kw
+  if_kw  = "if"  ~alnum
+  end_kw = "end" ~alnum
+  keyword = and_kw | or_kw | not_kw | if_kw | end_kw
 
-  ident = ~keyword letter alnum*
+  ident (an identifier)
+    = ~keyword letter alnum*
+
+  // Horizontal whitespace only
+  space := (" " | "\t")+
+
+  nl = ("\r" | "\n")+
 }

@@ -12,8 +12,12 @@ import {
 } from 'ohm-js';
 
 export interface ArithmeticActionDict<T> extends BaseActionDict<T> {
-  Program?: (this: NonterminalNode, arg0: IterationNode) => T;
+  Program?: (this: NonterminalNode, arg0: NonterminalNode) => T;
+  Block?: (this: NonterminalNode, arg0: IterationNode, arg1: IterationNode, arg2: IterationNode) => T;
+  StmtList?: (this: NonterminalNode, arg0: NonterminalNode, arg1: IterationNode, arg2: IterationNode) => T;
   Stmt?: (this: NonterminalNode, arg0: NonterminalNode) => T;
+  IfStmt?: (this: NonterminalNode, arg0: NonterminalNode, arg1: NonterminalNode, arg2: IterationNode, arg3: NonterminalNode, arg4: NonterminalNode) => T;
+  ExpStmt?: (this: NonterminalNode, arg0: NonterminalNode) => T;
   Exp?: (this: NonterminalNode, arg0: NonterminalNode) => T;
   AssignExp_assign?: (this: NonterminalNode, arg0: NonterminalNode, arg1: TerminalNode, arg2: NonterminalNode) => T;
   AssignExp_or?: (this: NonterminalNode, arg0: NonterminalNode) => T;
@@ -55,8 +59,12 @@ export interface ArithmeticActionDict<T> extends BaseActionDict<T> {
   and_kw?: (this: NonterminalNode, arg0: TerminalNode) => T;
   or_kw?: (this: NonterminalNode, arg0: TerminalNode) => T;
   not_kw?: (this: NonterminalNode, arg0: TerminalNode) => T;
+  if_kw?: (this: NonterminalNode, arg0: TerminalNode) => T;
+  end_kw?: (this: NonterminalNode, arg0: TerminalNode) => T;
   keyword?: (this: NonterminalNode, arg0: NonterminalNode) => T;
   ident?: (this: NonterminalNode, arg0: NonterminalNode, arg1: IterationNode) => T;
+  space?: (this: NonterminalNode, arg0: IterationNode) => T;
+  nl?: (this: NonterminalNode, arg0: IterationNode) => T;
 }
 
 export interface ArithmeticSemantics extends Semantics {
