@@ -152,6 +152,36 @@ test.each<{ source: string; op: string }>([
   ]);
 });
 
+test("1 and 1 compiles to PUSH, PUSH, AND", () => {
+  expect(compiled("1 and 1")).toEqual([
+    { op: "PUSH", value: 1 },
+    { op: "PUSH", value: 1 },
+    { op: "AND" },
+  ]);
+});
+
+test("1 or 0 compiles to PUSH, PUSH, OR", () => {
+  expect(compiled("1 or 0")).toEqual([
+    { op: "PUSH", value: 1 },
+    { op: "PUSH", value: 0 },
+    { op: "OR" },
+  ]);
+});
+
+test("not x compiles to LOAD, NOT", () => {
+  expect(compiled("not x")).toEqual([{ op: "LOAD", name: "x" }, { op: "NOT" }]);
+});
+
+test("a and (b or c) compiles correctly", () => {
+  expect(compiled("a and (b or c)")).toEqual([
+    { op: "LOAD", name: "a" },
+    { op: "LOAD", name: "b" },
+    { op: "LOAD", name: "c" },
+    { op: "OR" },
+    { op: "AND" },
+  ]);
+});
+
 test("comparison with arithmetic operands: x + 1 > 0", () => {
   expect(compiled("x + 1 > 0")).toEqual([
     { op: "LOAD", name: "x" },

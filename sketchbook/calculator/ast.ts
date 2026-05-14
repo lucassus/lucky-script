@@ -40,6 +40,22 @@ export class CompareExpr extends Expr {
   }
 }
 
+export class LogicalExpr extends Expr {
+  constructor(
+    public readonly operator: "and" | "or",
+    public readonly left: Expr,
+    public readonly right: Expr,
+  ) {
+    super();
+  }
+}
+
+export class NotExpr extends Expr {
+  constructor(public readonly operand: Expr) {
+    super();
+  }
+}
+
 export class AssignExpr extends Expr {
   constructor(
     public readonly name: string,

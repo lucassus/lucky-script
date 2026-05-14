@@ -5,6 +5,8 @@ import {
   CompareExpr,
   ExprStmt,
   Identifier,
+  LogicalExpr,
+  NotExpr,
   NumberLiteral,
   UnaryExpr,
 } from "./ast";
@@ -38,6 +40,19 @@ export function compile(program: Program): Bytecode {
               ? "MUL"
               : "DIV";
       instructions.push({ op });
+      return;
+    }
+
+    if (expr instanceof LogicalExpr) {
+      visitExpr(expr.left);
+      visitExpr(expr.right);
+      instructions.push({ op: expr.operator === "and" ? "AND" : "OR" });
+      return;
+    }
+
+    if (expr instanceof NotExpr) {
+      visitExpr(expr.operand);
+      instructions.push({ op: "NOT" });
       return;
     }
 

@@ -6,8 +6,20 @@ Arithmetic {
   Exp = AssignExp
 
   AssignExp
-    = ident "=" ~"=" AssignExp -- assign
-    | CmpExp                   -- cmp
+    = ident "=" AssignExp -- assign
+    | OrExp               -- or
+
+  OrExp
+    = OrExp or_kw AndExp -- or
+    | AndExp             -- and
+
+  AndExp
+    = AndExp and_kw NotExp -- and
+    | NotExp               -- not
+
+  NotExp
+    = not_kw NotExp -- not
+    | CmpExp        -- cmp
 
   CmpExp
     = AddExp ">=" AddExp -- gte
@@ -38,7 +50,13 @@ Arithmetic {
     | number -- lit
     | ident -- var
 
-  // Lexical: do not allow space inside a numeral
   number = digit+ ("." digit+)?
-  ident = letter alnum*
+
+  // Keyword tokens: match the word followed by a non-alphanumeric char (whole-word check)
+  and_kw = "and" ~alnum
+  or_kw  = "or"  ~alnum
+  not_kw = "not" ~alnum
+  keyword = and_kw | or_kw | not_kw
+
+  ident = ~keyword letter alnum*
 }

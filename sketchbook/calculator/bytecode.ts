@@ -30,6 +30,12 @@ export type Instruction =
   /** Pop `right`, then `left`, push 1 if `left === right`, else 0. */
   | { op: "EQ" }
   /** Pop `right`, then `left`, push 1 if `left !== right`, else 0. */
-  | { op: "NEQ" };
+  | { op: "NEQ" }
+  /** Pop `right`, then `left`, push 1 if both are non-zero, else 0. */
+  | { op: "AND" }
+  /** Pop `right`, then `left`, push 1 if either is non-zero, else 0. */
+  | { op: "OR" }
+  /** Pop one value, push 1 if it is zero, else 0. */
+  | { op: "NOT" };
 
 export type Bytecode = Instruction[];

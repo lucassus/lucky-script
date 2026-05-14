@@ -92,6 +92,63 @@ test.each([
 
   // comparison result stored and used
   ["a = 3 > 2\na", 1],
+
+  // logical and
+  ["1 and 1", 1],
+  ["1 and 0", 0],
+  ["0 and 1", 0],
+  ["0 and 0", 0],
+
+  // logical or
+  ["1 or 1", 1],
+  ["1 or 0", 1],
+  ["0 or 1", 1],
+  ["0 or 0", 0],
+
+  // not
+  ["not 0", 1],
+  ["not 1", 0],
+  ["not 5", 0],
+
+  // precedence: and tighter than or
+  ["0 or 1 and 1", 1],
+  ["1 or 0 and 0", 1],
+
+  // parentheses override precedence
+  ["(0 or 1) and 0", 0],
+  ["1 and (0 or 1)", 1],
+
+  // logical + comparison
+  ["3 > 2 and 5 > 4", 1],
+  ["3 > 2 and 5 > 6", 0],
+  ["3 > 2 or 5 > 6", 1],
+  ["3 > 4 or 5 > 6", 0],
+
+  // not with comparison
+  ["not 3 > 2", 0],
+  ["not 3 > 4", 1],
+
+  // keywords are not valid identifiers (tested via parse errors above)
+  // variables whose names start with keywords are valid
+  ["android = 7\nandroid", 7],
+  ["order = 3\norder", 3],
 ] as const)("evalExpr(%s) === %s", (source, expected) => {
   expect(evalExpr(source)).toBe(expected);
+});
+
+test("kitchen sink: all features in one script", () => {
+  const program = `
+    x = 5
+    y = 3
+    z = x * y + 2
+    neg = -z
+    lo = hi = 0
+    frac = z / 2.0
+    inRange = frac >= 8 and frac <= 9
+    mixed = z > neg and (x != y or lo == hi)
+    result = inRange and mixed and not (z == 0)
+    result
+  `.trim();
+
+  expect(evalExpr(program)).toBe(1);
 });

@@ -5,6 +5,8 @@ import {
   CompareExpr,
   ExprStmt,
   Identifier,
+  LogicalExpr,
+  NotExpr,
   NumberLiteral,
   Program,
   UnaryExpr,
@@ -32,7 +34,25 @@ semantics.addOperation<Program | ExprStmt | Expr | string>("toAst", {
       exprNode.toAst() as Expr,
     );
   },
-  AssignExp_cmp(cmpExp) {
+  AssignExp_or(orExp) {
+    return orExp.toAst() as Expr;
+  },
+  OrExp_or(left, _op, right) {
+    return new LogicalExpr("or", left.toAst() as Expr, right.toAst() as Expr);
+  },
+  OrExp_and(andExp) {
+    return andExp.toAst() as Expr;
+  },
+  AndExp_and(left, _op, right) {
+    return new LogicalExpr("and", left.toAst() as Expr, right.toAst() as Expr);
+  },
+  AndExp_not(notExp) {
+    return notExp.toAst() as Expr;
+  },
+  NotExp_not(_kw, operand) {
+    return new NotExpr(operand.toAst() as Expr);
+  },
+  NotExp_cmp(cmpExp) {
     return cmpExp.toAst() as Expr;
   },
   CmpExp_gte(left, _op, right) {

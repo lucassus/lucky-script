@@ -6,6 +6,8 @@ import {
   CompareExpr,
   ExprStmt,
   Identifier,
+  LogicalExpr,
+  NotExpr,
   NumberLiteral,
   Program,
   UnaryExpr,
@@ -160,6 +162,96 @@ test("comparison is lower precedence than arithmetic", () => {
       ),
     ]),
   );
+});
+
+test("logical or parses to LogicalExpr", () => {
+  expect(parse("a or b")).toEqual(
+    new Program([
+      new ExprStmt(
+        new LogicalExpr("or", new Identifier("a"), new Identifier("b")),
+      ),
+    ]),
+  );
+});
+
+test("logical and parses to LogicalExpr", () => {
+  expect(parse("a and b")).toEqual(
+    new Program([
+      new ExprStmt(
+        new LogicalExpr("and", new Identifier("a"), new Identifier("b")),
+      ),
+    ]),
+  );
+});
+
+test("not parses to NotExpr", () => {
+  expect(parse("not a")).toEqual(
+    new Program([new ExprStmt(new NotExpr(new Identifier("a")))]),
+  );
+});
+
+test("and binds tighter than or", () => {
+  expect(parse("a or b and c")).toEqual(
+    new Program([
+      new ExprStmt(
+        new LogicalExpr(
+          "or",
+          new Identifier("a"),
+          new LogicalExpr("and", new Identifier("b"), new Identifier("c")),
+        ),
+      ),
+    ]),
+  );
+});
+
+test("not binds tighter than and", () => {
+  expect(parse("not a and b")).toEqual(
+    new Program([
+      new ExprStmt(
+        new LogicalExpr("and", new NotExpr(new Identifier("a")), new Identifier("b")),
+      ),
+    ]),
+  );
+});
+
+test("parentheses override logical precedence", () => {
+  expect(parse("a and (b or c)")).toEqual(
+    new Program([
+      new ExprStmt(
+        new LogicalExpr(
+          "and",
+          new Identifier("a"),
+          new LogicalExpr("or", new Identifier("b"), new Identifier("c")),
+        ),
+      ),
+    ]),
+  );
+});
+
+test("comparison is tighter than logical", () => {
+  expect(parse("x > 1 and y < 2")).toEqual(
+    new Program([
+      new ExprStmt(
+        new LogicalExpr(
+          "and",
+          new CompareExpr(">", new Identifier("x"), new NumberLiteral(1)),
+          new CompareExpr("<", new Identifier("y"), new NumberLiteral(2)),
+        ),
+      ),
+    ]),
+  );
+});
+
+test("and/or/not cannot be used as variable names", () => {
+  expect(() => parse("and = 1")).toThrow();
+  expect(() => parse("or = 1")).toThrow();
+  expect(() => parse("not = 1")).toThrow();
+});
+
+test("andersn/order/notable are valid identifiers (not keywords)", () => {
+  expect(() => parse("andersn = 1")).not.toThrow();
+  expect(() => parse("order = 1")).not.toThrow();
+  expect(() => parse("notable = 1")).not.toThrow();
 });
 
 test("assignment rhs can contain a comparison", () => {

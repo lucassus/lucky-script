@@ -16,8 +16,17 @@ export interface ArithmeticActionDict<T> extends BaseActionDict<T> {
   Stmt?: (this: NonterminalNode, arg0: NonterminalNode) => T;
   Exp?: (this: NonterminalNode, arg0: NonterminalNode) => T;
   AssignExp_assign?: (this: NonterminalNode, arg0: NonterminalNode, arg1: TerminalNode, arg2: NonterminalNode) => T;
-  AssignExp_cmp?: (this: NonterminalNode, arg0: NonterminalNode) => T;
+  AssignExp_or?: (this: NonterminalNode, arg0: NonterminalNode) => T;
   AssignExp?: (this: NonterminalNode, arg0: NonterminalNode) => T;
+  OrExp_or?: (this: NonterminalNode, arg0: NonterminalNode, arg1: NonterminalNode, arg2: NonterminalNode) => T;
+  OrExp_and?: (this: NonterminalNode, arg0: NonterminalNode) => T;
+  OrExp?: (this: NonterminalNode, arg0: NonterminalNode) => T;
+  AndExp_and?: (this: NonterminalNode, arg0: NonterminalNode, arg1: NonterminalNode, arg2: NonterminalNode) => T;
+  AndExp_not?: (this: NonterminalNode, arg0: NonterminalNode) => T;
+  AndExp?: (this: NonterminalNode, arg0: NonterminalNode) => T;
+  NotExp_not?: (this: NonterminalNode, arg0: NonterminalNode, arg1: NonterminalNode) => T;
+  NotExp_cmp?: (this: NonterminalNode, arg0: NonterminalNode) => T;
+  NotExp?: (this: NonterminalNode, arg0: NonterminalNode) => T;
   CmpExp_gte?: (this: NonterminalNode, arg0: NonterminalNode, arg1: TerminalNode, arg2: NonterminalNode) => T;
   CmpExp_lte?: (this: NonterminalNode, arg0: NonterminalNode, arg1: TerminalNode, arg2: NonterminalNode) => T;
   CmpExp_eq?: (this: NonterminalNode, arg0: NonterminalNode, arg1: TerminalNode, arg2: NonterminalNode) => T;
@@ -43,6 +52,10 @@ export interface ArithmeticActionDict<T> extends BaseActionDict<T> {
   PriExp_var?: (this: NonterminalNode, arg0: NonterminalNode) => T;
   PriExp?: (this: NonterminalNode, arg0: NonterminalNode) => T;
   number?: (this: NonterminalNode, arg0: IterationNode, arg1: IterationNode, arg2: IterationNode) => T;
+  and_kw?: (this: NonterminalNode, arg0: TerminalNode) => T;
+  or_kw?: (this: NonterminalNode, arg0: TerminalNode) => T;
+  not_kw?: (this: NonterminalNode, arg0: TerminalNode) => T;
+  keyword?: (this: NonterminalNode, arg0: NonterminalNode) => T;
   ident?: (this: NonterminalNode, arg0: NonterminalNode, arg1: IterationNode) => T;
 }
 
