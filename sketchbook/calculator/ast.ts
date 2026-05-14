@@ -30,6 +30,16 @@ export class BinaryExpr extends Expr {
   }
 }
 
+export class CompareExpr extends Expr {
+  constructor(
+    public readonly operator: ">" | "<" | ">=" | "<=" | "==" | "!=",
+    public readonly left: Expr,
+    public readonly right: Expr,
+  ) {
+    super();
+  }
+}
+
 export class AssignExpr extends Expr {
   constructor(
     public readonly name: string,

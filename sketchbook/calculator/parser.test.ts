@@ -3,6 +3,7 @@ import { expect, test } from "vitest";
 import {
   AssignExpr,
   BinaryExpr,
+  CompareExpr,
   ExprStmt,
   Identifier,
   NumberLiteral,
@@ -125,6 +126,50 @@ test("chained assignment is right-associative", () => {
     new Program([
       new ExprStmt(
         new AssignExpr("x", new AssignExpr("y", new NumberLiteral(1))),
+      ),
+    ]),
+  );
+});
+
+test.each<[string, ">" | "<" | ">=" | "<=" | "==" | "!="]>([
+  ["3 > 2", ">"],
+  ["3 < 2", "<"],
+  ["3 >= 2", ">="],
+  ["3 <= 2", "<="],
+  ["3 == 2", "=="],
+  ["3 != 2", "!="],
+])("comparison operator %s parses to CompareExpr", (source, op) => {
+  expect(parse(source)).toEqual(
+    new Program([
+      new ExprStmt(
+        new CompareExpr(op, new NumberLiteral(3), new NumberLiteral(2)),
+      ),
+    ]),
+  );
+});
+
+test("comparison is lower precedence than arithmetic", () => {
+  expect(parse("x + 1 > y * 2")).toEqual(
+    new Program([
+      new ExprStmt(
+        new CompareExpr(
+          ">",
+          new BinaryExpr("+", new Identifier("x"), new NumberLiteral(1)),
+          new BinaryExpr("*", new Identifier("y"), new NumberLiteral(2)),
+        ),
+      ),
+    ]),
+  );
+});
+
+test("assignment rhs can contain a comparison", () => {
+  expect(parse("a = x == 1")).toEqual(
+    new Program([
+      new ExprStmt(
+        new AssignExpr(
+          "a",
+          new CompareExpr("==", new Identifier("x"), new NumberLiteral(1)),
+        ),
       ),
     ]),
   );

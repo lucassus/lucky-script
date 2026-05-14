@@ -68,6 +68,30 @@ test.each([
   ["x = y = 1\nx", 1],
   ["x = y = 1\ny", 1],
   ["x = y = 7\nx + y", 14],
+
+  // comparison: true yields 1, false yields 0
+  ["3 > 2", 1],
+  ["2 > 3", 0],
+  ["3 < 2", 0],
+  ["2 < 3", 1],
+  ["3 >= 3", 1],
+  ["2 >= 3", 0],
+  ["3 <= 3", 1],
+  ["4 <= 3", 0],
+  ["3 == 3", 1],
+  ["3 == 4", 0],
+  ["3 != 4", 1],
+  ["3 != 3", 0],
+
+  // comparison with arithmetic operands
+  ["x = 5\nx > 2", 1],
+  ["x = 1\nx >= 1", 1],
+  ["1 + 1 == 2", 1],
+  ["2 * 3 > 5", 1],
+  ["10 - 4 <= 6", 1],
+
+  // comparison result stored and used
+  ["a = 3 > 2\na", 1],
 ] as const)("evalExpr(%s) === %s", (source, expected) => {
   expect(evalExpr(source)).toBe(expected);
 });

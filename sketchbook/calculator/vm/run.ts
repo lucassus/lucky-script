@@ -102,6 +102,48 @@ export function run(
         break;
       }
 
+      case "GT": {
+        const right = stack.pop();
+        const left = stack.pop();
+        stack.push(left > right ? 1 : 0);
+        break;
+      }
+
+      case "LT": {
+        const right = stack.pop();
+        const left = stack.pop();
+        stack.push(left < right ? 1 : 0);
+        break;
+      }
+
+      case "GTE": {
+        const right = stack.pop();
+        const left = stack.pop();
+        stack.push(left >= right ? 1 : 0);
+        break;
+      }
+
+      case "LTE": {
+        const right = stack.pop();
+        const left = stack.pop();
+        stack.push(left <= right ? 1 : 0);
+        break;
+      }
+
+      case "EQ": {
+        const right = stack.pop();
+        const left = stack.pop();
+        stack.push(left === right ? 1 : 0);
+        break;
+      }
+
+      case "NEQ": {
+        const right = stack.pop();
+        const left = stack.pop();
+        stack.push(left !== right ? 1 : 0);
+        break;
+      }
+
       default: {
         instruction satisfies never;
       }

@@ -18,6 +18,18 @@ export type Instruction =
   /** Pop `right`, then `left`, push `left / right`. */
   | { op: "DIV" }
   /** Pop one value and push its arithmetic negation. */
-  | { op: "NEG" };
+  | { op: "NEG" }
+  /** Pop `right`, then `left`, push 1 if `left > right`, else 0. */
+  | { op: "GT" }
+  /** Pop `right`, then `left`, push 1 if `left < right`, else 0. */
+  | { op: "LT" }
+  /** Pop `right`, then `left`, push 1 if `left >= right`, else 0. */
+  | { op: "GTE" }
+  /** Pop `right`, then `left`, push 1 if `left <= right`, else 0. */
+  | { op: "LTE" }
+  /** Pop `right`, then `left`, push 1 if `left === right`, else 0. */
+  | { op: "EQ" }
+  /** Pop `right`, then `left`, push 1 if `left !== right`, else 0. */
+  | { op: "NEQ" };
 
 export type Bytecode = Instruction[];

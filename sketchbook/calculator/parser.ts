@@ -2,6 +2,7 @@ import type { Expr } from "./ast";
 import {
   AssignExpr,
   BinaryExpr,
+  CompareExpr,
   ExprStmt,
   Identifier,
   NumberLiteral,
@@ -31,7 +32,28 @@ semantics.addOperation<Program | ExprStmt | Expr | string>("toAst", {
       exprNode.toAst() as Expr,
     );
   },
-  AssignExp_add(addExp) {
+  AssignExp_cmp(cmpExp) {
+    return cmpExp.toAst() as Expr;
+  },
+  CmpExp_gte(left, _op, right) {
+    return new CompareExpr(">=", left.toAst() as Expr, right.toAst() as Expr);
+  },
+  CmpExp_lte(left, _op, right) {
+    return new CompareExpr("<=", left.toAst() as Expr, right.toAst() as Expr);
+  },
+  CmpExp_eq(left, _op, right) {
+    return new CompareExpr("==", left.toAst() as Expr, right.toAst() as Expr);
+  },
+  CmpExp_neq(left, _op, right) {
+    return new CompareExpr("!=", left.toAst() as Expr, right.toAst() as Expr);
+  },
+  CmpExp_gt(left, _op, right) {
+    return new CompareExpr(">", left.toAst() as Expr, right.toAst() as Expr);
+  },
+  CmpExp_lt(left, _op, right) {
+    return new CompareExpr("<", left.toAst() as Expr, right.toAst() as Expr);
+  },
+  CmpExp_add(addExp) {
     return addExp.toAst() as Expr;
   },
   AddExp_plus(left, _plus, right) {

@@ -16,8 +16,16 @@ export interface ArithmeticActionDict<T> extends BaseActionDict<T> {
   Stmt?: (this: NonterminalNode, arg0: NonterminalNode) => T;
   Exp?: (this: NonterminalNode, arg0: NonterminalNode) => T;
   AssignExp_assign?: (this: NonterminalNode, arg0: NonterminalNode, arg1: TerminalNode, arg2: NonterminalNode) => T;
-  AssignExp_add?: (this: NonterminalNode, arg0: NonterminalNode) => T;
+  AssignExp_cmp?: (this: NonterminalNode, arg0: NonterminalNode) => T;
   AssignExp?: (this: NonterminalNode, arg0: NonterminalNode) => T;
+  CmpExp_gte?: (this: NonterminalNode, arg0: NonterminalNode, arg1: TerminalNode, arg2: NonterminalNode) => T;
+  CmpExp_lte?: (this: NonterminalNode, arg0: NonterminalNode, arg1: TerminalNode, arg2: NonterminalNode) => T;
+  CmpExp_eq?: (this: NonterminalNode, arg0: NonterminalNode, arg1: TerminalNode, arg2: NonterminalNode) => T;
+  CmpExp_neq?: (this: NonterminalNode, arg0: NonterminalNode, arg1: TerminalNode, arg2: NonterminalNode) => T;
+  CmpExp_gt?: (this: NonterminalNode, arg0: NonterminalNode, arg1: TerminalNode, arg2: NonterminalNode) => T;
+  CmpExp_lt?: (this: NonterminalNode, arg0: NonterminalNode, arg1: TerminalNode, arg2: NonterminalNode) => T;
+  CmpExp_add?: (this: NonterminalNode, arg0: NonterminalNode) => T;
+  CmpExp?: (this: NonterminalNode, arg0: NonterminalNode) => T;
   AddExp_plus?: (this: NonterminalNode, arg0: NonterminalNode, arg1: TerminalNode, arg2: NonterminalNode) => T;
   AddExp_minus?: (this: NonterminalNode, arg0: NonterminalNode, arg1: TerminalNode, arg2: NonterminalNode) => T;
   AddExp_mul?: (this: NonterminalNode, arg0: NonterminalNode) => T;

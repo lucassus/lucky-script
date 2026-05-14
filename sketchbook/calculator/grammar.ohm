@@ -6,8 +6,17 @@ Arithmetic {
   Exp = AssignExp
 
   AssignExp
-    = ident "=" AssignExp -- assign
-    | AddExp              -- add
+    = ident "=" ~"=" AssignExp -- assign
+    | CmpExp                   -- cmp
+
+  CmpExp
+    = AddExp ">=" AddExp -- gte
+    | AddExp "<=" AddExp -- lte
+    | AddExp "==" AddExp -- eq
+    | AddExp "!=" AddExp -- neq
+    | AddExp ">"  AddExp -- gt
+    | AddExp "<"  AddExp -- lt
+    | AddExp             -- add
 
   AddExp
     = AddExp "+" MulExp -- plus

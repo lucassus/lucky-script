@@ -1,4 +1,4 @@
-- [ ] Variable re-assigment
+- [x] Variable re-assigment
 - [ ] Logic and branching
   - [ ] Operators
   - [ ] Control flow jumps

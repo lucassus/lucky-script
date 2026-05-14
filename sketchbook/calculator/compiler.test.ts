@@ -136,3 +136,28 @@ test.each<{ source: string; expected: Bytecode }>([
 ])("compile(%j) matches bytecode snapshot", ({ source, expected }) => {
   expect(compiled(source)).toEqual(expected);
 });
+
+test.each<{ source: string; op: string }>([
+  { source: "3 > 2", op: "GT" },
+  { source: "3 < 2", op: "LT" },
+  { source: "3 >= 2", op: "GTE" },
+  { source: "3 <= 2", op: "LTE" },
+  { source: "3 == 2", op: "EQ" },
+  { source: "3 != 2", op: "NEQ" },
+])("$source compiles to PUSH, PUSH, $op", ({ source, op }) => {
+  expect(compiled(source)).toEqual([
+    { op: "PUSH", value: 3 },
+    { op: "PUSH", value: 2 },
+    { op },
+  ]);
+});
+
+test("comparison with arithmetic operands: x + 1 > 0", () => {
+  expect(compiled("x + 1 > 0")).toEqual([
+    { op: "LOAD", name: "x" },
+    { op: "PUSH", value: 1 },
+    { op: "ADD" },
+    { op: "PUSH", value: 0 },
+    { op: "GT" },
+  ]);
+});

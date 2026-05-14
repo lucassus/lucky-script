@@ -2,6 +2,7 @@ import type { Expr, Program } from "./ast";
 import {
   AssignExpr,
   BinaryExpr,
+  CompareExpr,
   ExprStmt,
   Identifier,
   NumberLiteral,
@@ -36,6 +37,25 @@ export function compile(program: Program): Bytecode {
             : expr.operator === "*"
               ? "MUL"
               : "DIV";
+      instructions.push({ op });
+      return;
+    }
+
+    if (expr instanceof CompareExpr) {
+      visitExpr(expr.left);
+      visitExpr(expr.right);
+      const op =
+        expr.operator === ">"
+          ? "GT"
+          : expr.operator === "<"
+            ? "LT"
+            : expr.operator === ">="
+              ? "GTE"
+              : expr.operator === "<="
+                ? "LTE"
+                : expr.operator === "=="
+                  ? "EQ"
+                  : "NEQ";
       instructions.push({ op });
       return;
     }
