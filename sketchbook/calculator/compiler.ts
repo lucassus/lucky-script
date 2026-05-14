@@ -1,100 +1,81 @@
 import type { Expr, Program } from "./ast";
-import {
-  AssignExpr,
-  BinaryExpr,
-  CompareExpr,
-  ExprStmt,
-  Identifier,
-  LogicalExpr,
-  NotExpr,
-  NumberLiteral,
-  UnaryExpr,
-} from "./ast";
 import type { Bytecode, Instruction } from "./bytecode";
 
 export function compile(program: Program): Bytecode {
   const instructions: Instruction[] = [];
 
-  function visitExpr(expr: Expr): void {
-    if (expr instanceof AssignExpr) {
-      visitExpr(expr.value);
-      instructions.push({ op: "DUP" });
-      instructions.push({ op: "STORE", name: expr.name });
-      return;
-    }
+  function visit(expr: Expr): void {
+    switch (expr.kind) {
+      case "Assign":
+        visit(expr.value);
+        instructions.push({ op: "DUP" });
+        instructions.push({ op: "STORE", name: expr.name });
+        return;
 
-    if (expr instanceof Identifier) {
-      instructions.push({ op: "LOAD", name: expr.name });
-      return;
-    }
+      case "Variable":
+        instructions.push({ op: "LOAD", name: expr.name });
+        return;
 
-    if (expr instanceof BinaryExpr) {
-      visitExpr(expr.left);
-      visitExpr(expr.right);
-      const op =
-        expr.operator === "+"
-          ? "ADD"
-          : expr.operator === "-"
-            ? "SUB"
-            : expr.operator === "*"
-              ? "MUL"
-              : "DIV";
-      instructions.push({ op });
-      return;
-    }
+      case "Arithmetic":
+        visit(expr.left);
+        visit(expr.right);
+        instructions.push({
+          op:
+            expr.op === "+"
+              ? "ADD"
+              : expr.op === "-"
+                ? "SUB"
+                : expr.op === "*"
+                  ? "MUL"
+                  : "DIV",
+        });
+        return;
 
-    if (expr instanceof LogicalExpr) {
-      visitExpr(expr.left);
-      visitExpr(expr.right);
-      instructions.push({ op: expr.operator === "and" ? "AND" : "OR" });
-      return;
-    }
+      case "Logical":
+        visit(expr.left);
+        visit(expr.right);
+        instructions.push({ op: expr.op === "and" ? "AND" : "OR" });
+        return;
 
-    if (expr instanceof NotExpr) {
-      visitExpr(expr.operand);
-      instructions.push({ op: "NOT" });
-      return;
-    }
+      case "Unary":
+        visit(expr.expr);
+        if (expr.op === "not") {
+          instructions.push({ op: "NOT" });
+        } else if (expr.op === "-") {
+          instructions.push({ op: "NEG" });
+        }
+        return;
 
-    if (expr instanceof CompareExpr) {
-      visitExpr(expr.left);
-      visitExpr(expr.right);
-      const op =
-        expr.operator === ">"
-          ? "GT"
-          : expr.operator === "<"
-            ? "LT"
-            : expr.operator === ">="
-              ? "GTE"
-              : expr.operator === "<="
-                ? "LTE"
-                : expr.operator === "=="
-                  ? "EQ"
-                  : "NEQ";
-      instructions.push({ op });
-      return;
-    }
+      case "Compare":
+        visit(expr.left);
+        visit(expr.right);
+        instructions.push({
+          op:
+            expr.op === ">"
+              ? "GT"
+              : expr.op === "<"
+                ? "LT"
+                : expr.op === ">="
+                  ? "GTE"
+                  : expr.op === "<="
+                    ? "LTE"
+                    : expr.op === "=="
+                      ? "EQ"
+                      : "NEQ",
+        });
+        return;
 
-    if (expr instanceof UnaryExpr) {
-      visitExpr(expr.operand);
-      instructions.push({ op: "NEG" });
-      return;
-    }
-
-    if (expr instanceof NumberLiteral) {
-      instructions.push({ op: "PUSH", value: expr.value });
+      case "Literal":
+        instructions.push({ op: "PUSH", value: expr.value });
     }
   }
 
-  const stmts = program.body;
-  stmts.forEach((stmt, index) => {
-    const isLast = index === stmts.length - 1;
+  program.forEach((stmt, index) => {
+    const isLast = index === program.length - 1;
 
-    if (stmt instanceof ExprStmt) {
-      visitExpr(stmt.expr);
-      if (!isLast) {
-        instructions.push({ op: "POP" });
-      }
+    visit(stmt.expr);
+    if (!isLast) {
+      instructions.push({ op: "POP" });
     }
   });
 

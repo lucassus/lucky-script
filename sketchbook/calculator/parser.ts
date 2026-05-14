@@ -1,16 +1,4 @@
-import type { Expr } from "./ast";
-import {
-  AssignExpr,
-  BinaryExpr,
-  CompareExpr,
-  ExprStmt,
-  Identifier,
-  LogicalExpr,
-  NotExpr,
-  NumberLiteral,
-  Program,
-  UnaryExpr,
-} from "./ast";
+import type { Expr, Program, Stmt } from "./ast";
 import grammar from "./grammar.ohm-bundle";
 
 /* ohm-js operation callbacks use dynamically-typed `.toAst()`; keep unsafe rules off for this file. */
@@ -18,78 +6,143 @@ import grammar from "./grammar.ohm-bundle";
 
 const semantics = grammar.createSemantics();
 
-semantics.addOperation<Program | ExprStmt | Expr | string>("toAst", {
+semantics.addOperation<Program | Stmt | Expr | string>("toAst", {
   Program(stmts) {
-    return new Program(stmts.children.map((stmt) => stmt.toAst() as ExprStmt));
+    return stmts.children.map((stmt) => stmt.toAst() as Stmt);
   },
   Stmt(exp) {
-    return new ExprStmt(exp.toAst() as Expr);
+    return { kind: "ExprStmt" as const, expr: exp.toAst() as Expr };
   },
   Exp(assignExp) {
     return assignExp.toAst() as Expr;
   },
   AssignExp_assign(identNode, _eq, exprNode) {
-    return new AssignExpr(
-      identNode.toAst() as string,
-      exprNode.toAst() as Expr,
-    );
+    return {
+      kind: "Assign" as const,
+      name: identNode.toAst() as string,
+      value: exprNode.toAst() as Expr,
+    };
   },
   AssignExp_or(orExp) {
     return orExp.toAst() as Expr;
   },
   OrExp_or(left, _op, right) {
-    return new LogicalExpr("or", left.toAst() as Expr, right.toAst() as Expr);
+    return {
+      kind: "Logical" as const,
+      op: "or",
+      left: left.toAst() as Expr,
+      right: right.toAst() as Expr,
+    };
   },
   OrExp_and(andExp) {
     return andExp.toAst() as Expr;
   },
   AndExp_and(left, _op, right) {
-    return new LogicalExpr("and", left.toAst() as Expr, right.toAst() as Expr);
+    return {
+      kind: "Logical" as const,
+      op: "and",
+      left: left.toAst() as Expr,
+      right: right.toAst() as Expr,
+    };
   },
   AndExp_not(notExp) {
     return notExp.toAst() as Expr;
   },
   NotExp_not(_kw, operand) {
-    return new NotExpr(operand.toAst() as Expr);
+    return {
+      kind: "Unary" as const,
+      op: "not",
+      expr: operand.toAst() as Expr,
+    };
   },
   NotExp_cmp(cmpExp) {
     return cmpExp.toAst() as Expr;
   },
   CmpExp_gte(left, _op, right) {
-    return new CompareExpr(">=", left.toAst() as Expr, right.toAst() as Expr);
+    return {
+      kind: "Compare" as const,
+      op: ">=",
+      left: left.toAst() as Expr,
+      right: right.toAst() as Expr,
+    };
   },
   CmpExp_lte(left, _op, right) {
-    return new CompareExpr("<=", left.toAst() as Expr, right.toAst() as Expr);
+    return {
+      kind: "Compare" as const,
+      op: "<=",
+      left: left.toAst() as Expr,
+      right: right.toAst() as Expr,
+    };
   },
   CmpExp_eq(left, _op, right) {
-    return new CompareExpr("==", left.toAst() as Expr, right.toAst() as Expr);
+    return {
+      kind: "Compare" as const,
+      op: "==",
+      left: left.toAst() as Expr,
+      right: right.toAst() as Expr,
+    };
   },
   CmpExp_neq(left, _op, right) {
-    return new CompareExpr("!=", left.toAst() as Expr, right.toAst() as Expr);
+    return {
+      kind: "Compare" as const,
+      op: "!=",
+      left: left.toAst() as Expr,
+      right: right.toAst() as Expr,
+    };
   },
   CmpExp_gt(left, _op, right) {
-    return new CompareExpr(">", left.toAst() as Expr, right.toAst() as Expr);
+    return {
+      kind: "Compare" as const,
+      op: ">",
+      left: left.toAst() as Expr,
+      right: right.toAst() as Expr,
+    };
   },
   CmpExp_lt(left, _op, right) {
-    return new CompareExpr("<", left.toAst() as Expr, right.toAst() as Expr);
+    return {
+      kind: "Compare" as const,
+      op: "<",
+      left: left.toAst() as Expr,
+      right: right.toAst() as Expr,
+    };
   },
   CmpExp_add(addExp) {
     return addExp.toAst() as Expr;
   },
   AddExp_plus(left, _plus, right) {
-    return new BinaryExpr("+", left.toAst() as Expr, right.toAst() as Expr);
+    return {
+      kind: "Arithmetic" as const,
+      op: "+",
+      left: left.toAst() as Expr,
+      right: right.toAst() as Expr,
+    };
   },
   AddExp_minus(left, _minus, right) {
-    return new BinaryExpr("-", left.toAst() as Expr, right.toAst() as Expr);
+    return {
+      kind: "Arithmetic" as const,
+      op: "-",
+      left: left.toAst() as Expr,
+      right: right.toAst() as Expr,
+    };
   },
   AddExp_mul(mul) {
     return mul.toAst() as Expr;
   },
   MulExp_times(left, _star, right) {
-    return new BinaryExpr("*", left.toAst() as Expr, right.toAst() as Expr);
+    return {
+      kind: "Arithmetic" as const,
+      op: "*",
+      left: left.toAst() as Expr,
+      right: right.toAst() as Expr,
+    };
   },
   MulExp_divide(left, _slash, right) {
-    return new BinaryExpr("/", left.toAst() as Expr, right.toAst() as Expr);
+    return {
+      kind: "Arithmetic" as const,
+      op: "/",
+      left: left.toAst() as Expr,
+      right: right.toAst() as Expr,
+    };
   },
   MulExp_unary(unary) {
     return unary.toAst() as Expr;
@@ -98,7 +151,11 @@ semantics.addOperation<Program | ExprStmt | Expr | string>("toAst", {
     return unary.toAst() as Expr;
   },
   UnaryExp_neg(_minus, unary) {
-    return new UnaryExpr(unary.toAst() as Expr);
+    return {
+      kind: "Unary" as const,
+      op: "-",
+      expr: unary.toAst() as Expr,
+    };
   },
   UnaryExp_pri(pri) {
     return pri.toAst() as Expr;
@@ -110,11 +167,11 @@ semantics.addOperation<Program | ExprStmt | Expr | string>("toAst", {
     return num.toAst() as Expr;
   },
   PriExp_var(identNode) {
-    return new Identifier(identNode.toAst() as string);
+    return { kind: "Variable" as const, name: identNode.toAst() as string };
   },
   // Ohm expands `digit+ ("." digit+)?` into three child nodes for this action dict.
   number(_digits, _dotDigitsOpt1, _dotDigitsOpt2) {
-    return new NumberLiteral(Number(this.sourceString));
+    return { kind: "Literal" as const, value: Number(this.sourceString) };
   },
   ident(_first, _rest) {
     return this.sourceString;
