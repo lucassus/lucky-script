@@ -177,20 +177,25 @@ test.each<{ source: string; opcode: string }>([
   ]);
 });
 
-test("1 and 1 compiles to PUSH, PUSH, AND", () => {
+test("1 and 1 compiles to DUP, JMP_IF_ZERO, POP", () => {
   expect(compiled("1 and 1")).toEqual([
     { opcode: "PUSH", value: 1 },
+    { opcode: "DUP" },
+    { opcode: "JMP_IF_ZERO", target: 5 },
+    { opcode: "POP" },
     { opcode: "PUSH", value: 1 },
-    { opcode: "AND" },
     { opcode: "HALT" },
   ]);
 });
 
-test("1 or 0 compiles to PUSH, PUSH, OR", () => {
+test("1 or 0 compiles to DUP, NOT, JMP_IF_ZERO, POP", () => {
   expect(compiled("1 or 0")).toEqual([
     { opcode: "PUSH", value: 1 },
+    { opcode: "DUP" },
+    { opcode: "NOT" },
+    { opcode: "JMP_IF_ZERO", target: 6 },
+    { opcode: "POP" },
     { opcode: "PUSH", value: 0 },
-    { opcode: "OR" },
     { opcode: "HALT" },
   ]);
 });
@@ -206,12 +211,47 @@ test("not x compiles to LOAD, NOT", () => {
 test("a and (b or c) compiles correctly", () => {
   expect(compiled("a and (b or c)")).toEqual([
     { opcode: "LOAD", name: "a" },
+    { opcode: "DUP" },
+    { opcode: "JMP_IF_ZERO", target: 10 },
+    { opcode: "POP" },
     { opcode: "LOAD", name: "b" },
+    { opcode: "DUP" },
+    { opcode: "NOT" },
+    { opcode: "JMP_IF_ZERO", target: 10 },
+    { opcode: "POP" },
     { opcode: "LOAD", name: "c" },
-    { opcode: "OR" },
-    { opcode: "AND" },
     { opcode: "HALT" },
   ]);
+});
+
+test("logical 'and' short-circuits", () => {
+  // If short-circuited, x = 1 is not executed
+  const bytecode = compiled(`
+    x = 0
+    0 and (x = 1)
+    x
+  `);
+  expect(run(bytecode)).toBe(0);
+});
+
+test("logical 'or' short-circuits", () => {
+  // If short-circuited, x = 1 is not executed
+  const bytecode = compiled(`
+    x = 0
+    1 or (x = 1)
+    x
+  `);
+  expect(run(bytecode)).toBe(0);
+});
+
+test("logical 'and' returns actual values", () => {
+  expect(run(compiled("2 and 3"))).toBe(3);
+  expect(run(compiled("0 and 3"))).toBe(0);
+});
+
+test("logical 'or' returns actual values", () => {
+  expect(run(compiled("2 or 3"))).toBe(2);
+  expect(run(compiled("0 or 3"))).toBe(3);
 });
 
 test("comparison with arithmetic operands: x + 1 > 0", () => {

@@ -31,10 +31,6 @@ export type Instruction =
   | { opcode: "EQ" }
   /** Pop `right`, then `left`, push 1 if `left !== right`, else 0. */
   | { opcode: "NEQ" }
-  /** Pop `right`, then `left`, push 1 if both are non-zero, else 0. */
-  | { opcode: "AND" }
-  /** Pop `right`, then `left`, push 1 if either is non-zero, else 0. */
-  | { opcode: "OR" }
   /** Pop one value, push 1 if it is zero, else 0. */
   | { opcode: "NOT" }
   /**

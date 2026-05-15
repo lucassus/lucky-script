@@ -141,23 +141,6 @@ export function run(code: Bytecode, options?: RunOptions): number | undefined {
         break;
       }
 
-      // TODO: AND and OR evaluate both operands unconditionally.
-      // Short-circuit evaluation requires conditional JUMP instructions,
-      // which will be added when control flow (if/while) is implemented.
-      case "AND": {
-        const right = stack.pop();
-        const left = stack.pop();
-        stack.push(left !== 0 && right !== 0 ? 1 : 0);
-        break;
-      }
-
-      case "OR": {
-        const right = stack.pop();
-        const left = stack.pop();
-        stack.push(left !== 0 || right !== 0 ? 1 : 0);
-        break;
-      }
-
       case "NOT": {
         const value = stack.pop();
         stack.push(value === 0 ? 1 : 0);

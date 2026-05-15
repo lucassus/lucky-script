@@ -31,11 +31,36 @@ export function compile(program: Program): Bytecode {
         });
         return;
 
-      case "Logical":
+      case "Logical": {
         visit(expr.left);
-        visit(expr.right);
-        instructions.push({ opcode: expr.op === "and" ? "AND" : "OR" });
+        // Duplicate the left value. We need it as the final result if we short-circuit!
+        instructions.push({ opcode: "DUP" });
+
+        if (expr.op === "and") {
+          // If left is falsy (0), short-circuit to the end.
+          const jmpInstruction: Instruction = { opcode: "JMP_IF_ZERO", target: 0 };
+          instructions.push(jmpInstruction);
+
+          // We didn't jump, meaning left is truthy. Discard it.
+          instructions.push({ opcode: "POP" });
+          visit(expr.right);
+          
+          jmpInstruction.target = instructions.length;
+        } else {
+          // For 'or', we want to short-circuit if left is TRUTHY.
+          // We can invert the duplicated value with NOT, then JMP_IF_ZERO!
+          instructions.push({ opcode: "NOT" });
+          const jmpInstruction: Instruction = { opcode: "JMP_IF_ZERO", target: 0 };
+          instructions.push(jmpInstruction);
+
+          // We didn't jump, meaning left was falsy. Discard it.
+          instructions.push({ opcode: "POP" });
+          visit(expr.right);
+          
+          jmpInstruction.target = instructions.length;
+        }
         return;
+      }
 
       case "Unary":
         visit(expr.expr);
