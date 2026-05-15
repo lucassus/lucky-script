@@ -85,7 +85,7 @@ test("nested if: inner span is contained in outer span", () => {
   const program = parse("if 1\nif 2\nx = 3\nend\nend");
   const outer = program[0] as IfStmt;
   expect(outer.kind).toBe("IfStmt");
-  const inner = outer.body[0] as IfStmt;
+  const inner = outer.consequence[0] as IfStmt;
   expect(inner.kind).toBe("IfStmt");
   expect(inner.span.start).toBeGreaterThan(outer.span.start);
   expect(inner.span.end).toBeLessThan(outer.span.end);

@@ -168,47 +168,7 @@ exports[`kitchen sink: full AST snapshot including spans for a multi-feature pro
     },
   },
   {
-    "body": [
-      {
-        "expr": {
-          "kind": "Assign",
-          "name": "w",
-          "span": {
-            "end": 72,
-            "start": 63,
-          },
-          "value": {
-            "kind": "Arithmetic",
-            "left": {
-              "kind": "Identifier",
-              "name": "x",
-              "span": {
-                "end": 68,
-                "start": 67,
-              },
-            },
-            "op": "/",
-            "right": {
-              "kind": "Literal",
-              "span": {
-                "end": 72,
-                "start": 71,
-              },
-              "value": 2,
-            },
-            "span": {
-              "end": 72,
-              "start": 67,
-            },
-          },
-        },
-        "kind": "ExprStmt",
-        "span": {
-          "end": 72,
-          "start": 63,
-        },
-      },
-    ],
+    "alternative": undefined,
     "condition": {
       "kind": "Logical",
       "left": {
@@ -249,6 +209,47 @@ exports[`kitchen sink: full AST snapshot including spans for a multi-feature pro
         "start": 50,
       },
     },
+    "consequence": [
+      {
+        "expr": {
+          "kind": "Assign",
+          "name": "w",
+          "span": {
+            "end": 72,
+            "start": 63,
+          },
+          "value": {
+            "kind": "Arithmetic",
+            "left": {
+              "kind": "Identifier",
+              "name": "x",
+              "span": {
+                "end": 68,
+                "start": 67,
+              },
+            },
+            "op": "/",
+            "right": {
+              "kind": "Literal",
+              "span": {
+                "end": 72,
+                "start": 71,
+              },
+              "value": 2,
+            },
+            "span": {
+              "end": 72,
+              "start": 67,
+            },
+          },
+        },
+        "kind": "ExprStmt",
+        "span": {
+          "end": 72,
+          "start": 63,
+        },
+      },
+    ],
     "kind": "IfStmt",
     "span": {
       "end": 76,

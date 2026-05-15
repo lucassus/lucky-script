@@ -77,16 +77,30 @@ export function compile(program: Program): Bytecode {
 
       case "IfStmt": {
         visit(stmt.condition);
-
-        const jumpPc = instructions.length;
+        const toElsePc = instructions.length;
         instructions.push({ opcode: "JMP_IF_ZERO", target: 0 });
 
-        stmt.body.forEach((inner) => emitStmt(inner, keepOnStack));
+        stmt.consequence.forEach((inner) => emitStmt(inner, keepOnStack));
 
-        instructions[jumpPc] = {
+        let toEndPc: number | undefined;
+        if (stmt.alternative) {
+          toEndPc = instructions.length;
+          instructions.push({ opcode: "JMP", target: 0 });
+        }
+
+        instructions[toElsePc] = {
           opcode: "JMP_IF_ZERO",
           target: instructions.length,
         };
+
+        if (stmt.alternative) {
+          stmt.alternative.forEach((inner) => emitStmt(inner, keepOnStack));
+
+          instructions[toEndPc!] = {
+            opcode: "JMP",
+            target: instructions.length,
+          };
+        }
         break;
       }
     }

@@ -6,7 +6,7 @@ Arithmetic {
 
   Stmt = IfStmt | AssignExp -- expr
 
-  IfStmt = if_kw AssignExp nl+ Block end_kw
+  IfStmt = if_kw AssignExp nl+ Block (elseif_kw AssignExp nl+ Block)* (else_kw nl+ Block)? end_kw
 
   AssignExp
     = ident "=" AssignExp -- assign
@@ -60,9 +60,11 @@ Arithmetic {
   and_kw = kw<"and">
   or_kw  = kw<"or">
   not_kw = kw<"not">
-  if_kw  = kw<"if">
-  end_kw = kw<"end">
-  keyword = and_kw | or_kw | not_kw | if_kw | end_kw
+  if_kw     = kw<"if">
+  elseif_kw = kw<"elseif">
+  else_kw   = kw<"else">
+  end_kw    = kw<"end">
+  keyword = and_kw | or_kw | not_kw | if_kw | elseif_kw | else_kw | end_kw
 
   ident (an identifier) = ~keyword letter alnum*
 

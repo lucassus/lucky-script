@@ -391,7 +391,7 @@ test("assignment rhs can contain a comparison", () => {
   ]);
 });
 
-test("if end: empty body", () => {
+test("if end: empty consequence", () => {
   expect(parse("if 1 > 0\nend")).toEqual([
     {
       kind: "IfStmt",
@@ -401,12 +401,12 @@ test("if end: empty body", () => {
         left: { kind: "Literal", value: 1 },
         right: { kind: "Literal", value: 0 },
       },
-      body: [],
+      consequence: [],
     },
   ]);
 });
 
-test("if end: body with assignment", () => {
+test("if end: consequence with assignment", () => {
   expect(parse("if 1 > 0\nx = 2\nend")).toEqual([
     {
       kind: "IfStmt",
@@ -416,7 +416,7 @@ test("if end: body with assignment", () => {
         left: { kind: "Literal", value: 1 },
         right: { kind: "Literal", value: 0 },
       },
-      body: [
+      consequence: [
         {
           kind: "ExprStmt",
           expr: {
@@ -440,7 +440,7 @@ test("nested if", () => {
         left: { kind: "Literal", value: 1 },
         right: { kind: "Literal", value: 0 },
       },
-      body: [
+      consequence: [
         {
           kind: "IfStmt",
           condition: {
@@ -449,7 +449,7 @@ test("nested if", () => {
             left: { kind: "Literal", value: 2 },
             right: { kind: "Literal", value: 1 },
           },
-          body: [
+          consequence: [
             {
               kind: "ExprStmt",
               expr: {
@@ -457,6 +457,67 @@ test("nested if", () => {
                 name: "x",
                 value: { kind: "Literal", value: 1 },
               },
+            },
+          ],
+        },
+      ],
+    },
+  ]);
+});
+
+test("if elsif", () => {
+  expect(
+    parse(`
+  if x > 1
+  elseif x > 2
+  elseif x > 3
+  else
+    x = 100
+  end
+  `),
+  ).toEqual([
+    {
+      kind: "IfStmt",
+      condition: {
+        kind: "Compare",
+        op: ">",
+        left: { kind: "Identifier", name: "x" },
+        right: { kind: "Literal", value: 1 },
+      },
+      consequence: [],
+      alternative: [
+        {
+          kind: "IfStmt",
+          condition: {
+            kind: "Compare",
+            op: ">",
+            left: { kind: "Identifier", name: "x" },
+            right: { kind: "Literal", value: 2 },
+          },
+          consequence: [],
+          alternative: [
+            {
+              kind: "IfStmt",
+              condition: {
+                kind: "Compare",
+                op: ">",
+                left: { kind: "Identifier", name: "x" },
+                right: { kind: "Literal", value: 3 },
+              },
+              consequence: [],
+              alternative: [
+                {
+                  kind: "ExprStmt",
+                  expr: {
+                    kind: "Assign",
+                    name: "x",
+                    value: {
+                      kind: "Literal",
+                      value: 100,
+                    },
+                  },
+                },
+              ],
             },
           ],
         },

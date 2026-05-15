@@ -42,6 +42,8 @@ export type Instruction =
    * (absolute index of the next instruction to run).
    */
   | { opcode: "JMP_IF_ZERO"; target: number }
+  /** Unconditionally set the instruction pointer to `target`. */
+  | { opcode: "JMP"; target: number }
   /**
    * Terminate the program and yield the top of the operand stack as the
    * program's result. If the stack is empty, the result is `undefined`.

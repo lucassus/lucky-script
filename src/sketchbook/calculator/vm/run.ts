@@ -164,6 +164,11 @@ export function run(code: Bytecode, options?: RunOptions): number | undefined {
         break;
       }
 
+      case "JMP": {
+        ip = instruction.target;
+        break;
+      }
+
       case "JMP_IF_ZERO": {
         const value = stack.pop();
         if (value === 0) {

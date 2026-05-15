@@ -153,11 +153,18 @@ test("kitchen sink: all features in one script", () => {
     inRange = frac >= 8 and frac <= 9
     mixed = z > neg and (x != y or lo == hi)
     result = inRange and mixed and not (z == 0)
+    
     if x == 1
       x = 2
+    elseif x == 3
+      x = 4
+    else
+      x = 0
     end
+    
     if x = 1 + 2 == 3
     end
+    
     result
   `.trim();
 

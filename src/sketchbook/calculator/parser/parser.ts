@@ -4,6 +4,7 @@ import type {
   ArithmeticOp,
   CompareOp,
   Expr,
+  IfStmt,
   LogicalOp,
   Program,
   Span,
@@ -67,12 +68,54 @@ semantics.addOperation<Program | Stmt | Stmt[] | Expr | string | unknown[]>(
         expr: exp.toAst() as Expr,
       };
     },
-    IfStmt(_ifKw, cond, _nl, block, _endKw) {
+    IfStmt(
+      _ifKw,
+      cond,
+      _nl,
+      block,
+      elseifKwNodes,
+      elseifCondNodes,
+      _elseifNlNodes,
+      elseifBlockNodes,
+      elseKwNodes,
+      _elseNlNodes,
+      elseBlockNodes,
+      _endKw,
+    ) {
+      const body = block.toAst() as Stmt[];
+
+      let elseBody: Stmt[] | undefined;
+
+      if (elseKwNodes.children.length > 0) {
+        elseBody = elseBlockNodes.children[0]!.toAst() as Stmt[];
+      }
+
+      // Walk elseif clauses right-to-left, wrapping into elseBody as nested IfStmts
+      const elseifCount = elseifKwNodes.children.length;
+      for (let i = elseifCount - 1; i >= 0; i--) {
+        const condNode = elseifCondNodes.children[i]!;
+        const bodyNode = elseifBlockNodes.children[i]!;
+
+        const nested: IfStmt = {
+          kind: "IfStmt",
+          span: {
+            start: elseifKwNodes.children[i]!.source.startIdx,
+            end: bodyNode.source.endIdx,
+          },
+          condition: condNode.toAst() as Expr,
+          consequence: bodyNode.toAst() as Stmt[],
+          alternative: elseBody ?? undefined,
+        };
+
+        elseBody = [nested];
+      }
+
       return {
         kind: "IfStmt" as const,
         span: spanOf(this),
         condition: cond.toAst() as Expr,
-        body: block.toAst() as Stmt[],
+        consequence: body,
+        alternative: elseBody ?? undefined,
       };
     },
     AssignExp_assign(identNode, _eq, exprNode) {

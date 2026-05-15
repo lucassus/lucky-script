@@ -57,7 +57,8 @@ export interface ExprStmt extends Node<"ExprStmt"> {
 
 export interface IfStmt extends Node<"IfStmt"> {
   readonly condition: Expr;
-  readonly body: readonly Stmt[];
+  readonly consequence: readonly Stmt[];
+  readonly alternative?: readonly Stmt[];
 }
 
 export type Stmt = ExprStmt | IfStmt;
