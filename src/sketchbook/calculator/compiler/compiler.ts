@@ -70,25 +70,23 @@ export function compile(program: Program): Bytecode {
     }
   }
 
-  function emitStmt(stmt: Stmt, isLastInProgram: boolean): void {
+  function emitStmt(stmt: Stmt, keepOnStack: boolean): void {
     switch (stmt.kind) {
       case "ExprStmt":
         visit(stmt.expr);
-        if (!isLastInProgram) {
+        if (!keepOnStack) {
           instructions.push({ opcode: "POP" });
         }
         break;
 
       case "IfStmt": {
         visit(stmt.condition);
+
         const jumpPc = instructions.length;
         instructions.push({ opcode: "JMP_IF_ZERO", target: 0 });
-        for (let i = 0; i < stmt.body.length; i++) {
-          emitStmt(
-            stmt.body[i]!,
-            i === stmt.body.length - 1 && isLastInProgram,
-          );
-        }
+
+        stmt.body.forEach((inner) => emitStmt(inner, keepOnStack));
+
         instructions[jumpPc] = {
           opcode: "JMP_IF_ZERO",
           target: instructions.length,
@@ -99,8 +97,12 @@ export function compile(program: Program): Bytecode {
   }
 
   program.forEach((stmt, index) => {
-    emitStmt(stmt, index === program.length - 1);
+    const isLast = index === program.length - 1;
+    const keepOnStack = isLast && stmt.kind === "ExprStmt";
+    emitStmt(stmt, keepOnStack);
   });
+
+  instructions.push({ opcode: "HALT" });
 
   return instructions;
 }

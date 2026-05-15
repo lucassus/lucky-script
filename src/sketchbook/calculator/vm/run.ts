@@ -172,11 +172,15 @@ export function run(code: Bytecode, options?: RunOptions): number | undefined {
         break;
       }
 
+      case "HALT": {
+        return stack.isEmpty ? undefined : stack.pop();
+      }
+
       default: {
         instruction satisfies never;
       }
     }
   }
 
-  return stack.takeResult();
+  return undefined;
 }

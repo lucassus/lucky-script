@@ -1,6 +1,6 @@
 import { expect, test } from "vitest";
 
-import type { Bytecode } from "../bytecode";
+import type { Bytecode } from "../compiler/bytecode";
 import { StackOverflow, StackUnderflow, UndefinedVariable } from "./errors";
 import { run } from "./run";
 

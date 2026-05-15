@@ -1,6 +1,6 @@
 import { StackOverflow, StackUnderflow } from "./errors";
 
-/** Evaluation stack with a hard depth bound and checking pops. */
+/** Evaluation stack with a hard depth bound and checked pops. */
 export class OperandStack {
   private readonly slots: number[] = [];
 
@@ -21,11 +21,7 @@ export class OperandStack {
     return value;
   }
 
-  /**
-   * Final program value: removes one slot if present.
-   * Does not throw on empty stack (matches bare `stack.pop()` at end of `run`).
-   */
-  takeResult(): number | undefined {
-    return this.slots.pop();
+  get isEmpty(): boolean {
+    return this.slots.length === 0;
   }
 }

@@ -9,8 +9,8 @@ function compiled(source: string): Bytecode {
   return compile(parse(source));
 }
 
-test("empty program compiles to empty bytecode", () => {
-  expect(compiled("")).toEqual([]);
+test("empty program compiles to a single HALT", () => {
+  expect(compiled("")).toEqual([{ opcode: "HALT" }]);
 });
 
 test("(1 + 2) * -3 compiles to expected bytecode", () => {
@@ -24,6 +24,7 @@ test("(1 + 2) * -3 compiles to expected bytecode", () => {
     { opcode: "PUSH", value: 3 },
     { opcode: "NEG" },
     { opcode: "MUL" },
+    { opcode: "HALT" },
   ];
 
   expect<Bytecode>(bytecode).toEqual(expected);
@@ -36,6 +37,7 @@ test("x = 10 + 2 compiles to DUP and STORE", () => {
     { opcode: "ADD" },
     { opcode: "DUP" },
     { opcode: "STORE", name: "x" },
+    { opcode: "HALT" },
   ]);
 });
 
@@ -46,21 +48,26 @@ test("x = y = 2 compiles to nested DUP+STORE (right-associative)", () => {
     { opcode: "STORE", name: "y" },
     { opcode: "DUP" },
     { opcode: "STORE", name: "x" },
+    { opcode: "HALT" },
   ]);
 });
 
 test.each<{ source: string; expected: Bytecode }>([
   {
     source: "9",
-    expected: [{ opcode: "PUSH", value: 9 }],
+    expected: [{ opcode: "PUSH", value: 9 }, { opcode: "HALT" }],
   },
   {
     source: "2.5",
-    expected: [{ opcode: "PUSH", value: 2.5 }],
+    expected: [{ opcode: "PUSH", value: 2.5 }, { opcode: "HALT" }],
   },
   {
     source: "-4",
-    expected: [{ opcode: "PUSH", value: 4 }, { opcode: "NEG" }],
+    expected: [
+      { opcode: "PUSH", value: 4 },
+      { opcode: "NEG" },
+      { opcode: "HALT" },
+    ],
   },
   {
     source: "-(-1)",
@@ -68,11 +75,12 @@ test.each<{ source: string; expected: Bytecode }>([
       { opcode: "PUSH", value: 1 },
       { opcode: "NEG" },
       { opcode: "NEG" },
+      { opcode: "HALT" },
     ],
   },
   {
     source: "+8",
-    expected: [{ opcode: "PUSH", value: 8 }],
+    expected: [{ opcode: "PUSH", value: 8 }, { opcode: "HALT" }],
   },
   {
     source: "5-2",
@@ -80,6 +88,7 @@ test.each<{ source: string; expected: Bytecode }>([
       { opcode: "PUSH", value: 5 },
       { opcode: "PUSH", value: 2 },
       { opcode: "SUB" },
+      { opcode: "HALT" },
     ],
   },
   {
@@ -88,6 +97,7 @@ test.each<{ source: string; expected: Bytecode }>([
       { opcode: "PUSH", value: 8 },
       { opcode: "PUSH", value: 2 },
       { opcode: "DIV" },
+      { opcode: "HALT" },
     ],
   },
   {
@@ -98,6 +108,7 @@ test.each<{ source: string; expected: Bytecode }>([
       { opcode: "PUSH", value: 4 },
       { opcode: "MUL" },
       { opcode: "ADD" },
+      { opcode: "HALT" },
     ],
   },
   {
@@ -108,6 +119,7 @@ test.each<{ source: string; expected: Bytecode }>([
       { opcode: "ADD" },
       { opcode: "PUSH", value: 4 },
       { opcode: "MUL" },
+      { opcode: "HALT" },
     ],
   },
   {
@@ -118,6 +130,7 @@ test.each<{ source: string; expected: Bytecode }>([
       { opcode: "SUB" },
       { opcode: "PUSH", value: 2 },
       { opcode: "SUB" },
+      { opcode: "HALT" },
     ],
   },
   {
@@ -128,6 +141,7 @@ test.each<{ source: string; expected: Bytecode }>([
       { opcode: "DIV" },
       { opcode: "PUSH", value: 2 },
       { opcode: "DIV" },
+      { opcode: "HALT" },
     ],
   },
   {
@@ -140,6 +154,7 @@ test.each<{ source: string; expected: Bytecode }>([
       { opcode: "PUSH", value: 3 },
       { opcode: "PUSH", value: 4 },
       { opcode: "MUL" },
+      { opcode: "HALT" },
     ],
   },
 ])("compile(%j) matches bytecode snapshot", ({ source, expected }) => {
@@ -153,11 +168,12 @@ test.each<{ source: string; opcode: string }>([
   { source: "3 <= 2", opcode: "LTE" },
   { source: "3 == 2", opcode: "EQ" },
   { source: "3 != 2", opcode: "NEQ" },
-])("$source compiles to PUSH, PUSH, $op", ({ source, opcode }) => {
+])("$source compiles to PUSH, PUSH, $opcode", ({ source, opcode }) => {
   expect(compiled(source)).toEqual([
     { opcode: "PUSH", value: 3 },
     { opcode: "PUSH", value: 2 },
     { opcode },
+    { opcode: "HALT" },
   ]);
 });
 
@@ -166,6 +182,7 @@ test("1 and 1 compiles to PUSH, PUSH, AND", () => {
     { opcode: "PUSH", value: 1 },
     { opcode: "PUSH", value: 1 },
     { opcode: "AND" },
+    { opcode: "HALT" },
   ]);
 });
 
@@ -174,6 +191,7 @@ test("1 or 0 compiles to PUSH, PUSH, OR", () => {
     { opcode: "PUSH", value: 1 },
     { opcode: "PUSH", value: 0 },
     { opcode: "OR" },
+    { opcode: "HALT" },
   ]);
 });
 
@@ -181,6 +199,7 @@ test("not x compiles to LOAD, NOT", () => {
   expect(compiled("not x")).toEqual([
     { opcode: "LOAD", name: "x" },
     { opcode: "NOT" },
+    { opcode: "HALT" },
   ]);
 });
 
@@ -191,6 +210,7 @@ test("a and (b or c) compiles correctly", () => {
     { opcode: "LOAD", name: "c" },
     { opcode: "OR" },
     { opcode: "AND" },
+    { opcode: "HALT" },
   ]);
 });
 
@@ -201,6 +221,7 @@ test("comparison with arithmetic operands: x + 1 > 0", () => {
     { opcode: "ADD" },
     { opcode: "PUSH", value: 0 },
     { opcode: "GT" },
+    { opcode: "HALT" },
   ]);
 });
 
@@ -209,10 +230,12 @@ test("if: JMP_IF_ZERO around body", () => {
     { opcode: "PUSH", value: 1 },
     { opcode: "PUSH", value: 0 },
     { opcode: "GT" },
-    { opcode: "JMP_IF_ZERO", target: 7 },
+    { opcode: "JMP_IF_ZERO", target: 8 },
     { opcode: "PUSH", value: 1 },
     { opcode: "DUP" },
     { opcode: "STORE", name: "x" },
+    { opcode: "POP" },
+    { opcode: "HALT" },
   ]);
 });
 

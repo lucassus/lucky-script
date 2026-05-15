@@ -6,12 +6,12 @@ import { OperandStack } from "./OperandStack";
 test("OperandStack push then pop", () => {
   const s = new OperandStack(10);
   s.push(7);
-  expect(s.pop("TEST")).toBe(7);
+  expect(s.pop()).toBe(7);
 });
 
 test("OperandStack pop throws StackUnderflow", () => {
   const s = new OperandStack(10);
-  expect(() => s.pop("TEST")).toThrow(StackUnderflow);
+  expect(() => s.pop()).toThrow(StackUnderflow);
 });
 
 test("OperandStack push throws StackOverflow at limit", () => {
@@ -20,13 +20,11 @@ test("OperandStack push throws StackOverflow at limit", () => {
   expect(() => s.push(2)).toThrow(StackOverflow);
 });
 
-test("OperandStack takeResult returns undefined when empty", () => {
+test("OperandStack isEmpty reflects stack contents", () => {
   const s = new OperandStack(10);
-  expect(s.takeResult()).toBeUndefined();
-});
-
-test("OperandStack takeResult pops one value", () => {
-  const s = new OperandStack(10);
+  expect(s.isEmpty).toBe(true);
   s.push(42);
-  expect(s.takeResult()).toBe(42);
+  expect(s.isEmpty).toBe(false);
+  s.pop();
+  expect(s.isEmpty).toBe(true);
 });

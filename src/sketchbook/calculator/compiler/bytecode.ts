@@ -41,6 +41,11 @@ export type Instruction =
    * Pop the top value; if it is zero, set the instruction pointer to `target`
    * (absolute index of the next instruction to run).
    */
-  | { opcode: "JMP_IF_ZERO"; target: number };
+  | { opcode: "JMP_IF_ZERO"; target: number }
+  /**
+   * Terminate the program and yield the top of the operand stack as the
+   * program's result. If the stack is empty, the result is `undefined`.
+   */
+  | { opcode: "HALT" };
 
 export type Bytecode = Instruction[];
