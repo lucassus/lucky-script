@@ -1,7 +1,7 @@
 export type ArithmeticOp = "+" | "-" | "*" | "/";
 export type CompareOp = "==" | "!=" | ">=" | "<=" | ">" | "<";
 export type LogicalOp = "and" | "or";
-export type UnaryOp = "+" | "-" | "not";
+export type UnaryOp = "-" | "not";
 
 export type Expr =
   | { kind: "Literal"; value: number }

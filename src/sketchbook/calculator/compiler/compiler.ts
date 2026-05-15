@@ -39,11 +39,7 @@ export function compile(program: Program): Bytecode {
 
       case "Unary":
         visit(expr.expr);
-        if (expr.op === "not") {
-          instructions.push({ opcode: "NOT" });
-        } else if (expr.op === "-") {
-          instructions.push({ opcode: "NEG" });
-        }
+        instructions.push({ opcode: expr.op === "not" ? "NOT" : "NEG" });
         return;
 
       case "Compare":

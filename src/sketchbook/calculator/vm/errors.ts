@@ -1,6 +1,6 @@
 /** Base class for VM runtime failures thrown while executing bytecode. */
 export class VmError extends Error {
-  override readonly name = "VmError";
+  override readonly name: string = "VmError";
 }
 
 /** Too few values on the stack for an instruction (e.g. `ADD` with <2 operands). */

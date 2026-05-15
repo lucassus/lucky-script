@@ -1,10 +1,38 @@
+import type { Node, NonterminalNode } from "ohm-js";
+
+import type {
+  ArithmeticOp,
+  CompareOp,
+  Expr,
+  LogicalOp,
+  Program,
+  Stmt,
+} from "./ast";
 import grammar from "./grammar.ohm-bundle";
-import type { Expr, Program, Stmt } from "./ast";
 
 /* ohm-js operation callbacks use dynamically-typed `.toAst()`; keep unsafe rules off for this file. */
 /* eslint-disable @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-return */
 
 const semantics = grammar.createSemantics();
+
+type BinarySpec =
+  | { kind: "Arithmetic"; op: ArithmeticOp }
+  | { kind: "Compare"; op: CompareOp }
+  | { kind: "Logical"; op: LogicalOp };
+
+function bin(spec: BinarySpec) {
+  return function (
+    left: NonterminalNode,
+    _op: Node,
+    right: NonterminalNode,
+  ): Expr {
+    return {
+      ...spec,
+      left: left.toAst() as Expr,
+      right: right.toAst() as Expr,
+    };
+  };
+}
 
 semantics.addOperation<Program | Stmt | Stmt[] | Expr | string | unknown[]>(
   "toAst",
@@ -12,12 +40,7 @@ semantics.addOperation<Program | Stmt | Stmt[] | Expr | string | unknown[]>(
     _iter(...children) {
       return children.map((c) => c.toAst());
     },
-    Program(block) {
-      return block.toAst() as Program;
-    },
-    Block(leadNl, optStmtList, trailNl) {
-      void leadNl;
-      void trailNl;
+    Block(_leadNl, optStmtList, _trailNl) {
       if (optStmtList.children.length === 0) {
         return [];
       }
@@ -30,10 +53,7 @@ semantics.addOperation<Program | Stmt | Stmt[] | Expr | string | unknown[]>(
       }
       return stmts;
     },
-    Stmt(child) {
-      return child.toAst() as Stmt;
-    },
-    ExpStmt(exp) {
+    Stmt_expr(exp) {
       return { kind: "ExprStmt" as const, expr: exp.toAst() as Expr };
     },
     IfStmt(_ifKw, cond, _nl, block, _endKw) {
@@ -43,9 +63,6 @@ semantics.addOperation<Program | Stmt | Stmt[] | Expr | string | unknown[]>(
         body: block.toAst() as Stmt[],
       };
     },
-    Exp(assignExp) {
-      return assignExp.toAst() as Expr;
-    },
     AssignExp_assign(identNode, _eq, exprNode) {
       return {
         kind: "Assign" as const,
@@ -53,31 +70,8 @@ semantics.addOperation<Program | Stmt | Stmt[] | Expr | string | unknown[]>(
         value: exprNode.toAst() as Expr,
       };
     },
-    AssignExp_or(orExp) {
-      return orExp.toAst() as Expr;
-    },
-    OrExp_or(left, _op, right) {
-      return {
-        kind: "Logical" as const,
-        op: "or",
-        left: left.toAst() as Expr,
-        right: right.toAst() as Expr,
-      };
-    },
-    OrExp_and(andExp) {
-      return andExp.toAst() as Expr;
-    },
-    AndExp_and(left, _op, right) {
-      return {
-        kind: "Logical" as const,
-        op: "and",
-        left: left.toAst() as Expr,
-        right: right.toAst() as Expr,
-      };
-    },
-    AndExp_not(notExp) {
-      return notExp.toAst() as Expr;
-    },
+    OrExp_or: bin({ kind: "Logical", op: "or" }),
+    AndExp_and: bin({ kind: "Logical", op: "and" }),
     NotExp_not(_kw, operand) {
       return {
         kind: "Unary" as const,
@@ -85,98 +79,16 @@ semantics.addOperation<Program | Stmt | Stmt[] | Expr | string | unknown[]>(
         expr: operand.toAst() as Expr,
       };
     },
-    NotExp_cmp(cmpExp) {
-      return cmpExp.toAst() as Expr;
-    },
-    CmpExp_gte(left, _op, right) {
-      return {
-        kind: "Compare" as const,
-        op: ">=",
-        left: left.toAst() as Expr,
-        right: right.toAst() as Expr,
-      };
-    },
-    CmpExp_lte(left, _op, right) {
-      return {
-        kind: "Compare" as const,
-        op: "<=",
-        left: left.toAst() as Expr,
-        right: right.toAst() as Expr,
-      };
-    },
-    CmpExp_eq(left, _op, right) {
-      return {
-        kind: "Compare" as const,
-        op: "==",
-        left: left.toAst() as Expr,
-        right: right.toAst() as Expr,
-      };
-    },
-    CmpExp_neq(left, _op, right) {
-      return {
-        kind: "Compare" as const,
-        op: "!=",
-        left: left.toAst() as Expr,
-        right: right.toAst() as Expr,
-      };
-    },
-    CmpExp_gt(left, _op, right) {
-      return {
-        kind: "Compare" as const,
-        op: ">",
-        left: left.toAst() as Expr,
-        right: right.toAst() as Expr,
-      };
-    },
-    CmpExp_lt(left, _op, right) {
-      return {
-        kind: "Compare" as const,
-        op: "<",
-        left: left.toAst() as Expr,
-        right: right.toAst() as Expr,
-      };
-    },
-    CmpExp_add(addExp) {
-      return addExp.toAst() as Expr;
-    },
-    AddExp_plus(left, _plus, right) {
-      return {
-        kind: "Arithmetic" as const,
-        op: "+",
-        left: left.toAst() as Expr,
-        right: right.toAst() as Expr,
-      };
-    },
-    AddExp_minus(left, _minus, right) {
-      return {
-        kind: "Arithmetic" as const,
-        op: "-",
-        left: left.toAst() as Expr,
-        right: right.toAst() as Expr,
-      };
-    },
-    AddExp_mul(mul) {
-      return mul.toAst() as Expr;
-    },
-    MulExp_times(left, _star, right) {
-      return {
-        kind: "Arithmetic" as const,
-        op: "*",
-        left: left.toAst() as Expr,
-        right: right.toAst() as Expr,
-      };
-    },
-    MulExp_divide(left, _slash, right) {
-      return {
-        kind: "Arithmetic" as const,
-        op: "/",
-        left: left.toAst() as Expr,
-        right: right.toAst() as Expr,
-      };
-    },
-    MulExp_unary(unary) {
-      return unary.toAst() as Expr;
-    },
+    CmpExp_gte: bin({ kind: "Compare", op: ">=" }),
+    CmpExp_lte: bin({ kind: "Compare", op: "<=" }),
+    CmpExp_eq: bin({ kind: "Compare", op: "==" }),
+    CmpExp_neq: bin({ kind: "Compare", op: "!=" }),
+    CmpExp_gt: bin({ kind: "Compare", op: ">" }),
+    CmpExp_lt: bin({ kind: "Compare", op: "<" }),
+    AddExp_plus: bin({ kind: "Arithmetic", op: "+" }),
+    AddExp_minus: bin({ kind: "Arithmetic", op: "-" }),
+    MulExp_times: bin({ kind: "Arithmetic", op: "*" }),
+    MulExp_divide: bin({ kind: "Arithmetic", op: "/" }),
     UnaryExp_pos(_plus, unary) {
       return unary.toAst() as Expr;
     },
@@ -187,14 +99,8 @@ semantics.addOperation<Program | Stmt | Stmt[] | Expr | string | unknown[]>(
         expr: unary.toAst() as Expr,
       };
     },
-    UnaryExp_pri(pri) {
-      return pri.toAst() as Expr;
-    },
     PriExp_paren(_lp, exp, _rp) {
       return exp.toAst() as Expr;
-    },
-    PriExp_lit(num) {
-      return num.toAst() as Expr;
     },
     PriExp_var(identNode) {
       return { kind: "Identifier" as const, name: identNode.toAst() as string };

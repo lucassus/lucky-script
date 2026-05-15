@@ -4,29 +4,25 @@ Arithmetic {
 
   StmtList = Stmt (nl+ Stmt)*
 
-  Stmt = IfStmt | ExpStmt
+  Stmt = IfStmt | AssignExp -- expr
 
-  IfStmt = if_kw Exp nl+ Block end_kw
-
-  ExpStmt = Exp
-
-  Exp = AssignExp
+  IfStmt = if_kw AssignExp nl+ Block end_kw
 
   AssignExp
     = ident "=" AssignExp -- assign
-    | OrExp               -- or
+    | OrExp
 
   OrExp
     = OrExp or_kw AndExp -- or
-    | AndExp             -- and
+    | AndExp
 
   AndExp
     = AndExp and_kw NotExp -- and
-    | NotExp               -- not
+    | NotExp
 
   NotExp
     = not_kw NotExp -- not
-    | CmpExp        -- cmp
+    | CmpExp
 
   CmpExp
     = AddExp ">=" AddExp -- gte
@@ -35,40 +31,40 @@ Arithmetic {
     | AddExp "!=" AddExp -- neq
     | AddExp ">"  AddExp -- gt
     | AddExp "<"  AddExp -- lt
-    | AddExp             -- add
+    | AddExp
 
   AddExp
     = AddExp "+" MulExp -- plus
     | AddExp "-" MulExp -- minus
-    | MulExp            -- mul
+    | MulExp
 
   MulExp
     = MulExp "*" UnaryExp -- times
     | MulExp "/" UnaryExp -- divide
-    | UnaryExp            -- unary
+    | UnaryExp
 
   UnaryExp
     = "+" UnaryExp -- pos
     | "-" UnaryExp -- neg
-    | PriExp       -- pri
+    | PriExp
 
   PriExp
-    = "(" Exp ")" -- paren
-    | number      -- lit
-    | ident       -- var
+    = "(" AssignExp ")" -- paren
+    | number
+    | ident -- var
 
   number = digit+ ("." digit+)?
 
-  // Keyword tokens: match the word followed by a non-alphanumeric char (whole-word check)
-  and_kw = "and" ~alnum
-  or_kw  = "or"  ~alnum
-  not_kw = "not" ~alnum
-  if_kw  = "if"  ~alnum
-  end_kw = "end" ~alnum
+  // Whole-word keyword match: keyword text followed by a non-alphanumeric char.
+  kw<s>  = s ~alnum
+  and_kw = kw<"and">
+  or_kw  = kw<"or">
+  not_kw = kw<"not">
+  if_kw  = kw<"if">
+  end_kw = kw<"end">
   keyword = and_kw | or_kw | not_kw | if_kw | end_kw
 
-  ident (an identifier)
-    = ~keyword letter alnum*
+  ident (an identifier) = ~keyword letter alnum*
 
   // Horizontal whitespace only
   space := (" " | "\t")+
