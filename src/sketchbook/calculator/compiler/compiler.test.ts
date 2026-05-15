@@ -2,8 +2,8 @@ import { expect, expectTypeOf, test } from "vitest";
 
 import { parse } from "../parser";
 import { run } from "../vm";
-import type { Bytecode } from ".";
-import { compile } from ".";
+import type { Bytecode } from "./index";
+import { compile } from "./index";
 
 function compiled(source: string): Bytecode {
   return compile(parse(source));

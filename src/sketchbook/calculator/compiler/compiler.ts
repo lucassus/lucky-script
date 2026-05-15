@@ -12,7 +12,7 @@ export function compile(program: Program): Bytecode {
         instructions.push({ opcode: "STORE", name: expr.name });
         return;
 
-      case "Variable":
+      case "Identifier":
         instructions.push({ opcode: "LOAD", name: expr.name });
         return;
 

@@ -197,7 +197,7 @@ semantics.addOperation<Program | Stmt | Stmt[] | Expr | string | unknown[]>(
       return num.toAst() as Expr;
     },
     PriExp_var(identNode) {
-      return { kind: "Variable" as const, name: identNode.toAst() as string };
+      return { kind: "Identifier" as const, name: identNode.toAst() as string };
     },
     // Ohm expands `digit+ ("." digit+)?` into three child nodes for this action dict.
     number(_digits, _dotDigitsOpt1, _dotDigitsOpt2) {

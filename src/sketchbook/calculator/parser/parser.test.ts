@@ -1,6 +1,6 @@
 import { expect, test } from "vitest";
 
-import { parse } from ".";
+import { parse } from "./index";
 
 test("precedence: addition below multiplication", () => {
   expect(parse("1 + 2 * 3")).toEqual([
@@ -167,7 +167,7 @@ test("assignment to identifier", () => {
         },
       },
     },
-    { kind: "ExprStmt", expr: { kind: "Variable", name: "x" } },
+    { kind: "ExprStmt", expr: { kind: "Identifier", name: "x" } },
   ]);
 });
 
@@ -219,13 +219,13 @@ test("comparison is lower precedence than arithmetic", () => {
         left: {
           kind: "Arithmetic",
           op: "+",
-          left: { kind: "Variable", name: "x" },
+          left: { kind: "Identifier", name: "x" },
           right: { kind: "Literal", value: 1 },
         },
         right: {
           kind: "Arithmetic",
           op: "*",
-          left: { kind: "Variable", name: "y" },
+          left: { kind: "Identifier", name: "y" },
           right: { kind: "Literal", value: 2 },
         },
       },
@@ -240,8 +240,8 @@ test("logical or parses to Logical", () => {
       expr: {
         kind: "Logical",
         op: "or",
-        left: { kind: "Variable", name: "a" },
-        right: { kind: "Variable", name: "b" },
+        left: { kind: "Identifier", name: "a" },
+        right: { kind: "Identifier", name: "b" },
       },
     },
   ]);
@@ -254,8 +254,8 @@ test("logical and parses to Logical", () => {
       expr: {
         kind: "Logical",
         op: "and",
-        left: { kind: "Variable", name: "a" },
-        right: { kind: "Variable", name: "b" },
+        left: { kind: "Identifier", name: "a" },
+        right: { kind: "Identifier", name: "b" },
       },
     },
   ]);
@@ -268,7 +268,7 @@ test("not parses to Unary with op not", () => {
       expr: {
         kind: "Unary",
         op: "not",
-        expr: { kind: "Variable", name: "a" },
+        expr: { kind: "Identifier", name: "a" },
       },
     },
   ]);
@@ -281,12 +281,12 @@ test("and binds tighter than or", () => {
       expr: {
         kind: "Logical",
         op: "or",
-        left: { kind: "Variable", name: "a" },
+        left: { kind: "Identifier", name: "a" },
         right: {
           kind: "Logical",
           op: "and",
-          left: { kind: "Variable", name: "b" },
-          right: { kind: "Variable", name: "c" },
+          left: { kind: "Identifier", name: "b" },
+          right: { kind: "Identifier", name: "c" },
         },
       },
     },
@@ -303,9 +303,9 @@ test("not binds tighter than and", () => {
         left: {
           kind: "Unary",
           op: "not",
-          expr: { kind: "Variable", name: "a" },
+          expr: { kind: "Identifier", name: "a" },
         },
-        right: { kind: "Variable", name: "b" },
+        right: { kind: "Identifier", name: "b" },
       },
     },
   ]);
@@ -318,12 +318,12 @@ test("parentheses override logical precedence", () => {
       expr: {
         kind: "Logical",
         op: "and",
-        left: { kind: "Variable", name: "a" },
+        left: { kind: "Identifier", name: "a" },
         right: {
           kind: "Logical",
           op: "or",
-          left: { kind: "Variable", name: "b" },
-          right: { kind: "Variable", name: "c" },
+          left: { kind: "Identifier", name: "b" },
+          right: { kind: "Identifier", name: "c" },
         },
       },
     },
@@ -340,13 +340,13 @@ test("comparison is tighter than logical", () => {
         left: {
           kind: "Compare",
           op: ">",
-          left: { kind: "Variable", name: "x" },
+          left: { kind: "Identifier", name: "x" },
           right: { kind: "Literal", value: 1 },
         },
         right: {
           kind: "Compare",
           op: "<",
-          left: { kind: "Variable", name: "y" },
+          left: { kind: "Identifier", name: "y" },
           right: { kind: "Literal", value: 2 },
         },
       },
@@ -376,7 +376,7 @@ test("assignment rhs can contain a comparison", () => {
         value: {
           kind: "Compare",
           op: "==",
-          left: { kind: "Variable", name: "x" },
+          left: { kind: "Identifier", name: "x" },
           right: { kind: "Literal", value: 1 },
         },
       },

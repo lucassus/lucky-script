@@ -5,7 +5,7 @@ export type UnaryOp = "+" | "-" | "not";
 
 export type Expr =
   | { kind: "Literal"; value: number }
-  | { kind: "Variable"; name: string }
+  | { kind: "Identifier"; name: string }
   | { kind: "Assign"; name: string; value: Expr }
   | { kind: "Unary"; op: UnaryOp; expr: Expr }
   | { kind: "Arithmetic"; op: ArithmeticOp; left: Expr; right: Expr }
