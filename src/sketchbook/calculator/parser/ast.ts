@@ -61,6 +61,15 @@ export interface IfStmt extends Node<"IfStmt"> {
   readonly alternative?: readonly Stmt[];
 }
 
-export type Stmt = ExprStmt | IfStmt;
+export interface WhileStmt extends Node<"WhileStmt"> {
+  readonly condition: Expr;
+  readonly body: readonly Stmt[];
+}
+
+export type BreakStmt = Node<"BreakStmt">;
+
+export type ContinueStmt = Node<"ContinueStmt">;
+
+export type Stmt = ExprStmt | IfStmt | WhileStmt | BreakStmt | ContinueStmt;
 
 export type Program = readonly Stmt[];

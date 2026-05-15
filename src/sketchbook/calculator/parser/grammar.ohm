@@ -5,8 +5,15 @@ Arithmetic {
   StmtList = Stmt (nl+ Stmt)*
 
   Stmt
-    = IfStmt
+    = WhileStmt
+    | BreakStmt
+    | ContinueStmt
+    | IfStmt
     | AssignExp -- expr
+
+  WhileStmt = while_kw AssignExp nl+ Block end_kw
+  BreakStmt = break_kw
+  ContinueStmt = continue_kw
 
   IfStmt = if_kw AssignExp nl+ Block (elseif_kw AssignExp nl+ Block)* (else_kw nl+ Block)? end_kw
 
@@ -66,7 +73,10 @@ Arithmetic {
   elseif_kw = kw<"elseif">
   else_kw   = kw<"else">
   end_kw    = kw<"end">
-  keyword = and_kw | or_kw | not_kw | if_kw | elseif_kw | else_kw | end_kw
+  while_kw  = kw<"while">
+  break_kw  = kw<"break">
+  continue_kw = kw<"continue">
+  keyword = and_kw | or_kw | not_kw | if_kw | elseif_kw | else_kw | end_kw | while_kw | break_kw | continue_kw
 
   ident (an identifier) = ~keyword letter alnum*
 

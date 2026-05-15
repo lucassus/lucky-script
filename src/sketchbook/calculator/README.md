@@ -5,7 +5,7 @@
   - [x] Basic if statements; Control flow jumps
   - [x] else elseif statements (optionally)
   - [x] Short-circuit evaluation
-- [ ] While loops
+- [x] While loops
 - [ ] Functions
   - [ ] CallFrame architecture
   - [ ] Function invocation and returns 

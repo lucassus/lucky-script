@@ -1,4 +1,4 @@
-import { expect, expectTypeOf, test } from "vitest";
+import { describe, expect, expectTypeOf, it, test } from "vitest";
 
 import { parse } from "../parser";
 import { run } from "../vm";
@@ -232,6 +232,100 @@ test("logical 'and' short-circuits", () => {
     x
   `);
   expect(run(bytecode)).toBe(0);
+});
+
+describe("loops", () => {
+  it("compiles while loop", () => {
+    expect(
+      compile([
+        {
+          kind: "WhileStmt",
+          span: { start: 0, end: 0 },
+          condition: {
+            kind: "Compare",
+            op: ">",
+            span: { start: 0, end: 0 },
+            left: { kind: "Identifier", name: "x", span: { start: 0, end: 0 } },
+            right: { kind: "Literal", value: 0, span: { start: 0, end: 0 } },
+          },
+          body: [
+            {
+              kind: "ExprStmt",
+              span: { start: 0, end: 0 },
+              expr: {
+                kind: "Assign",
+                name: "x",
+                span: { start: 0, end: 0 },
+                value: {
+                  kind: "Arithmetic",
+                  op: "-",
+                  span: { start: 0, end: 0 },
+                  left: {
+                    kind: "Identifier",
+                    name: "x",
+                    span: { start: 0, end: 0 },
+                  },
+                  right: {
+                    kind: "Literal",
+                    value: 1,
+                    span: { start: 0, end: 0 },
+                  },
+                },
+              },
+            },
+          ],
+        },
+      ]),
+    ).toEqual([
+      { opcode: "LOAD", name: "x" },
+      { opcode: "PUSH", value: 0 },
+      { opcode: "GT" },
+      { opcode: "JMP_IF_ZERO", target: 11 },
+      { opcode: "LOAD", name: "x" },
+      { opcode: "PUSH", value: 1 },
+      { opcode: "SUB" },
+      { opcode: "DUP" },
+      { opcode: "STORE", name: "x" },
+      { opcode: "POP" }, // Pop the result of the expression statement
+      { opcode: "JMP", target: 0 },
+      { opcode: "HALT" },
+    ]);
+  });
+
+  it("compiles break and continue", () => {
+    expect(
+      compile([
+        {
+          kind: "WhileStmt",
+          span: { start: 0, end: 0 },
+          condition: { kind: "Literal", value: 1, span: { start: 0, end: 0 } },
+          body: [
+            { kind: "BreakStmt", span: { start: 0, end: 0 } },
+            { kind: "ContinueStmt", span: { start: 0, end: 0 } },
+          ],
+        },
+      ]),
+    ).toEqual([
+      { opcode: "PUSH", value: 1 },
+      { opcode: "JMP_IF_ZERO", target: 5 },
+      { opcode: "JMP", target: 5 }, // break
+      { opcode: "JMP", target: 0 }, // continue
+      { opcode: "JMP", target: 0 }, // loop end jump
+      { opcode: "HALT" },
+    ]);
+  });
+
+  it("throws error for break outside loop", () => {
+    expect(() =>
+      compile([{ kind: "BreakStmt", span: { start: 0, end: 0 } }]),
+    ).toThrowError("break statement outside of a loop");
+  });
+
+  it("throws error for continue outside loop", () => {
+    expect(() =>
+      compile([{ kind: "ContinueStmt", span: { start: 0, end: 0 } }]),
+    ).toThrowError("continue statement outside of a loop");
+  });
 });
 
 test("logical 'or' short-circuits", () => {

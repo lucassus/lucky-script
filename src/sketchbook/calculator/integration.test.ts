@@ -138,6 +138,17 @@ test.each([
   // variables whose names start with keywords are valid
   ["android = 7\nandroid", 7],
   ["order = 3\norder", 3],
+
+  // while loops
+  ["x = 0\nwhile x < 5\n  x = x + 1\nend\nx", 5],
+  ["x = 10\ny = 0\nwhile x > 0\n  y = y + x\n  x = x - 1\nend\ny", 55],
+
+  // break and continue
+  ["x = 0\nwhile 1\n  x = x + 1\n  if x == 5\n    break\n  end\nend\nx", 5],
+  [
+    "x = 0\ny = 0\nwhile x < 5\n  x = x + 1\n  if x == 3\n    continue\n  end\n  y = y + x\nend\ny",
+    1 + 2 + 4 + 5,
+  ],
 ] as const)("evalExpr(%s) === %s", (source, expected) => {
   expect(evalExpr(source)).toBe(expected);
 });
@@ -163,6 +174,16 @@ test("kitchen sink: all features in one script", () => {
     end
     
     if x = 1 + 2 == 3
+    end
+
+    while x < 10
+      x = x + 1
+      if x == 5
+        continue
+      end
+      if x == 8
+        break
+      end
     end
     
     result

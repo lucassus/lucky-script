@@ -1,4 +1,4 @@
-import type { Node, NonterminalNode } from "ohm-js";
+import type { IterationNode, Node, NonterminalNode } from "ohm-js";
 
 import type {
   ArithmeticOp,
@@ -48,20 +48,30 @@ semantics.addOperation<Program | Stmt | Stmt[] | Expr | string | unknown[]>(
     _iter(...children) {
       return children.map((c) => c.toAst());
     },
-    Block(_leadNl, optStmtList, _trailNl) {
+    Block(
+      this: NonterminalNode,
+      _leadNl: Node,
+      optStmtList: IterationNode,
+      _trailNl: Node,
+    ) {
       if (optStmtList.children.length === 0) {
         return [];
       }
       return optStmtList.children[0]!.toAst() as Stmt[];
     },
-    StmtList(head, _nlChunks, restStmts) {
+    StmtList(
+      this: NonterminalNode,
+      head: Node,
+      _nlChunks: IterationNode,
+      restStmts: IterationNode,
+    ) {
       const stmts: Stmt[] = [head.toAst() as Stmt];
       for (const s of restStmts.children) {
         stmts.push(s.toAst() as Stmt);
       }
       return stmts;
     },
-    Stmt_expr(exp) {
+    Stmt_expr(this: NonterminalNode, exp: Node) {
       return {
         kind: "ExprStmt" as const,
         span: spanOf(this),
@@ -69,18 +79,19 @@ semantics.addOperation<Program | Stmt | Stmt[] | Expr | string | unknown[]>(
       };
     },
     IfStmt(
-      _ifKw,
-      cond,
-      _nl,
-      block,
-      elseifKwNodes,
-      elseifCondNodes,
-      _elseifNlNodes,
-      elseifBlockNodes,
-      elseKwNodes,
-      _elseNlNodes,
-      elseBlockNodes,
-      _endKw,
+      this: NonterminalNode,
+      _ifKw: Node,
+      cond: Node,
+      _nl: Node,
+      block: Node,
+      elseifKwNodes: IterationNode,
+      elseifCondNodes: IterationNode,
+      _elseifNlNodes: IterationNode,
+      elseifBlockNodes: IterationNode,
+      elseKwNodes: IterationNode,
+      _elseNlNodes: IterationNode,
+      elseBlockNodes: IterationNode,
+      _endKw: Node,
     ) {
       const body = block.toAst() as Stmt[];
 
@@ -118,7 +129,39 @@ semantics.addOperation<Program | Stmt | Stmt[] | Expr | string | unknown[]>(
         alternative: elseBody ?? undefined,
       };
     },
-    AssignExp_assign(identNode, _eq, exprNode) {
+    WhileStmt(
+      this: NonterminalNode,
+      _whileKw: Node,
+      cond: Node,
+      _nl: Node,
+      block: Node,
+      _endKw: Node,
+    ) {
+      return {
+        kind: "WhileStmt" as const,
+        span: spanOf(this),
+        condition: cond.toAst() as Expr,
+        body: block.toAst() as Stmt[],
+      };
+    },
+    BreakStmt(this: NonterminalNode, _breakKw: Node) {
+      return {
+        kind: "BreakStmt" as const,
+        span: spanOf(this),
+      };
+    },
+    ContinueStmt(this: NonterminalNode, _continueKw: Node) {
+      return {
+        kind: "ContinueStmt" as const,
+        span: spanOf(this),
+      };
+    },
+    AssignExp_assign(
+      this: NonterminalNode,
+      identNode: Node,
+      _eq: Node,
+      exprNode: Node,
+    ) {
       return {
         kind: "Assign" as const,
         span: spanOf(this),
@@ -128,7 +171,7 @@ semantics.addOperation<Program | Stmt | Stmt[] | Expr | string | unknown[]>(
     },
     OrExp_or: bin({ kind: "Logical", op: "or" }),
     AndExp_and: bin({ kind: "Logical", op: "and" }),
-    NotExp_not(_kw, operand) {
+    NotExp_not(this: NonterminalNode, _kw: Node, operand: Node) {
       return {
         kind: "Unary" as const,
         span: spanOf(this),
@@ -146,12 +189,12 @@ semantics.addOperation<Program | Stmt | Stmt[] | Expr | string | unknown[]>(
     AddExp_minus: bin({ kind: "Arithmetic", op: "-" }),
     MulExp_times: bin({ kind: "Arithmetic", op: "*" }),
     MulExp_divide: bin({ kind: "Arithmetic", op: "/" }),
-    UnaryExp_pos(_plus, unary) {
+    UnaryExp_pos(this: NonterminalNode, _plus: Node, unary: Node) {
       // `+x` is a no-op semantically, but the span should still cover the `+`.
       const inner = unary.toAst() as Expr;
       return { ...inner, span: spanOf(this) };
     },
-    UnaryExp_neg(_minus, unary) {
+    UnaryExp_neg(this: NonterminalNode, _minus: Node, unary: Node) {
       return {
         kind: "Unary" as const,
         span: spanOf(this),
@@ -159,12 +202,12 @@ semantics.addOperation<Program | Stmt | Stmt[] | Expr | string | unknown[]>(
         expr: unary.toAst() as Expr,
       };
     },
-    PriExp_paren(_lp, exp, _rp) {
+    PriExp_paren(this: NonterminalNode, _lp: Node, exp: Node, _rp: Node) {
       // Parens widen the inner expression's span to include the brackets.
       const inner = exp.toAst() as Expr;
       return { ...inner, span: spanOf(this) };
     },
-    PriExp_var(identNode) {
+    PriExp_var(this: NonterminalNode, identNode: Node) {
       return {
         kind: "Identifier" as const,
         span: spanOf(this),
@@ -172,14 +215,19 @@ semantics.addOperation<Program | Stmt | Stmt[] | Expr | string | unknown[]>(
       };
     },
     // Ohm expands `digit+ ("." digit+)?` into three child nodes for this action dict.
-    number(_digits, _dotDigitsOpt1, _dotDigitsOpt2) {
+    number(
+      this: NonterminalNode,
+      _digits: Node,
+      _dotDigitsOpt1: Node,
+      _dotDigitsOpt2: Node,
+    ) {
       return {
         kind: "Literal" as const,
         span: spanOf(this),
         value: Number(this.sourceString),
       };
     },
-    ident(_first, _rest) {
+    ident(this: NonterminalNode, _first: Node, _rest: Node) {
       return this.sourceString;
     },
   },
