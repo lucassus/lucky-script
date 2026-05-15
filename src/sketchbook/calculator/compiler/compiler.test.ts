@@ -2,7 +2,7 @@ import { expect, expectTypeOf, test } from "vitest";
 
 import { parse } from "../parser";
 import { run } from "../vm";
-import type { Bytecode } from "./index";
+import type { Bytecode, Instruction } from "./index";
 import { compile } from "./index";
 
 function compiled(source: string): Bytecode {
@@ -239,6 +239,46 @@ test("if: JMP_IF_ZERO around body", () => {
   ]);
 });
 
+test("if elseif else", () => {
+  expect(
+    compiled(`
+    if x > 2
+      x = 2
+    elseif x > 1
+    else
+      x = 3
+    end
+    
+    x
+  `),
+  ).toEqual<Instruction[]>([
+    { opcode: "LOAD", name: "x" },
+    { opcode: "PUSH", value: 2 },
+    { opcode: "GT" },
+    { opcode: "JMP_IF_ZERO", target: 9 },
+    // if x > 2
+    { opcode: "PUSH", value: 2 },
+    { opcode: "DUP" },
+    { opcode: "STORE", name: "x" },
+    { opcode: "POP" },
+    { opcode: "JMP", target: 18 },
+    // elseif x > 1
+    { opcode: "LOAD", name: "x" },
+    { opcode: "PUSH", value: 1 },
+    { opcode: "GT" },
+    { opcode: "JMP_IF_ZERO", target: 14 },
+    { opcode: "JMP", target: 18 },
+    // else
+    { opcode: "PUSH", value: 3 },
+    { opcode: "DUP" },
+    { opcode: "STORE", name: "x" },
+    { opcode: "POP" },
+
+    { opcode: "LOAD", name: "x" },
+    { opcode: "HALT" },
+  ]);
+});
+
 test("if false skips body", () => {
   const bytecode = compiled(`x = 0
 if x > 0
@@ -255,4 +295,49 @@ x = 2
 end
 x`);
   expect(run(bytecode)).toBe(2);
+});
+
+test("if-elseif-else executes the 'if' branch", () => {
+  const bytecode = compiled(`
+    x = 0
+    if 2 > 1
+      x = 1
+    elseif 2 > 1
+      x = 2
+    else
+      x = 3
+    end
+    x
+  `);
+  expect(run(bytecode)).toBe(1);
+});
+
+test("if-elseif-else executes the 'elseif' branch", () => {
+  const bytecode = compiled(`
+    x = 0
+    if 1 > 2
+      x = 1
+    elseif 2 > 1
+      x = 2
+    else
+      x = 3
+    end
+    x
+  `);
+  expect(run(bytecode)).toBe(2);
+});
+
+test("if-elseif-else executes the 'else' branch", () => {
+  const bytecode = compiled(`
+    x = 0
+    if 1 > 2
+      x = 1
+    elseif 1 > 2
+      x = 2
+    else
+      x = 3
+    end
+    x
+  `);
+  expect(run(bytecode)).toBe(3);
 });

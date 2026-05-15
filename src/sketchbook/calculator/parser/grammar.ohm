@@ -4,7 +4,9 @@ Arithmetic {
 
   StmtList = Stmt (nl+ Stmt)*
 
-  Stmt = IfStmt | AssignExp -- expr
+  Stmt
+    = IfStmt
+    | AssignExp -- expr
 
   IfStmt = if_kw AssignExp nl+ Block (elseif_kw AssignExp nl+ Block)* (else_kw nl+ Block)? end_kw
 

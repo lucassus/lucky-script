@@ -77,30 +77,32 @@ export function compile(program: Program): Bytecode {
 
       case "IfStmt": {
         visit(stmt.condition);
-        const toElsePc = instructions.length;
-        instructions.push({ opcode: "JMP_IF_ZERO", target: 0 });
+
+        const jmpIfZeroInstruction: Instruction = {
+          opcode: "JMP_IF_ZERO",
+          target: 0, // We will update this later
+        };
+        instructions.push(jmpIfZeroInstruction);
 
         stmt.consequence.forEach((inner) => emitStmt(inner, keepOnStack));
 
-        let toEndPc: number | undefined;
         if (stmt.alternative) {
-          toEndPc = instructions.length;
-          instructions.push({ opcode: "JMP", target: 0 });
-        }
+          const jmpInstruction: Instruction = {
+            opcode: "JMP",
+            target: 0, // We will update this later
+          };
+          instructions.push(jmpInstruction);
 
-        instructions[toElsePc] = {
-          opcode: "JMP_IF_ZERO",
-          target: instructions.length,
-        };
+          jmpIfZeroInstruction.target = instructions.length;
 
-        if (stmt.alternative) {
           stmt.alternative.forEach((inner) => emitStmt(inner, keepOnStack));
 
-          instructions[toEndPc!] = {
-            opcode: "JMP",
-            target: instructions.length,
-          };
+          jmpInstruction.target = instructions.length;
+        } else {
+          // Jump to the end of the if block
+          jmpIfZeroInstruction.target = instructions.length;
         }
+
         break;
       }
     }
