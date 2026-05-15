@@ -1,0 +1,274 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`kitchen sink: full AST snapshot including spans for a multi-feature program 1`] = `
+[
+  {
+    "expr": {
+      "kind": "Assign",
+      "name": "x",
+      "span": {
+        "end": 5,
+        "start": 0,
+      },
+      "value": {
+        "kind": "Literal",
+        "span": {
+          "end": 5,
+          "start": 4,
+        },
+        "value": 5,
+      },
+    },
+    "kind": "ExprStmt",
+    "span": {
+      "end": 5,
+      "start": 0,
+    },
+  },
+  {
+    "expr": {
+      "kind": "Assign",
+      "name": "y",
+      "span": {
+        "end": 20,
+        "start": 6,
+      },
+      "value": {
+        "kind": "Arithmetic",
+        "left": {
+          "expr": {
+            "kind": "Identifier",
+            "name": "x",
+            "span": {
+              "end": 12,
+              "start": 11,
+            },
+          },
+          "kind": "Unary",
+          "op": "-",
+          "span": {
+            "end": 12,
+            "start": 10,
+          },
+        },
+        "op": "+",
+        "right": {
+          "kind": "Arithmetic",
+          "left": {
+            "kind": "Literal",
+            "span": {
+              "end": 16,
+              "start": 15,
+            },
+            "value": 3,
+          },
+          "op": "*",
+          "right": {
+            "kind": "Literal",
+            "span": {
+              "end": 20,
+              "start": 19,
+            },
+            "value": 2,
+          },
+          "span": {
+            "end": 20,
+            "start": 15,
+          },
+        },
+        "span": {
+          "end": 20,
+          "start": 10,
+        },
+      },
+    },
+    "kind": "ExprStmt",
+    "span": {
+      "end": 20,
+      "start": 6,
+    },
+  },
+  {
+    "expr": {
+      "kind": "Assign",
+      "name": "z",
+      "span": {
+        "end": 46,
+        "start": 21,
+      },
+      "value": {
+        "kind": "Logical",
+        "left": {
+          "kind": "Compare",
+          "left": {
+            "kind": "Identifier",
+            "name": "x",
+            "span": {
+              "end": 26,
+              "start": 25,
+            },
+          },
+          "op": "==",
+          "right": {
+            "kind": "Identifier",
+            "name": "y",
+            "span": {
+              "end": 31,
+              "start": 30,
+            },
+          },
+          "span": {
+            "end": 31,
+            "start": 25,
+          },
+        },
+        "op": "or",
+        "right": {
+          "expr": {
+            "kind": "Compare",
+            "left": {
+              "kind": "Identifier",
+              "name": "x",
+              "span": {
+                "end": 41,
+                "start": 40,
+              },
+            },
+            "op": ">",
+            "right": {
+              "kind": "Literal",
+              "span": {
+                "end": 45,
+                "start": 44,
+              },
+              "value": 0,
+            },
+            "span": {
+              "end": 46,
+              "start": 39,
+            },
+          },
+          "kind": "Unary",
+          "op": "not",
+          "span": {
+            "end": 46,
+            "start": 35,
+          },
+        },
+        "span": {
+          "end": 46,
+          "start": 25,
+        },
+      },
+    },
+    "kind": "ExprStmt",
+    "span": {
+      "end": 46,
+      "start": 21,
+    },
+  },
+  {
+    "body": [
+      {
+        "expr": {
+          "kind": "Assign",
+          "name": "w",
+          "span": {
+            "end": 72,
+            "start": 63,
+          },
+          "value": {
+            "kind": "Arithmetic",
+            "left": {
+              "kind": "Identifier",
+              "name": "x",
+              "span": {
+                "end": 68,
+                "start": 67,
+              },
+            },
+            "op": "/",
+            "right": {
+              "kind": "Literal",
+              "span": {
+                "end": 72,
+                "start": 71,
+              },
+              "value": 2,
+            },
+            "span": {
+              "end": 72,
+              "start": 67,
+            },
+          },
+        },
+        "kind": "ExprStmt",
+        "span": {
+          "end": 72,
+          "start": 63,
+        },
+      },
+    ],
+    "condition": {
+      "kind": "Logical",
+      "left": {
+        "kind": "Identifier",
+        "name": "z",
+        "span": {
+          "end": 51,
+          "start": 50,
+        },
+      },
+      "op": "and",
+      "right": {
+        "kind": "Compare",
+        "left": {
+          "kind": "Identifier",
+          "name": "y",
+          "span": {
+            "end": 57,
+            "start": 56,
+          },
+        },
+        "op": ">=",
+        "right": {
+          "kind": "Literal",
+          "span": {
+            "end": 62,
+            "start": 61,
+          },
+          "value": 0,
+        },
+        "span": {
+          "end": 62,
+          "start": 56,
+        },
+      },
+      "span": {
+        "end": 62,
+        "start": 50,
+      },
+    },
+    "kind": "IfStmt",
+    "span": {
+      "end": 76,
+      "start": 47,
+    },
+  },
+  {
+    "expr": {
+      "kind": "Identifier",
+      "name": "w",
+      "span": {
+        "end": 78,
+        "start": 77,
+      },
+    },
+    "kind": "ExprStmt",
+    "span": {
+      "end": 78,
+      "start": 77,
+    },
+  },
+]
+`;

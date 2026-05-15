@@ -1,6 +1,13 @@
 import { expect, test } from "vitest";
 
-import { parse } from "./index";
+import { parse as parseWithSpans } from "./index";
+import { stripSpans } from "./testingUtils";
+
+// Shape-only AST for terse `toEqual` fixtures; spans are exercised separately
+// in `parser.spans.test.ts`.
+function parse(source: string): unknown {
+  return stripSpans(parseWithSpans(source));
+}
 
 test("precedence: addition below multiplication", () => {
   expect(parse("1 + 2 * 3")).toEqual([

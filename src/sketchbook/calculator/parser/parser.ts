@@ -6,6 +6,7 @@ import type {
   Expr,
   LogicalOp,
   Program,
+  Span,
   Stmt,
 } from "./ast";
 import grammar from "./grammar.ohm-bundle";
@@ -15,6 +16,10 @@ import grammar from "./grammar.ohm-bundle";
 
 const semantics = grammar.createSemantics();
 
+function spanOf(node: { source: { startIdx: number; endIdx: number } }): Span {
+  return { start: node.source.startIdx, end: node.source.endIdx };
+}
+
 type BinarySpec =
   | { kind: "Arithmetic"; op: ArithmeticOp }
   | { kind: "Compare"; op: CompareOp }
@@ -22,12 +27,14 @@ type BinarySpec =
 
 function bin(spec: BinarySpec) {
   return function (
+    this: NonterminalNode,
     left: NonterminalNode,
     _op: Node,
     right: NonterminalNode,
   ): Expr {
     return {
       ...spec,
+      span: spanOf(this),
       left: left.toAst() as Expr,
       right: right.toAst() as Expr,
     };
@@ -54,11 +61,16 @@ semantics.addOperation<Program | Stmt | Stmt[] | Expr | string | unknown[]>(
       return stmts;
     },
     Stmt_expr(exp) {
-      return { kind: "ExprStmt" as const, expr: exp.toAst() as Expr };
+      return {
+        kind: "ExprStmt" as const,
+        span: spanOf(this),
+        expr: exp.toAst() as Expr,
+      };
     },
     IfStmt(_ifKw, cond, _nl, block, _endKw) {
       return {
         kind: "IfStmt" as const,
+        span: spanOf(this),
         condition: cond.toAst() as Expr,
         body: block.toAst() as Stmt[],
       };
@@ -66,6 +78,7 @@ semantics.addOperation<Program | Stmt | Stmt[] | Expr | string | unknown[]>(
     AssignExp_assign(identNode, _eq, exprNode) {
       return {
         kind: "Assign" as const,
+        span: spanOf(this),
         name: identNode.toAst() as string,
         value: exprNode.toAst() as Expr,
       };
@@ -75,6 +88,7 @@ semantics.addOperation<Program | Stmt | Stmt[] | Expr | string | unknown[]>(
     NotExp_not(_kw, operand) {
       return {
         kind: "Unary" as const,
+        span: spanOf(this),
         op: "not",
         expr: operand.toAst() as Expr,
       };
@@ -90,24 +104,37 @@ semantics.addOperation<Program | Stmt | Stmt[] | Expr | string | unknown[]>(
     MulExp_times: bin({ kind: "Arithmetic", op: "*" }),
     MulExp_divide: bin({ kind: "Arithmetic", op: "/" }),
     UnaryExp_pos(_plus, unary) {
-      return unary.toAst() as Expr;
+      // `+x` is a no-op semantically, but the span should still cover the `+`.
+      const inner = unary.toAst() as Expr;
+      return { ...inner, span: spanOf(this) };
     },
     UnaryExp_neg(_minus, unary) {
       return {
         kind: "Unary" as const,
+        span: spanOf(this),
         op: "-",
         expr: unary.toAst() as Expr,
       };
     },
     PriExp_paren(_lp, exp, _rp) {
-      return exp.toAst() as Expr;
+      // Parens widen the inner expression's span to include the brackets.
+      const inner = exp.toAst() as Expr;
+      return { ...inner, span: spanOf(this) };
     },
     PriExp_var(identNode) {
-      return { kind: "Identifier" as const, name: identNode.toAst() as string };
+      return {
+        kind: "Identifier" as const,
+        span: spanOf(this),
+        name: identNode.toAst() as string,
+      };
     },
     // Ohm expands `digit+ ("." digit+)?` into three child nodes for this action dict.
     number(_digits, _dotDigitsOpt1, _dotDigitsOpt2) {
-      return { kind: "Literal" as const, value: Number(this.sourceString) };
+      return {
+        kind: "Literal" as const,
+        span: spanOf(this),
+        value: Number(this.sourceString),
+      };
     },
     ident(_first, _rest) {
       return this.sourceString;
