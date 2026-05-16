@@ -16,6 +16,7 @@ export interface ArithmeticActionDict<T> extends BaseActionDict<T> {
   Block?: (this: NonterminalNode, arg0: IterationNode, arg1: IterationNode, arg2: IterationNode) => T;
   StmtList?: (this: NonterminalNode, arg0: NonterminalNode, arg1: IterationNode, arg2: IterationNode) => T;
   Stmt_expr?: (this: NonterminalNode, arg0: NonterminalNode) => T;
+  LetStmt?: (this: NonterminalNode, arg0: NonterminalNode, arg1: NonterminalNode, arg2: TerminalNode, arg3: NonterminalNode) => T;
   FunDef?: (this: NonterminalNode, arg0: NonterminalNode, arg1: NonterminalNode, arg2: TerminalNode, arg3: IterationNode, arg4: TerminalNode, arg5: NonterminalNode, arg6: NonterminalNode, arg7: NonterminalNode) => T;
   ReturnStmt?: (this: NonterminalNode, arg0: NonterminalNode, arg1: IterationNode) => T;
   Params_single?: (this: NonterminalNode, arg0: NonterminalNode) => T;
@@ -69,6 +70,7 @@ export interface ArithmeticActionDict<T> extends BaseActionDict<T> {
   continue_kw?: (this: NonterminalNode, arg0: NonterminalNode) => T;
   def_kw?: (this: NonterminalNode, arg0: NonterminalNode) => T;
   return_kw?: (this: NonterminalNode, arg0: NonterminalNode) => T;
+  let_kw?: (this: NonterminalNode, arg0: NonterminalNode) => T;
   keyword?: (this: NonterminalNode, arg0: NonterminalNode) => T;
   ident?: (this: NonterminalNode, arg0: NonterminalNode, arg1: IterationNode) => T;
   space?: (this: NonterminalNode, arg0: IterationNode) => T;

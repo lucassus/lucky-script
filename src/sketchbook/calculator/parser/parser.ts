@@ -178,6 +178,20 @@ semantics.addOperation<Program | Stmt | Stmt[] | Expr | string | unknown[]>(
     ): Expr[] {
       return [exp.toAst() as Expr, ...(rest.toAst() as Expr[])];
     },
+    LetStmt(
+      this: NonterminalNode,
+      _letKw: Node,
+      identNode: Node,
+      _eq: Node,
+      exprNode: Node,
+    ): Stmt {
+      return {
+        kind: "LetStmt" as const,
+        span: spanOf(this),
+        name: identNode.toAst() as string,
+        value: exprNode.toAst() as Expr,
+      };
+    },
     FunDef(
       this: NonterminalNode,
       _defKw: Node,

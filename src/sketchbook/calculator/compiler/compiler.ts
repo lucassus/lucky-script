@@ -4,27 +4,23 @@ import type { BytecodeModule, FunctionProto, Instruction } from "./bytecode";
 export function compile(program: Program): BytecodeModule {
   const main: FunctionProto = { name: "__main", params: [], code: [] };
   const functions: FunctionProto[] = [];
-  const functionTable = new Map<string, number>();
 
-  for (const stmt of program) {
-    if (stmt.kind === "FunDef") {
-      if (functionTable.has(stmt.name)) {
-        throw new Error(`duplicate function: ${stmt.name}`);
-      }
-      const idx = functions.length;
-      functionTable.set(stmt.name, idx);
-      functions.push({
-        name: stmt.name,
-        params: [...stmt.params],
-        code: [],
-      });
-    }
+  // knownLocalsStack: compile-time shadow of the Environment chain.
+  // Index 0 = innermost (current) scope, last = global scope.
+  // Used only for "is this name visible?" checks — it never affects code shape.
+  const knownLocalsStack: Set<string>[] = [new Set<string>()];
+
+  function currentScope(): Set<string> {
+    return knownLocalsStack[0]!;
+  }
+
+  // Returns true if name is visible in any enclosing scope at compile time.
+  function isKnown(name: string): boolean {
+    return knownLocalsStack.some((s) => s.has(name));
   }
 
   let targetCode = main.code;
   let inFunction = false;
-  let knownLocals = new Set<string>();
-  let controlDepth = 0;
 
   let loopDepth = 0;
   const breakStatements: Instruction[][] = [];
@@ -33,37 +29,38 @@ export function compile(program: Program): BytecodeModule {
   function visit(expr: Expr): void {
     switch (expr.kind) {
       case "Call": {
-        const fnIndex = functionTable.get(expr.name);
-        if (fnIndex === undefined) {
-          throw new Error(`unknown function: ${expr.name}`);
+        // All calls go through LOAD (get the closure value) + CALL (invoke it).
+        // Arity checking is deferred to runtime via ArityMismatch.
+        if (!isKnown(expr.name)) {
+          throw new Error(`unknown name: ${expr.name}`);
         }
-        const callee = functions[fnIndex]!;
-        const arity = callee.params.length;
-        if (expr.args.length !== arity) {
-          throw new Error(
-            `arity mismatch: ${expr.name} expects ${arity} arguments, got ${expr.args.length}`,
-          );
-        }
+        targetCode.push({ opcode: "LOAD", name: expr.name });
         for (const arg of expr.args) {
           visit(arg);
         }
-        targetCode.push({ opcode: "CALL", fnIndex, argc: expr.args.length });
+        targetCode.push({ opcode: "CALL", argc: expr.args.length });
         return;
       }
 
-      case "Assign":
+      case "Assign": {
+        // Bare `x = e`: must already exist somewhere in the chain.
+        if (!isKnown(expr.name)) {
+          throw new Error(`unknown name: ${expr.name}`);
+        }
         visit(expr.value);
+        // DUP so the assignment expression still has a value on the stack.
         targetCode.push({ opcode: "DUP" });
-        knownLocals.add(expr.name);
-        targetCode.push({ opcode: "STORE", name: expr.name });
+        targetCode.push({ opcode: "ASSIGN", name: expr.name });
         return;
+      }
 
-      case "Identifier":
-        if (!knownLocals.has(expr.name)) {
+      case "Identifier": {
+        if (!isKnown(expr.name)) {
           throw new Error(`unknown name: ${expr.name}`);
         }
         targetCode.push({ opcode: "LOAD", name: expr.name });
         return;
+      }
 
       case "Arithmetic":
         visit(expr.left);
@@ -90,10 +87,8 @@ export function compile(program: Program): BytecodeModule {
             target: 0,
           };
           targetCode.push(jmpInstruction);
-
           targetCode.push({ opcode: "POP" });
           visit(expr.right);
-
           jmpInstruction.target = targetCode.length;
         } else {
           targetCode.push({ opcode: "NOT" });
@@ -102,10 +97,8 @@ export function compile(program: Program): BytecodeModule {
             target: 0,
           };
           targetCode.push(jmpInstruction);
-
           targetCode.push({ opcode: "POP" });
           visit(expr.right);
-
           jmpInstruction.target = targetCode.length;
         }
         return;
@@ -141,38 +134,67 @@ export function compile(program: Program): BytecodeModule {
     }
   }
 
-  function compileFunBody(funStmt: Extract<Stmt, { kind: "FunDef" }>): void {
-    if (inFunction || controlDepth !== 0) {
-      throw new Error("def is only allowed at the top level");
+  function compileFunDef(funStmt: Extract<Stmt, { kind: "FunDef" }>): void {
+    // Duplicate-name guard within the current scope.
+    if (currentScope().has(funStmt.name)) {
+      throw new Error(`duplicate function: ${funStmt.name}`);
     }
 
-    const fnIndex = functionTable.get(funStmt.name)!;
-    const proto = functions[fnIndex]!;
+    const fnIndex = functions.length;
+    const proto: FunctionProto = {
+      name: funStmt.name,
+      params: [...funStmt.params],
+      code: [],
+    };
+    functions.push(proto);
 
+    // Register name in the enclosing scope BEFORE compiling the body so that
+    // the function can call itself recursively. This is not full hoisting —
+    // only the function's own name is pre-registered, not any later defs.
+    currentScope().add(funStmt.name);
+
+    // Save compilation state and switch into the function's body.
     const savedCode = targetCode;
     const savedInFunction = inFunction;
-    const savedLocals = knownLocals;
 
     targetCode = proto.code;
     inFunction = true;
-    knownLocals = new Set(funStmt.params);
+
+    // Push a new scope containing only the parameters.
+    const paramScope = new Set<string>(funStmt.params);
+    knownLocalsStack.unshift(paramScope);
 
     for (const inner of funStmt.body) {
       emitStmt(inner, false);
     }
 
+    // Implicit return 0 if the body falls through without a return statement.
     targetCode.push({ opcode: "PUSH", value: 0 });
     targetCode.push({ opcode: "RETURN" });
 
+    knownLocalsStack.shift();
     targetCode = savedCode;
     inFunction = savedInFunction;
-    knownLocals = savedLocals;
+
+    // Emit the runtime instructions that create the closure and bind it.
+    targetCode.push({ opcode: "MAKE_CLOSURE", fnIndex });
+    targetCode.push({ opcode: "DEFINE", name: funStmt.name });
   }
 
   function emitStmt(stmt: Stmt, keepOnStack: boolean): void {
     switch (stmt.kind) {
-      case "FunDef":
-        throw new Error("def is only allowed at the top level");
+      case "LetStmt": {
+        // `let x = e` — define a new binding in the current scope.
+        visit(stmt.value);
+        currentScope().add(stmt.name);
+        targetCode.push({ opcode: "DEFINE", name: stmt.name });
+        break;
+      }
+
+      case "FunDef": {
+        compileFunDef(stmt);
+        break;
+      }
 
       case "ReturnStmt": {
         if (!inFunction) {
@@ -198,10 +220,7 @@ export function compile(program: Program): BytecodeModule {
         if (loopDepth === 0) {
           throw new Error("break statement outside of a loop");
         }
-        const jmpInstruction: Instruction = {
-          opcode: "JMP",
-          target: 0,
-        };
+        const jmpInstruction: Instruction = { opcode: "JMP", target: 0 };
         targetCode.push(jmpInstruction);
         breakStatements[loopDepth - 1]!.push(jmpInstruction);
         break;
@@ -211,10 +230,7 @@ export function compile(program: Program): BytecodeModule {
         if (loopDepth === 0) {
           throw new Error("continue statement outside of a loop");
         }
-        const jmpInstruction: Instruction = {
-          opcode: "JMP",
-          target: 0,
-        };
+        const jmpInstruction: Instruction = { opcode: "JMP", target: 0 };
         targetCode.push(jmpInstruction);
         continueStatements[loopDepth - 1]!.push(jmpInstruction);
         break;
@@ -229,22 +245,15 @@ export function compile(program: Program): BytecodeModule {
         };
         targetCode.push(jmpIfZeroInstruction);
 
-        controlDepth++;
         stmt.consequence.forEach((inner) => emitStmt(inner, keepOnStack));
-        controlDepth--;
 
         if (stmt.alternative) {
-          const jmpInstruction: Instruction = {
-            opcode: "JMP",
-            target: 0,
-          };
+          const jmpInstruction: Instruction = { opcode: "JMP", target: 0 };
           targetCode.push(jmpInstruction);
 
           jmpIfZeroInstruction.target = targetCode.length;
 
-          controlDepth++;
           stmt.alternative.forEach((inner) => emitStmt(inner, keepOnStack));
-          controlDepth--;
 
           jmpInstruction.target = targetCode.length;
         } else {
@@ -268,9 +277,7 @@ export function compile(program: Program): BytecodeModule {
         breakStatements.push([]);
         continueStatements.push([]);
 
-        controlDepth++;
         stmt.body.forEach((inner) => emitStmt(inner, false));
-        controlDepth--;
 
         const jmpInstruction: Instruction = {
           opcode: "JMP",
@@ -283,15 +290,11 @@ export function compile(program: Program): BytecodeModule {
 
         const currentBreaks = breakStatements.pop()!;
         for (const breakJmp of currentBreaks) {
-          if (breakJmp.opcode === "JMP") {
-            breakJmp.target = loopEnd;
-          }
+          if (breakJmp.opcode === "JMP") breakJmp.target = loopEnd;
         }
         const currentContinues = continueStatements.pop()!;
         for (const continueJmp of currentContinues) {
-          if (continueJmp.opcode === "JMP") {
-            continueJmp.target = loopStart;
-          }
+          if (continueJmp.opcode === "JMP") continueJmp.target = loopStart;
         }
 
         loopDepth--;
@@ -307,11 +310,7 @@ export function compile(program: Program): BytecodeModule {
   for (let i = 0; i < program.length; i++) {
     const stmt = program[i]!;
     const isLast = i === program.length - 1;
-    if (stmt.kind === "FunDef") {
-      compileFunBody(stmt);
-    } else {
-      emitStmt(stmt, isLast && stmt.kind === "ExprStmt");
-    }
+    emitStmt(stmt, isLast && stmt.kind === "ExprStmt");
   }
 
   main.code.push({ opcode: "HALT" });

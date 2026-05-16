@@ -86,6 +86,11 @@ export interface ReturnStmt extends Node<"ReturnStmt"> {
   readonly value?: Expr;
 }
 
+export interface LetStmt extends Node<"LetStmt"> {
+  readonly name: string;
+  readonly value: Expr;
+}
+
 export type Stmt =
   | ExprStmt
   | IfStmt
@@ -93,6 +98,7 @@ export type Stmt =
   | BreakStmt
   | ContinueStmt
   | FunDef
-  | ReturnStmt;
+  | ReturnStmt
+  | LetStmt;
 
 export type Program = readonly Stmt[];

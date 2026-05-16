@@ -11,7 +11,10 @@ Arithmetic {
     | BreakStmt
     | ContinueStmt
     | IfStmt
+    | LetStmt
     | AssignExp -- expr
+
+  LetStmt = let_kw ident "=" OrExp
 
   FunDef = def_kw ident "(" Params? ")" nl+ Block end_kw
   Params
@@ -92,7 +95,8 @@ Arithmetic {
   continue_kw = kw<"continue">
   def_kw = kw<"def">
   return_kw = kw<"return">
-  keyword = and_kw | or_kw | not_kw | if_kw | elseif_kw | else_kw | end_kw | while_kw | break_kw | continue_kw | def_kw | return_kw
+  let_kw = kw<"let">
+  keyword = and_kw | or_kw | not_kw | if_kw | elseif_kw | else_kw | end_kw | while_kw | break_kw | continue_kw | def_kw | return_kw | let_kw
 
   ident (an identifier) = ~keyword letter alnum*
 

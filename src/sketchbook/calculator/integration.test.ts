@@ -7,7 +7,10 @@ import { FrameStackOverflow, run, type RunOptions } from "./vm";
 function evalExpr(source: string): number | undefined {
   const program = parse(source);
   const module = compile(program);
-  return run(module);
+  const result = run(module);
+  if (result === undefined) return undefined;
+  if (result.kind !== "number") throw new Error("expected number, got closure");
+  return result.value;
 }
 
 function evalExprWithOptions(
@@ -16,7 +19,10 @@ function evalExprWithOptions(
 ): number | undefined {
   const program = parse(source);
   const module = compile(program);
-  return run(module, options);
+  const result = run(module, options);
+  if (result === undefined) return undefined;
+  if (result.kind !== "number") throw new Error("expected number, got closure");
+  return result.value;
 }
 
 test.each([
@@ -67,16 +73,16 @@ test.each([
   ["1\n2+3", 5],
   ["1+1\n3*4", 12],
 
-  // assignment: returns the assigned value
-  ["x = 2 + 3\nx * 4", 20],
-  ["x = 5", 5],
-  ["x = 1\nx = 40\nx + 3", 43],
-  ["lettings = 99\nlettings", 99],
+  // let: bind a new variable; bare x = e: reassign to existing variable
+  ["let x = 2 + 3\nx * 4", 20],
+  ["let x = 0\nx = 5", 5], // bare assignment expression returns the assigned value
+  ["let x = 1\nx = 40\nx + 3", 43],
+  ["let lettings = 99\nlettings", 99],
 
   // chained assignment: x = y = v assigns v to both, evaluates to v
-  ["x = y = 1\nx", 1],
-  ["x = y = 1\ny", 1],
-  ["x = y = 7\nx + y", 14],
+  ["let x = 0\nlet y = 0\nx = y = 1\nx", 1],
+  ["let x = 0\nlet y = 0\nx = y = 1\ny", 1],
+  ["let x = 0\nlet y = 0\nx = y = 7\nx + y", 14],
 
   // comparison: true yields 1, false yields 0
   ["3 > 2", 1],
@@ -93,14 +99,14 @@ test.each([
   ["3 != 3", 0],
 
   // comparison with arithmetic operands
-  ["x = 5\nx > 2", 1],
-  ["x = 1\nx >= 1", 1],
+  ["let x = 5\nx > 2", 1],
+  ["let x = 1\nx >= 1", 1],
   ["1 + 1 == 2", 1],
   ["2 * 3 > 5", 1],
   ["10 - 4 <= 6", 1],
 
   // comparison result stored and used
-  ["a = 3 > 2\na", 1],
+  ["let a = 3 > 2\na", 1],
 
   // logical and
   ["1 and 1", 1],
@@ -138,24 +144,23 @@ test.each([
   ["not 3 > 4", 1],
 
   // if / end (condition line must end before body)
-  ["x = 1\nif 0\nx = 9\nend\nx", 1],
-  ["x = 1\nif 1\nx = 9\nend\nx", 9],
-  ["x = 0\nif x > 0\nx = 2\nend\nx", 0],
-  ["x = 1\nif x > 0\nx = 3\nend\nx", 3],
+  ["let x = 1\nif 0\nx = 9\nend\nx", 1],
+  ["let x = 1\nif 1\nx = 9\nend\nx", 9],
+  ["let x = 0\nif x > 0\nx = 2\nend\nx", 0],
+  ["let x = 1\nif x > 0\nx = 3\nend\nx", 3],
 
-  // keywords are not valid identifiers (tested via parse errors above)
   // variables whose names start with keywords are valid
-  ["android = 7\nandroid", 7],
-  ["order = 3\norder", 3],
+  ["let android = 7\nandroid", 7],
+  ["let order = 3\norder", 3],
 
   // while loops
-  ["x = 0\nwhile x < 5\n  x = x + 1\nend\nx", 5],
-  ["x = 10\ny = 0\nwhile x > 0\n  y = y + x\n  x = x - 1\nend\ny", 55],
+  ["let x = 0\nwhile x < 5\n  x = x + 1\nend\nx", 5],
+  ["let x = 10\nlet y = 0\nwhile x > 0\n  y = y + x\n  x = x - 1\nend\ny", 55],
 
   // break and continue
-  ["x = 0\nwhile 1\n  x = x + 1\n  if x == 5\n    break\n  end\nend\nx", 5],
+  ["let x = 0\nwhile 1\n  x = x + 1\n  if x == 5\n    break\n  end\nend\nx", 5],
   [
-    "x = 0\ny = 0\nwhile x < 5\n  x = x + 1\n  if x == 3\n    continue\n  end\n  y = y + x\nend\ny",
+    "let x = 0\nlet y = 0\nwhile x < 5\n  x = x + 1\n  if x == 3\n    continue\n  end\n  y = y + x\nend\ny",
     1 + 2 + 4 + 5,
   ],
 ] as const)("evalExpr(%s) === %s", (source, expected) => {
@@ -164,16 +169,17 @@ test.each([
 
 test("kitchen sink: all features in one script", () => {
   const program = `
-    x = 5
-    y = 3
-    z = x * y + 2
-    neg = -z
-    lo = hi = 0
-    frac = z / 2.0
-    inRange = frac >= 8 and frac <= 9
-    mixed = z > neg and (x != y or lo == hi)
-    result = inRange and mixed and not (z == 0)
-    
+    let x = 5
+    let y = 3
+    let z = x * y + 2
+    let neg = -z
+    let lo = 0
+    let hi = 0
+    let frac = z / 2.0
+    let inRange = frac >= 8 and frac <= 9
+    let mixed = z > neg and (x != y or lo == hi)
+    let result = inRange and mixed and not (z == 0)
+
     if x == 1
       x = 2
     elseif x == 3
@@ -181,7 +187,7 @@ test("kitchen sink: all features in one script", () => {
     else
       x = 0
     end
-    
+
     if x = 1 + 2 == 3
     end
 
@@ -194,7 +200,7 @@ test("kitchen sink: all features in one script", () => {
         break
       end
     end
-    
+
     result
   `.trim();
 
@@ -264,7 +270,7 @@ min(10, 3)
 def double(x)
   return x * 2
 end
-x = 3
+let x = 3
 1 + double(x) * 2
 `,
     13,
@@ -325,13 +331,15 @@ test.each([
   expect(evalExpr(FIB_PROG.replace("K", String(n)))).toBe(expected);
 });
 
+// Variables introduced inside a function body must use `let`.
+// Subsequent reassignments within the loop use bare `x = e` (ASSIGN).
 const FIB_IT_PROG = `
 def fibIt(n)
-  a = 0
-  b = 1
-  i = 0
+  let a = 0
+  let b = 1
+  let i = 0
   while i < n
-    t = a + b
+    let t = a + b
     a = b
     b = t
     i = i + 1
@@ -354,6 +362,8 @@ test.each([
   expect(evalExpr(FIB_IT_PROG.replace("K", String(n)))).toBe(expected);
 });
 
+// even/odd is mutual recursion — a known limitation; compile error because
+// `odd` is not yet in scope when `even`'s body is compiled.
 const PARITY_PROG = `
 def even(n)
   if n == 0
@@ -371,20 +381,13 @@ end
 even(K)
 `.trim();
 
-test.each([
-  [0, 1],
-  [1, 0],
-  [2, 1],
-  [7, 0],
-  [10, 1],
-  [11, 0],
-] as const)("mutual recursion even(%s) === %s", (n, expected) => {
-  expect(evalExpr(PARITY_PROG.replace("K", String(n)))).toBe(expected);
+test("mutual recursion is a compile error (no hoisting)", () => {
+  expect(() => evalExpr(PARITY_PROG.replace("K", "0"))).toThrow("unknown name");
 });
 
 const GCD_PROG = `
 def mod(a, b)
-  r = a
+  let r = a
   while r >= b
     r = r - b
   end
@@ -411,15 +414,18 @@ test.each([
   ).toBe(expected);
 });
 
+// `let x = e` inside a function creates a LOCAL binding that shadows any outer
+// variable with the same name. Bare `x = e` walks the chain and updates the
+// nearest existing binding.
 test.each([
   [
     `
-x = 10
+let x = 10
 def f()
-  x = 5
+  let x = 5
   return x
 end
-y = f()
+let y = f()
 x + y
 `,
     15,
@@ -427,12 +433,12 @@ x + y
   [
     `
 def fa()
-  x = 1
+  let x = 1
   return x
 end
 
 def fb()
-  x = 99
+  let x = 99
   return x
 end
 
@@ -442,7 +448,7 @@ fa() + fb()
   ],
   [
     `
-x = 99
+let x = 99
 def f(x)
   return x + 1
 end
@@ -468,7 +474,7 @@ test.each([
   [
     `
 def f()
-  x = 1
+  let x = 1
 end
 f()
 `,
@@ -490,7 +496,7 @@ f()
     `
 def firstEven(start)
   while 1
-    n = start
+    let n = start
     while n >= 2
       n = n - 2
     end
@@ -508,7 +514,7 @@ firstEven(11)
     `
 def firstEven(start)
   while 1
-    n = start
+    let n = start
     while n >= 2
       n = n - 2
     end
@@ -532,7 +538,7 @@ test.each([
 def inc(x)
   return x + 1
 end
-y = inc(3)
+let y = inc(3)
 y
 `,
     4,
@@ -543,7 +549,7 @@ def truth()
   return 1
 end
 if truth()
-  x = 7
+  let x = 7
 else
   x = 0
 end
@@ -556,7 +562,7 @@ x
 def cond()
   return 0
 end
-x = 0
+let x = 0
 while cond()
   x = x + 1
 end
@@ -611,8 +617,8 @@ def square(x)
 end
 
 def sumTo(n)
-  s = 0
-  i = 1
+  let s = 0
+  let i = 1
   while i <= n
     s = s + i
     i = i + 1
@@ -627,10 +633,10 @@ def fib(n)
   return fib(n - 1) + fib(n - 2)
 end
 
-x = 4
-a = square(x)
-b = sumTo(5)
-c = fib(6)
+let x = 4
+let a = square(x)
+let b = sumTo(5)
+let c = fib(6)
 
 def early(n)
   if n > 10
@@ -639,29 +645,133 @@ def early(n)
   return n
 end
 
-d = early(3)
+let d = early(3)
 a + b + c + d
 `.trim();
 
   expect(evalExpr(source)).toBe(16 + 15 + 8 + 3);
 });
 
+// ── Closure tests ─────────────────────────────────────────────────────────────
+
+// A closure captures the Environment object by reference, so each call to
+// makeAdder produces an independent adder with its own captured `x`.
 test.each([
-  ["if 1\ndef f()\nend\nend", "def is only allowed at the top level"],
-  ["while 1\ndef f()\nend\nend", "def is only allowed at the top level"],
   [
-    "def outer()\ndef inner()\nend\nend",
-    "def is only allowed at the top level",
+    `
+def makeAdder(x)
+  def adder(y)
+    return x + y
+  end
+  return adder
+end
+let add5 = makeAdder(5)
+add5(3)
+`,
+    8,
   ],
+  [
+    `
+def makeAdder(x)
+  def adder(y)
+    return x + y
+  end
+  return adder
+end
+let add2 = makeAdder(2)
+let add10 = makeAdder(10)
+add2(3) + add10(1)
+`,
+    16,
+  ],
+  [
+    `
+def makeAdder(x)
+  def adder(y)
+    return x + y
+  end
+  return adder
+end
+let f = makeAdder(0)
+let g = makeAdder(100)
+f(1) + g(1)
+`,
+    102,
+  ],
+] as const)("closure makeAdder: evalExpr === %s", (source, expected) => {
+  expect(evalExpr(source.trim())).toBe(expected);
+});
+
+// Bare `x = e` inside a closure updates the binding in the environment where
+// `x` was originally defined (capture by reference).
+test("closure captures variable by reference", () => {
+  const source = `
+let counter = 0
+def inc()
+  counter = counter + 1
+end
+inc()
+inc()
+counter
+`.trim();
+  expect(evalExpr(source)).toBe(2);
+});
+
+// `let x = e` inside a function always creates a fresh local binding,
+// shadowing any outer variable without disturbing it.
+test("let inside function shadows outer binding", () => {
+  const source = `
+let x = 10
+def f()
+  let x = 99
+  return x
+end
+f() + x
+`.trim();
+  expect(evalExpr(source)).toBe(109);
+});
+
+// def is now allowed inside if/while bodies (no longer restricted to top level).
+test("def inside if block is valid", () => {
+  const source = `
+let x = 1
+if x > 0
+  def double(n)
+    return n * 2
+  end
+end
+double(5)
+`.trim();
+  expect(evalExpr(source)).toBe(10);
+});
+
+test("def inside while block is valid", () => {
+  const source = `
+let i = 0
+while i < 1
+  def triple(n)
+    return n * 3
+  end
+  i = i + 1
+end
+triple(4)
+`.trim();
+  expect(evalExpr(source)).toBe(12);
+});
+
+// ── Compile / runtime errors ───────────────────────────────────────────────────
+
+test.each([
   ["return 1", "return outside of a function"],
   ["if 1\nreturn 1\nend", "return outside of a function"],
-  ["nosuch()", "unknown function"],
+  // nosuch() — name never introduced with `let` or `def`
+  ["nosuch()", "unknown name"],
   [
     `
 def f()
   return x
 end
-x = 1
+let x = 1
 f()
 `,
     "unknown name",
@@ -684,11 +794,14 @@ test("regression: legacy calculator suite table remains stable", () => {
   const rows = [
     ["(1 + 2) * -3", -9],
     ["1+2", 3],
-    ["x = 2 + 3\nx * 4", 20],
+    ["let x = 2 + 3\nx * 4", 20],
     ["3 > 2", 1],
     ["1 and 0", 0],
-    ["x = 0\nwhile x < 5\n  x = x + 1\nend\nx", 5],
-    ["x = 0\nwhile 1\n  x = x + 1\n  if x == 5\n    break\n  end\nend\nx", 5],
+    ["let x = 0\nwhile x < 5\n  x = x + 1\nend\nx", 5],
+    [
+      "let x = 0\nwhile 1\n  x = x + 1\n  if x == 5\n    break\n  end\nend\nx",
+      5,
+    ],
   ] as const;
   for (const [src, expected] of rows) {
     expect(evalExpr(src)).toBe(expected);

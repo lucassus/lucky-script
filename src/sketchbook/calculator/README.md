@@ -9,7 +9,28 @@
 - [x] Functions
   - [x] CallFrame architecture
   - [x] Function invocation and returns 
-- [ ] First-class functions
-- [ ] Closures
-- [ ] Arrays
+- [x] First-class functions
+  - [ ] Make Call Expressions Dynamic: Immediately invoke a returned function like getAdder(5)(10)
+- [x] Closures
+- [ ] Better tests organization
+- [ ] None type
 - [ ] Anonymous functions aka lambdas
+- [ ] Move to v2 folder
+- [ ] Arrays
+- [ ] Repl
+- [ ] Std library functions, like print, assert
+
+
+```
+let add = (a, b) -> a + b
+map(list, add)
+
+let add = def (a,b)
+  return a + b
+end
+
+map(list, (x) -> x * 2)
+map(list, def(x)
+  return x * 2
+end)
+```

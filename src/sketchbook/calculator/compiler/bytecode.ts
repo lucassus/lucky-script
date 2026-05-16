@@ -1,19 +1,24 @@
+// ── Instructions ─────────────────────────────────────────────────────────────
+
 export type Instruction =
   /** Push a number literal onto the operand stack. */
   | { opcode: "PUSH"; value: number }
   /** Duplicate the top value on the stack. */
   | { opcode: "DUP" }
-  /**
-   * Push the value of the named binding from the **current** frame's locals map.
-   * The compiler guarantees the name is bound before any read.
-   */
+  /** Walk the Environment chain from the current frame and push the value. */
   | { opcode: "LOAD"; name: string }
   /**
-   * Pop one value and store it under `name` in the current frame's locals map
-   * (creates the binding if not present).
+   * Pop one value and create a new binding in the CURRENT frame's Environment.
+   * Compiled from `let x = e`. Never walks the chain.
    */
-  | { opcode: "STORE"; name: string }
-  /** Pop the top value and discard it (e.g. for expression statements). */
+  | { opcode: "DEFINE"; name: string }
+  /**
+   * Pop one value and walk the Environment chain to find and update an existing
+   * binding. Compiled from bare `x = e`. Throws UndefinedVariable if the name
+   * is not found anywhere in the chain.
+   */
+  | { opcode: "ASSIGN"; name: string }
+  /** Pop the top value and discard it (expression statements). */
   | { opcode: "POP" }
   /** Pop `right`, then `left`, push `left + right`. */
   | { opcode: "ADD" }
@@ -40,31 +45,34 @@ export type Instruction =
   /** Pop one value, push 1 if it is zero, else 0. */
   | { opcode: "NOT" }
   /**
-   * Pop the top value; if it is zero, set the instruction pointer to `target`
-   * (absolute index of the next instruction to run).
+   * Pop the top value; if it is zero, set the instruction pointer to `target`.
    */
   | { opcode: "JMP_IF_ZERO"; target: number }
   /** Unconditionally set the instruction pointer to `target`. */
   | { opcode: "JMP"; target: number }
   /**
-   * Pop `argc` argument values, allocate a new frame for `module.functions[fnIndex]`,
-   * bind each parameter name to its corresponding argument (declaration order), and transfer control.
-   * Operand-stack net effect after the callee runs `RETURN`: `-argc + 1` (arguments consumed, one return value pushed).
+   * Create a ClosureValue from `module.functions[fnIndex]` and the current
+   * frame's Environment, then push it. The enclosing Environment is captured
+   * by reference, so mutations via ASSIGN are visible to the closure.
    */
-  | { opcode: "CALL"; fnIndex: number; argc: number }
+  | { opcode: "MAKE_CLOSURE"; fnIndex: number }
   /**
-   * Pop one return value from the operand stack, pop the current frame, and push that value
-   * onto the caller's operand stack.
+   * Pop the callee (must be a ClosureValue), pop `argc` argument values, create
+   * a new Environment with `enclosing = callee.env`, bind each parameter, and
+   * transfer control. The callee sits below the arguments on the stack.
+   */
+  | { opcode: "CALL"; argc: number }
+  /**
+   * Pop one return value, pop the current frame, and push the value onto the
+   * caller's operand stack.
    */
   | { opcode: "RETURN" }
   /**
-   * Terminate the program and yield the top of the operand stack as the
-   * program's result. If the stack is empty, the result is `undefined`.
-   * Valid only while executing in the main (`__main`) frame.
+   * Terminate the program. Returns the top of the stack (or undefined if empty).
+   * Valid only in the main (`__main`) frame.
    */
   | { opcode: "HALT" };
 
-/** Bytecode for a single function body (`__main` or a user `def`). */
 export type Bytecode = Instruction[];
 
 export interface FunctionProto {
@@ -74,8 +82,9 @@ export interface FunctionProto {
 }
 
 /**
- * A compiled calculator module: top-level script (`main`) plus indexed user functions (`functions`).
- * `CALL.fnIndex` indexes into `functions` only — `main` is never invoked via `CALL`.
+ * A compiled module: top-level script (`main`) plus all named function bodies
+ * (`functions`). `MAKE_CLOSURE` references `functions` by index; `main` is
+ * never referenced by index.
  */
 export interface BytecodeModule {
   readonly main: FunctionProto;

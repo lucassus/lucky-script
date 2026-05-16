@@ -30,11 +30,31 @@ export class FrameStackOverflow extends VmError {
   }
 }
 
-/** `LOAD` for a name not present in the current frame's locals (should be rare if bytecode comes from the compiler). */
+/** `LOAD` or `ASSIGN` for a name not present anywhere in the Environment chain. */
 export class UndefinedVariable extends VmError {
   override readonly name = "UndefinedVariable";
 
   constructor(readonly variableName: string) {
     super(`undefined variable '${variableName}'`);
+  }
+}
+
+/** `CALL` received the wrong number of arguments for the callee's parameter list. */
+export class ArityMismatch extends VmError {
+  override readonly name = "ArityMismatch";
+
+  constructor(fnName: string, expected: number, got: number) {
+    super(
+      `arity mismatch: ${fnName} expects ${expected} arguments, got ${got}`,
+    );
+  }
+}
+
+/** `CALL` was executed against a non-closure value (e.g. a number). */
+export class NotCallable extends VmError {
+  override readonly name = "NotCallable";
+
+  constructor() {
+    super("value is not callable");
   }
 }
