@@ -42,6 +42,11 @@ export type Arithmetic = Binary<"Arithmetic", ArithmeticOp>;
 export type Compare = Binary<"Compare", CompareOp>;
 export type Logical = Binary<"Logical", LogicalOp>;
 
+export interface Call extends Node<"Call"> {
+  readonly name: string;
+  readonly args: readonly Expr[];
+}
+
 export type Expr =
   | Literal
   | Identifier
@@ -49,7 +54,8 @@ export type Expr =
   | Unary
   | Arithmetic
   | Compare
-  | Logical;
+  | Logical
+  | Call;
 
 export interface ExprStmt extends Node<"ExprStmt"> {
   readonly expr: Expr;
@@ -70,6 +76,23 @@ export type BreakStmt = Node<"BreakStmt">;
 
 export type ContinueStmt = Node<"ContinueStmt">;
 
-export type Stmt = ExprStmt | IfStmt | WhileStmt | BreakStmt | ContinueStmt;
+export interface FunDef extends Node<"FunDef"> {
+  readonly name: string;
+  readonly params: readonly string[];
+  readonly body: readonly Stmt[];
+}
+
+export interface ReturnStmt extends Node<"ReturnStmt"> {
+  readonly value?: Expr;
+}
+
+export type Stmt =
+  | ExprStmt
+  | IfStmt
+  | WhileStmt
+  | BreakStmt
+  | ContinueStmt
+  | FunDef
+  | ReturnStmt;
 
 export type Program = readonly Stmt[];

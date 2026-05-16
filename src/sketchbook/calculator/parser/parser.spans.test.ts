@@ -3,9 +3,12 @@ import { expect, test } from "vitest";
 import type {
   Arithmetic,
   Assign,
+  Call,
+  FunDef,
   Identifier,
   IfStmt,
   Literal,
+  ReturnStmt,
   Unary,
 } from "./ast";
 import { parse } from "./index";
@@ -89,6 +92,27 @@ test("nested if: inner span is contained in outer span", () => {
   expect(inner.kind).toBe("IfStmt");
   expect(inner.span.start).toBeGreaterThan(outer.span.start);
   expect(inner.span.end).toBeLessThan(outer.span.end);
+});
+
+test("FunDef span covers def through end", () => {
+  const program = parse("def f()\nend");
+  const fd = program[0] as FunDef;
+  expect(fd.kind).toBe("FunDef");
+  expect(fd.span).toEqual({ start: 0, end: 11 });
+});
+
+test("ReturnStmt span covers return and optional expression", () => {
+  const program = parse("def f()\nreturn 1 + 2\nend");
+  const ret = (program[0] as FunDef).body[0] as ReturnStmt;
+  expect(ret.kind).toBe("ReturnStmt");
+  expect(ret.span.start).toBeGreaterThan(0);
+  expect(ret.span.end).toBeLessThan(program[0]!.span.end);
+});
+
+test("Call span covers name, parens, and arguments", () => {
+  const expr = firstExpr("outer(inner(1), 2)") as Call;
+  expect(expr.kind).toBe("Call");
+  expect(expr.span).toEqual({ start: 0, end: 18 });
 });
 
 test("kitchen sink: full AST snapshot including spans for a multi-feature program", () => {

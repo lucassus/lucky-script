@@ -5,11 +5,20 @@ Arithmetic {
   StmtList = Stmt (nl+ Stmt)*
 
   Stmt
-    = WhileStmt
+    = FunDef
+    | ReturnStmt
+    | WhileStmt
     | BreakStmt
     | ContinueStmt
     | IfStmt
     | AssignExp -- expr
+
+  FunDef = def_kw ident "(" Params? ")" nl+ Block end_kw
+  Params
+    = ident "," Params -- cons
+    | ident -- single
+
+  ReturnStmt = return_kw AssignExp?
 
   WhileStmt = while_kw AssignExp nl+ Block end_kw
   BreakStmt = break_kw
@@ -58,9 +67,14 @@ Arithmetic {
     | PriExp
 
   PriExp
-    = "(" AssignExp ")" -- paren
+    = ident "(" Args? ")" -- call
+    | "(" AssignExp ")" -- paren
     | number
     | ident -- var
+
+  Args
+    = AssignExp "," Args -- cons
+    | AssignExp -- single
 
   number = digit+ ("." digit+)?
 
@@ -76,7 +90,9 @@ Arithmetic {
   while_kw  = kw<"while">
   break_kw  = kw<"break">
   continue_kw = kw<"continue">
-  keyword = and_kw | or_kw | not_kw | if_kw | elseif_kw | else_kw | end_kw | while_kw | break_kw | continue_kw
+  def_kw = kw<"def">
+  return_kw = kw<"return">
+  keyword = and_kw | or_kw | not_kw | if_kw | elseif_kw | else_kw | end_kw | while_kw | break_kw | continue_kw | def_kw | return_kw
 
   ident (an identifier) = ~keyword letter alnum*
 

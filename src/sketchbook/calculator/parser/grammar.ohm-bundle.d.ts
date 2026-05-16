@@ -16,6 +16,12 @@ export interface ArithmeticActionDict<T> extends BaseActionDict<T> {
   Block?: (this: NonterminalNode, arg0: IterationNode, arg1: IterationNode, arg2: IterationNode) => T;
   StmtList?: (this: NonterminalNode, arg0: NonterminalNode, arg1: IterationNode, arg2: IterationNode) => T;
   Stmt_expr?: (this: NonterminalNode, arg0: NonterminalNode) => T;
+  FunDef?: (this: NonterminalNode, arg0: NonterminalNode, arg1: NonterminalNode, arg2: TerminalNode, arg3: IterationNode, arg4: TerminalNode, arg5: NonterminalNode, arg6: NonterminalNode, arg7: NonterminalNode) => T;
+  ReturnStmt?: (this: NonterminalNode, arg0: NonterminalNode, arg1: IterationNode) => T;
+  Params_single?: (this: NonterminalNode, arg0: NonterminalNode) => T;
+  Params_cons?: (this: NonterminalNode, arg0: NonterminalNode, arg1: TerminalNode, arg2: NonterminalNode) => T;
+  Args_single?: (this: NonterminalNode, arg0: NonterminalNode) => T;
+  Args_cons?: (this: NonterminalNode, arg0: NonterminalNode, arg1: TerminalNode, arg2: NonterminalNode) => T;
   Stmt?: (this: NonterminalNode, arg0: NonterminalNode) => T;
   WhileStmt?: (this: NonterminalNode, arg0: NonterminalNode, arg1: NonterminalNode, arg2: IterationNode, arg3: NonterminalNode, arg4: NonterminalNode) => T;
   BreakStmt?: (this: NonterminalNode, arg0: NonterminalNode) => T;
@@ -45,6 +51,7 @@ export interface ArithmeticActionDict<T> extends BaseActionDict<T> {
   UnaryExp_pos?: (this: NonterminalNode, arg0: TerminalNode, arg1: NonterminalNode) => T;
   UnaryExp_neg?: (this: NonterminalNode, arg0: TerminalNode, arg1: NonterminalNode) => T;
   UnaryExp?: (this: NonterminalNode, arg0: NonterminalNode) => T;
+  PriExp_call?: (this: NonterminalNode, arg0: NonterminalNode, arg1: TerminalNode, arg2: IterationNode, arg3: TerminalNode) => T;
   PriExp_paren?: (this: NonterminalNode, arg0: TerminalNode, arg1: NonterminalNode, arg2: TerminalNode) => T;
   PriExp_var?: (this: NonterminalNode, arg0: NonterminalNode) => T;
   PriExp?: (this: NonterminalNode, arg0: NonterminalNode) => T;
@@ -60,6 +67,8 @@ export interface ArithmeticActionDict<T> extends BaseActionDict<T> {
   while_kw?: (this: NonterminalNode, arg0: NonterminalNode) => T;
   break_kw?: (this: NonterminalNode, arg0: NonterminalNode) => T;
   continue_kw?: (this: NonterminalNode, arg0: NonterminalNode) => T;
+  def_kw?: (this: NonterminalNode, arg0: NonterminalNode) => T;
+  return_kw?: (this: NonterminalNode, arg0: NonterminalNode) => T;
   keyword?: (this: NonterminalNode, arg0: NonterminalNode) => T;
   ident?: (this: NonterminalNode, arg0: NonterminalNode, arg1: IterationNode) => T;
   space?: (this: NonterminalNode, arg0: IterationNode) => T;

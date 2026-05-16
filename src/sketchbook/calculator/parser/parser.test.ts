@@ -538,3 +538,126 @@ test("if and end are not identifiers", () => {
 test("if is not valid on rhs of assignment", () => {
   expect(() => parse("x = if 1 > 0\nend")).toThrow();
 });
+
+test("functions: empty def and multi-param body", () => {
+  expect(parse("def f()\nend")).toEqual([
+    {
+      kind: "FunDef",
+      name: "f",
+      params: [],
+      body: [],
+    },
+  ]);
+
+  expect(parse("def f(a, b)\nx = a + b\nreturn x\nend")).toEqual([
+    {
+      kind: "FunDef",
+      name: "f",
+      params: ["a", "b"],
+      body: [
+        {
+          kind: "ExprStmt",
+          expr: {
+            kind: "Assign",
+            name: "x",
+            value: {
+              kind: "Arithmetic",
+              op: "+",
+              left: { kind: "Identifier", name: "a" },
+              right: { kind: "Identifier", name: "b" },
+            },
+          },
+        },
+        {
+          kind: "ReturnStmt",
+          value: { kind: "Identifier", name: "x" },
+        },
+      ],
+    },
+  ]);
+});
+
+test("functions: return bare and with expression inside body", () => {
+  expect(parse("def f()\nreturn\nend")).toEqual([
+    {
+      kind: "FunDef",
+      name: "f",
+      params: [],
+      body: [{ kind: "ReturnStmt" }],
+    },
+  ]);
+
+  expect(parse("def f()\nreturn 1 + 2\nend")).toEqual([
+    {
+      kind: "FunDef",
+      name: "f",
+      params: [],
+      body: [
+        {
+          kind: "ReturnStmt",
+          value: {
+            kind: "Arithmetic",
+            op: "+",
+            left: { kind: "Literal", value: 1 },
+            right: { kind: "Literal", value: 2 },
+          },
+        },
+      ],
+    },
+  ]);
+});
+
+test("functions: call expression and expr-statement call", () => {
+  expect(parse("1 + f(1, 2) * 3")).toEqual([
+    {
+      kind: "ExprStmt",
+      expr: {
+        kind: "Arithmetic",
+        op: "+",
+        left: { kind: "Literal", value: 1 },
+        right: {
+          kind: "Arithmetic",
+          op: "*",
+          left: {
+            kind: "Call",
+            name: "f",
+            args: [
+              { kind: "Literal", value: 1 },
+              { kind: "Literal", value: 2 },
+            ],
+          },
+          right: { kind: "Literal", value: 3 },
+        },
+      },
+    },
+  ]);
+
+  expect(parse("f()")).toEqual([
+    { kind: "ExprStmt", expr: { kind: "Call", name: "f", args: [] } },
+  ]);
+});
+
+test("functions: nested calls", () => {
+  expect(parse("outer(inner(1), 2)")).toEqual([
+    {
+      kind: "ExprStmt",
+      expr: {
+        kind: "Call",
+        name: "outer",
+        args: [
+          {
+            kind: "Call",
+            name: "inner",
+            args: [{ kind: "Literal", value: 1 }],
+          },
+          { kind: "Literal", value: 2 },
+        ],
+      },
+    },
+  ]);
+});
+
+test("def and return are not identifiers", () => {
+  expect(() => parse("def = 1")).toThrow();
+  expect(() => parse("return = 1")).toThrow();
+});

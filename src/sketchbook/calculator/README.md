@@ -6,6 +6,10 @@
   - [x] else elseif statements (optionally)
   - [x] Short-circuit evaluation
 - [x] While loops
-- [ ] Functions
-  - [ ] CallFrame architecture
-  - [ ] Function invocation and returns 
+- [x] Functions
+  - [x] CallFrame architecture
+  - [x] Function invocation and returns 
+- [ ] First-class functions
+- [ ] Closures
+- [ ] Arrays
+- [ ] Anonymous functions aka lambdas

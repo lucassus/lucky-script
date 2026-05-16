@@ -156,6 +156,68 @@ semantics.addOperation<Program | Stmt | Stmt[] | Expr | string | unknown[]>(
         span: spanOf(this),
       };
     },
+    Params_single(this: NonterminalNode, identNode: Node): string[] {
+      return [identNode.toAst() as string];
+    },
+    Params_cons(
+      this: NonterminalNode,
+      identNode: Node,
+      _comma: Node,
+      rest: Node,
+    ): string[] {
+      return [identNode.toAst() as string, ...(rest.toAst() as string[])];
+    },
+    Args_single(this: NonterminalNode, exp: Node): Expr[] {
+      return [exp.toAst() as Expr];
+    },
+    Args_cons(
+      this: NonterminalNode,
+      exp: Node,
+      _comma: Node,
+      rest: Node,
+    ): Expr[] {
+      return [exp.toAst() as Expr, ...(rest.toAst() as Expr[])];
+    },
+    FunDef(
+      this: NonterminalNode,
+      _defKw: Node,
+      identNode: Node,
+      _lp: Node,
+      paramsOpt: IterationNode,
+      _rp: Node,
+      _nl: Node,
+      block: Node,
+      _endKw: Node,
+    ): Stmt {
+      let params: readonly string[] = [];
+      if (paramsOpt.children.length > 0) {
+        params = paramsOpt.children[0]!.toAst() as string[];
+      }
+      return {
+        kind: "FunDef" as const,
+        span: spanOf(this),
+        name: identNode.toAst() as string,
+        params,
+        body: block.toAst() as Stmt[],
+      };
+    },
+    ReturnStmt(
+      this: NonterminalNode,
+      _returnKw: Node,
+      valueOpt: IterationNode,
+    ): Stmt {
+      if (valueOpt.children.length === 0) {
+        return {
+          kind: "ReturnStmt" as const,
+          span: spanOf(this),
+        };
+      }
+      return {
+        kind: "ReturnStmt" as const,
+        span: spanOf(this),
+        value: valueOpt.children[0]!.toAst() as Expr,
+      };
+    },
     AssignExp_assign(
       this: NonterminalNode,
       identNode: Node,
@@ -206,6 +268,24 @@ semantics.addOperation<Program | Stmt | Stmt[] | Expr | string | unknown[]>(
       // Parens widen the inner expression's span to include the brackets.
       const inner = exp.toAst() as Expr;
       return { ...inner, span: spanOf(this) };
+    },
+    PriExp_call(
+      this: NonterminalNode,
+      identNode: Node,
+      _lp: Node,
+      argsOpt: IterationNode,
+      _rp: Node,
+    ): Expr {
+      let args: readonly Expr[] = [];
+      if (argsOpt.children.length > 0) {
+        args = argsOpt.children[0]!.toAst() as Expr[];
+      }
+      return {
+        kind: "Call" as const,
+        span: spanOf(this),
+        name: identNode.toAst() as string,
+        args,
+      };
     },
     PriExp_var(this: NonterminalNode, identNode: Node) {
       return {

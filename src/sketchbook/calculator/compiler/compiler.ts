@@ -1,25 +1,82 @@
 import type { Expr, Program, Stmt } from "../parser";
-import type { Bytecode, Instruction } from "./bytecode";
+import type { BytecodeModule, FunctionProto, Instruction } from "./bytecode";
 
-export function compile(program: Program): Bytecode {
-  const instructions: Instruction[] = [];
+export function compile(program: Program): BytecodeModule {
+  const main: FunctionProto = { name: "__main", params: [], code: [] };
+  const functions: FunctionProto[] = [];
+  const functionTable = new Map<string, number>();
+
+  for (const stmt of program) {
+    if (stmt.kind === "FunDef") {
+      if (functionTable.has(stmt.name)) {
+        throw new Error(`duplicate function: ${stmt.name}`);
+      }
+      const idx = functions.length;
+      functionTable.set(stmt.name, idx);
+      functions.push({
+        name: stmt.name,
+        params: [...stmt.params],
+        code: [],
+      });
+    }
+  }
+
+  let targetCode = main.code;
+  let inFunction = false;
+  let knownLocals = new Set<string>();
+  let controlDepth = 0;
+
+  let loopDepth = 0;
+  const breakStatements: Instruction[][] = [];
+  const continueStatements: Instruction[][] = [];
 
   function visit(expr: Expr): void {
     switch (expr.kind) {
+      case "Call": {
+        const fnIndex = functionTable.get(expr.name);
+        if (fnIndex === undefined) {
+          throw new Error(`unknown function: ${expr.name}`);
+        }
+        const callee = functions[fnIndex]!;
+        const arity = callee.params.length;
+        if (expr.args.length !== arity) {
+          throw new Error(
+            `arity mismatch: ${expr.name} expects ${arity} arguments, got ${expr.args.length}`,
+          );
+        }
+        for (const arg of expr.args) {
+          visit(arg);
+        }
+        targetCode.push({ opcode: "CALL", fnIndex, argc: expr.args.length });
+        return;
+      }
+
       case "Assign":
         visit(expr.value);
-        instructions.push({ opcode: "DUP" });
-        instructions.push({ opcode: "STORE", name: expr.name });
+        targetCode.push({ opcode: "DUP" });
+        if (inFunction) {
+          knownLocals.add(expr.name);
+          targetCode.push({ opcode: "STORE_L", name: expr.name });
+        } else {
+          targetCode.push({ opcode: "STORE_G", name: expr.name });
+        }
         return;
 
       case "Identifier":
-        instructions.push({ opcode: "LOAD", name: expr.name });
+        if (inFunction) {
+          if (!knownLocals.has(expr.name)) {
+            throw new Error(`unknown name: ${expr.name}`);
+          }
+          targetCode.push({ opcode: "LOAD_L", name: expr.name });
+        } else {
+          targetCode.push({ opcode: "LOAD_G", name: expr.name });
+        }
         return;
 
       case "Arithmetic":
         visit(expr.left);
         visit(expr.right);
-        instructions.push({
+        targetCode.push({
           opcode:
             expr.op === "+"
               ? "ADD"
@@ -33,50 +90,44 @@ export function compile(program: Program): Bytecode {
 
       case "Logical": {
         visit(expr.left);
-        // Duplicate the left value. We need it as the final result if we short-circuit!
-        instructions.push({ opcode: "DUP" });
+        targetCode.push({ opcode: "DUP" });
 
         if (expr.op === "and") {
-          // If left is falsy (0), short-circuit to the end.
           const jmpInstruction: Instruction = {
             opcode: "JMP_IF_ZERO",
             target: 0,
           };
-          instructions.push(jmpInstruction);
+          targetCode.push(jmpInstruction);
 
-          // We didn't jump, meaning left is truthy. Discard it.
-          instructions.push({ opcode: "POP" });
+          targetCode.push({ opcode: "POP" });
           visit(expr.right);
 
-          jmpInstruction.target = instructions.length;
+          jmpInstruction.target = targetCode.length;
         } else {
-          // For 'or', we want to short-circuit if left is TRUTHY.
-          // We can invert the duplicated value with NOT, then JMP_IF_ZERO!
-          instructions.push({ opcode: "NOT" });
+          targetCode.push({ opcode: "NOT" });
           const jmpInstruction: Instruction = {
             opcode: "JMP_IF_ZERO",
             target: 0,
           };
-          instructions.push(jmpInstruction);
+          targetCode.push(jmpInstruction);
 
-          // We didn't jump, meaning left was falsy. Discard it.
-          instructions.push({ opcode: "POP" });
+          targetCode.push({ opcode: "POP" });
           visit(expr.right);
 
-          jmpInstruction.target = instructions.length;
+          jmpInstruction.target = targetCode.length;
         }
         return;
       }
 
       case "Unary":
         visit(expr.expr);
-        instructions.push({ opcode: expr.op === "not" ? "NOT" : "NEG" });
+        targetCode.push({ opcode: expr.op === "not" ? "NOT" : "NEG" });
         return;
 
       case "Compare":
         visit(expr.left);
         visit(expr.right);
-        instructions.push({
+        targetCode.push({
           opcode:
             expr.op === ">"
               ? "GT"
@@ -93,20 +144,61 @@ export function compile(program: Program): Bytecode {
         return;
 
       case "Literal":
-        instructions.push({ opcode: "PUSH", value: expr.value });
+        targetCode.push({ opcode: "PUSH", value: expr.value });
+        return;
     }
   }
 
-  let loopDepth = 0;
-  const breakStatements: Instruction[][] = [];
-  const continueStatements: Instruction[][] = [];
+  function compileFunBody(funStmt: Extract<Stmt, { kind: "FunDef" }>): void {
+    if (inFunction || controlDepth !== 0) {
+      throw new Error("def is only allowed at the top level");
+    }
+
+    const fnIndex = functionTable.get(funStmt.name)!;
+    const proto = functions[fnIndex]!;
+
+    const savedCode = targetCode;
+    const savedInFunction = inFunction;
+    const savedLocals = knownLocals;
+
+    targetCode = proto.code;
+    inFunction = true;
+    knownLocals = new Set(funStmt.params);
+
+    for (const inner of funStmt.body) {
+      emitStmt(inner, false);
+    }
+
+    targetCode.push({ opcode: "PUSH", value: 0 });
+    targetCode.push({ opcode: "RETURN" });
+
+    targetCode = savedCode;
+    inFunction = savedInFunction;
+    knownLocals = savedLocals;
+  }
 
   function emitStmt(stmt: Stmt, keepOnStack: boolean): void {
     switch (stmt.kind) {
+      case "FunDef":
+        throw new Error("def is only allowed at the top level");
+
+      case "ReturnStmt": {
+        if (!inFunction) {
+          throw new Error("return outside of a function");
+        }
+        if (stmt.value) {
+          visit(stmt.value);
+        } else {
+          targetCode.push({ opcode: "PUSH", value: 0 });
+        }
+        targetCode.push({ opcode: "RETURN" });
+        break;
+      }
+
       case "ExprStmt":
         visit(stmt.expr);
         if (!keepOnStack) {
-          instructions.push({ opcode: "POP" });
+          targetCode.push({ opcode: "POP" });
         }
         break;
 
@@ -118,7 +210,7 @@ export function compile(program: Program): Bytecode {
           opcode: "JMP",
           target: 0,
         };
-        instructions.push(jmpInstruction);
+        targetCode.push(jmpInstruction);
         breakStatements[loopDepth - 1]!.push(jmpInstruction);
         break;
       }
@@ -131,7 +223,7 @@ export function compile(program: Program): Bytecode {
           opcode: "JMP",
           target: 0,
         };
-        instructions.push(jmpInstruction);
+        targetCode.push(jmpInstruction);
         continueStatements[loopDepth - 1]!.push(jmpInstruction);
         break;
       }
@@ -141,58 +233,62 @@ export function compile(program: Program): Bytecode {
 
         const jmpIfZeroInstruction: Instruction = {
           opcode: "JMP_IF_ZERO",
-          target: 0, // We will update this later
+          target: 0,
         };
-        instructions.push(jmpIfZeroInstruction);
+        targetCode.push(jmpIfZeroInstruction);
 
+        controlDepth++;
         stmt.consequence.forEach((inner) => emitStmt(inner, keepOnStack));
+        controlDepth--;
 
         if (stmt.alternative) {
           const jmpInstruction: Instruction = {
             opcode: "JMP",
-            target: 0, // We will update this later
+            target: 0,
           };
-          instructions.push(jmpInstruction);
+          targetCode.push(jmpInstruction);
 
-          jmpIfZeroInstruction.target = instructions.length;
+          jmpIfZeroInstruction.target = targetCode.length;
 
+          controlDepth++;
           stmt.alternative.forEach((inner) => emitStmt(inner, keepOnStack));
+          controlDepth--;
 
-          jmpInstruction.target = instructions.length;
+          jmpInstruction.target = targetCode.length;
         } else {
-          // Jump to the end of the if block
-          jmpIfZeroInstruction.target = instructions.length;
+          jmpIfZeroInstruction.target = targetCode.length;
         }
 
         break;
       }
 
       case "WhileStmt": {
-        const loopStart = instructions.length;
+        const loopStart = targetCode.length;
         visit(stmt.condition);
 
         const jmpIfZeroInstruction: Instruction = {
           opcode: "JMP_IF_ZERO",
           target: 0,
         };
-        instructions.push(jmpIfZeroInstruction);
+        targetCode.push(jmpIfZeroInstruction);
 
         loopDepth++;
         breakStatements.push([]);
         continueStatements.push([]);
 
+        controlDepth++;
         stmt.body.forEach((inner) => emitStmt(inner, false));
+        controlDepth--;
 
         const jmpInstruction: Instruction = {
           opcode: "JMP",
           target: loopStart,
         };
-        instructions.push(jmpInstruction);
+        targetCode.push(jmpInstruction);
 
-        const loopEnd = instructions.length;
+        const loopEnd = targetCode.length;
         jmpIfZeroInstruction.target = loopEnd;
 
-        // Patch breaks and continues
         const currentBreaks = breakStatements.pop()!;
         for (const breakJmp of currentBreaks) {
           if (breakJmp.opcode === "JMP") {
@@ -208,30 +304,25 @@ export function compile(program: Program): Bytecode {
 
         loopDepth--;
 
-        // While loop is a statement and does not yield a value.
-        // Wait, what if it's the last statement? We need to push 0 or keepOnStack handling?
-        // Let's just push 0 if keepOnStack is true, wait, standard calculator vm doesn't have an UNDEFINED value.
-        // But the previous implementation ExprStmt checks keepOnStack.
-        // For if statement, it also doesn't handle keepOnStack? Ah, keepOnStack in if statement is passed down to consequence/alternative.
-        // For while, we just don't push anything. It's a loop. But the top level loop might need to keepOnStack if we change things?
-        // Let's see how if statement is handled: it passes keepOnStack to children.
-        // For while, the children are not returned. We passed false to body.
-        // If while loop is the last statement, what should we return? Let's just push 0 if keepOnStack.
         if (keepOnStack) {
-          instructions.push({ opcode: "PUSH", value: 0 }); // Default value for while loop
+          targetCode.push({ opcode: "PUSH", value: 0 });
         }
         break;
       }
     }
   }
 
-  program.forEach((stmt, index) => {
-    const isLast = index === program.length - 1;
-    const keepOnStack = isLast && stmt.kind === "ExprStmt";
-    emitStmt(stmt, keepOnStack);
-  });
+  for (let i = 0; i < program.length; i++) {
+    const stmt = program[i]!;
+    const isLast = i === program.length - 1;
+    if (stmt.kind === "FunDef") {
+      compileFunBody(stmt);
+    } else {
+      emitStmt(stmt, isLast && stmt.kind === "ExprStmt");
+    }
+  }
 
-  instructions.push({ opcode: "HALT" });
+  main.code.push({ opcode: "HALT" });
 
-  return instructions;
+  return { main, functions };
 }

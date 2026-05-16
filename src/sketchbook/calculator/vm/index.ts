@@ -1,4 +1,5 @@
 export {
+  FrameStackOverflow,
   StackOverflow,
   StackUnderflow,
   UndefinedVariable,

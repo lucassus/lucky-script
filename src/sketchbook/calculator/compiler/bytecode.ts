@@ -3,10 +3,25 @@ export type Instruction =
   | { opcode: "PUSH"; value: number }
   /** Duplicate the top value on the stack. */
   | { opcode: "DUP" }
-  /** Look up a variable by name and push its value; undefined names are a runtime error. */
-  | { opcode: "LOAD"; name: string }
-  /** Pop the top value and store it under `name` in the runtime binding map. */
-  | { opcode: "STORE"; name: string }
+  /**
+   * Look up a global variable by name and push its value; undefined names are a runtime error.
+   * Emitted only from `__main` compilation — accesses the VM-level globals map.
+   */
+  | { opcode: "LOAD_G"; name: string }
+  /**
+   * Pop the top value and store it under `name` in the VM-level globals map (main frame only).
+   */
+  | { opcode: "STORE_G"; name: string }
+  /**
+   * Push the value of the named local from the **current** frame's locals map.
+   * The compiler guarantees the name is bound before any read inside function bodies.
+   */
+  | { opcode: "LOAD_L"; name: string }
+  /**
+   * Pop one value and store it under `name` in the current frame's locals map
+   * (creates the binding if not present).
+   */
+  | { opcode: "STORE_L"; name: string }
   /** Pop the top value and discard it (e.g. for expression statements). */
   | { opcode: "POP" }
   /** Pop `right`, then `left`, push `left + right`. */
@@ -41,9 +56,37 @@ export type Instruction =
   /** Unconditionally set the instruction pointer to `target`. */
   | { opcode: "JMP"; target: number }
   /**
+   * Pop `argc` argument values, allocate a new frame for `module.functions[fnIndex]`,
+   * bind each parameter name to its corresponding argument (declaration order), and transfer control.
+   * Operand-stack net effect after the callee runs `RETURN`: `-argc + 1` (arguments consumed, one return value pushed).
+   */
+  | { opcode: "CALL"; fnIndex: number; argc: number }
+  /**
+   * Pop one return value from the operand stack, pop the current frame, and push that value
+   * onto the caller's operand stack.
+   */
+  | { opcode: "RETURN" }
+  /**
    * Terminate the program and yield the top of the operand stack as the
    * program's result. If the stack is empty, the result is `undefined`.
+   * Valid only while executing in the main (`__main`) frame.
    */
   | { opcode: "HALT" };
 
+/** Bytecode for a single function body (`__main` or a user `def`). */
 export type Bytecode = Instruction[];
+
+export interface FunctionProto {
+  readonly name: string;
+  readonly params: readonly string[];
+  readonly code: Instruction[];
+}
+
+/**
+ * A compiled calculator module: top-level script (`main`) plus indexed user functions (`functions`).
+ * `CALL.fnIndex` indexes into `functions` only — `main` is never invoked via `CALL`.
+ */
+export interface BytecodeModule {
+  readonly main: FunctionProto;
+  readonly functions: readonly FunctionProto[];
+}

@@ -21,7 +21,16 @@ export class StackOverflow extends VmError {
   }
 }
 
-/** `LOAD` for a name not present in bindings (should be rare if bytecode comes from the compiler). */
+/** Call frames grew past the configured limit (guards pathological recursion). */
+export class FrameStackOverflow extends VmError {
+  override readonly name = "FrameStackOverflow";
+
+  constructor(readonly limit: number) {
+    super(`frame stack overflow: exceeded max depth ${limit}`);
+  }
+}
+
+/** `LOAD_G` for a name not present in globals (should be rare if bytecode comes from the compiler). */
 export class UndefinedVariable extends VmError {
   override readonly name = "UndefinedVariable";
 
