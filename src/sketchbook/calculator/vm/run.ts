@@ -26,7 +26,6 @@ export function run(
     options?.maxStackDepth ?? DEFAULT_MAX_STACK_DEPTH,
   );
   const maxFrameDepth = options?.maxFrameDepth ?? DEFAULT_MAX_FRAME_DEPTH;
-  const globals = new Map<string, number>();
 
   const frames: CallFrame[] = [
     { proto: module.main, ip: 0, locals: new Map() },
@@ -56,22 +55,7 @@ export function run(
         break;
       }
 
-      case "LOAD_G": {
-        const value = globals.get(instruction.name);
-        if (value === undefined) {
-          throw new UndefinedVariable(instruction.name);
-        }
-        stack.push(value);
-        break;
-      }
-
-      case "STORE_G": {
-        const popped = stack.pop();
-        globals.set(instruction.name, popped);
-        break;
-      }
-
-      case "LOAD_L": {
+      case "LOAD": {
         const value = frame.locals.get(instruction.name);
         if (value === undefined) {
           throw new UndefinedVariable(instruction.name);
@@ -80,7 +64,7 @@ export function run(
         break;
       }
 
-      case "STORE_L": {
+      case "STORE": {
         const popped = stack.pop();
         frame.locals.set(instruction.name, popped);
         break;

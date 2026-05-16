@@ -34,24 +34,24 @@ test("(1 + 2) * -3 compiles to expected bytecode", () => {
   expect<Instruction[]>(bytecode).toEqual(expected);
 });
 
-test("x = 10 + 2 compiles to DUP and STORE_G", () => {
+test("x = 10 + 2 compiles to DUP and STORE", () => {
   expect(compiledMain("x = 10 + 2")).toEqual([
     { opcode: "PUSH", value: 10 },
     { opcode: "PUSH", value: 2 },
     { opcode: "ADD" },
     { opcode: "DUP" },
-    { opcode: "STORE_G", name: "x" },
+    { opcode: "STORE", name: "x" },
     { opcode: "HALT" },
   ]);
 });
 
-test("x = y = 2 compiles to nested DUP+STORE_G (right-associative)", () => {
+test("x = y = 2 compiles to nested DUP+STORE (right-associative)", () => {
   expect(compiledMain("x = y = 2")).toEqual([
     { opcode: "PUSH", value: 2 },
     { opcode: "DUP" },
-    { opcode: "STORE_G", name: "y" },
+    { opcode: "STORE", name: "y" },
     { opcode: "DUP" },
-    { opcode: "STORE_G", name: "x" },
+    { opcode: "STORE", name: "x" },
     { opcode: "HALT" },
   ]);
 });
@@ -204,26 +204,42 @@ test("1 or 0 compiles to DUP, NOT, JMP_IF_ZERO, POP", () => {
   ]);
 });
 
-test("not x compiles to LOAD_G, NOT", () => {
-  expect(compiledMain("not x")).toEqual([
-    { opcode: "LOAD_G", name: "x" },
+test("not x compiles to LOAD, NOT", () => {
+  expect(compiledMain("x = 0\nnot x")).toEqual([
+    { opcode: "PUSH", value: 0 },
+    { opcode: "DUP" },
+    { opcode: "STORE", name: "x" },
+    { opcode: "POP" },
+    { opcode: "LOAD", name: "x" },
     { opcode: "NOT" },
     { opcode: "HALT" },
   ]);
 });
 
 test("a and (b or c) compiles correctly", () => {
-  expect(compiledMain("a and (b or c)")).toEqual([
-    { opcode: "LOAD_G", name: "a" },
+  expect(compiledMain("a = 1\nb = 0\nc = 1\na and (b or c)")).toEqual([
+    { opcode: "PUSH", value: 1 },
     { opcode: "DUP" },
-    { opcode: "JMP_IF_ZERO", target: 10 },
+    { opcode: "STORE", name: "a" },
     { opcode: "POP" },
-    { opcode: "LOAD_G", name: "b" },
+    { opcode: "PUSH", value: 0 },
+    { opcode: "DUP" },
+    { opcode: "STORE", name: "b" },
+    { opcode: "POP" },
+    { opcode: "PUSH", value: 1 },
+    { opcode: "DUP" },
+    { opcode: "STORE", name: "c" },
+    { opcode: "POP" },
+    { opcode: "LOAD", name: "a" },
+    { opcode: "DUP" },
+    { opcode: "JMP_IF_ZERO", target: 22 },
+    { opcode: "POP" },
+    { opcode: "LOAD", name: "b" },
     { opcode: "DUP" },
     { opcode: "NOT" },
-    { opcode: "JMP_IF_ZERO", target: 10 },
+    { opcode: "JMP_IF_ZERO", target: 22 },
     { opcode: "POP" },
-    { opcode: "LOAD_G", name: "c" },
+    { opcode: "LOAD", name: "c" },
     { opcode: "HALT" },
   ]);
 });
@@ -242,6 +258,16 @@ describe("loops", () => {
   it("compiles while loop", () => {
     expect(
       compile([
+        {
+          kind: "ExprStmt",
+          span: { start: 0, end: 0 },
+          expr: {
+            kind: "Assign",
+            name: "x",
+            span: { start: 0, end: 0 },
+            value: { kind: "Literal", value: 1, span: { start: 0, end: 0 } },
+          },
+        },
         {
           kind: "WhileStmt",
           span: { start: 0, end: 0 },
@@ -281,17 +307,21 @@ describe("loops", () => {
         },
       ]).main.code,
     ).toEqual([
-      { opcode: "LOAD_G", name: "x" },
+      { opcode: "PUSH", value: 1 },
+      { opcode: "DUP" },
+      { opcode: "STORE", name: "x" },
+      { opcode: "POP" },
+      { opcode: "LOAD", name: "x" },
       { opcode: "PUSH", value: 0 },
       { opcode: "GT" },
-      { opcode: "JMP_IF_ZERO", target: 11 },
-      { opcode: "LOAD_G", name: "x" },
+      { opcode: "JMP_IF_ZERO", target: 15 },
+      { opcode: "LOAD", name: "x" },
       { opcode: "PUSH", value: 1 },
       { opcode: "SUB" },
       { opcode: "DUP" },
-      { opcode: "STORE_G", name: "x" },
+      { opcode: "STORE", name: "x" },
       { opcode: "POP" }, // Pop the result of the expression statement
-      { opcode: "JMP", target: 0 },
+      { opcode: "JMP", target: 4 },
       { opcode: "HALT" },
     ]);
   });
@@ -353,8 +383,12 @@ test("logical 'or' returns actual values", () => {
 });
 
 test("comparison with arithmetic operands: x + 1 > 0", () => {
-  expect(compiledMain("x + 1 > 0")).toEqual([
-    { opcode: "LOAD_G", name: "x" },
+  expect(compiledMain("x = 0\nx + 1 > 0")).toEqual([
+    { opcode: "PUSH", value: 0 },
+    { opcode: "DUP" },
+    { opcode: "STORE", name: "x" },
+    { opcode: "POP" },
+    { opcode: "LOAD", name: "x" },
     { opcode: "PUSH", value: 1 },
     { opcode: "ADD" },
     { opcode: "PUSH", value: 0 },
@@ -371,7 +405,7 @@ test("if: JMP_IF_ZERO around body", () => {
     { opcode: "JMP_IF_ZERO", target: 8 },
     { opcode: "PUSH", value: 1 },
     { opcode: "DUP" },
-    { opcode: "STORE_G", name: "x" },
+    { opcode: "STORE", name: "x" },
     { opcode: "POP" },
     { opcode: "HALT" },
   ]);
@@ -380,6 +414,7 @@ test("if: JMP_IF_ZERO around body", () => {
 test("if elseif else", () => {
   expect(
     compiledMain(`
+    x = 3
     if x > 2
       x = 2
     elseif x > 1
@@ -390,29 +425,33 @@ test("if elseif else", () => {
     x
   `),
   ).toEqual<Instruction[]>([
-    { opcode: "LOAD_G", name: "x" },
+    { opcode: "PUSH", value: 3 },
+    { opcode: "DUP" },
+    { opcode: "STORE", name: "x" },
+    { opcode: "POP" },
+    { opcode: "LOAD", name: "x" },
     { opcode: "PUSH", value: 2 },
     { opcode: "GT" },
-    { opcode: "JMP_IF_ZERO", target: 9 },
+    { opcode: "JMP_IF_ZERO", target: 13 },
     // if x > 2
     { opcode: "PUSH", value: 2 },
     { opcode: "DUP" },
-    { opcode: "STORE_G", name: "x" },
+    { opcode: "STORE", name: "x" },
     { opcode: "POP" },
-    { opcode: "JMP", target: 18 },
+    { opcode: "JMP", target: 22 },
     // elseif x > 1
-    { opcode: "LOAD_G", name: "x" },
+    { opcode: "LOAD", name: "x" },
     { opcode: "PUSH", value: 1 },
     { opcode: "GT" },
-    { opcode: "JMP_IF_ZERO", target: 14 },
-    { opcode: "JMP", target: 18 },
+    { opcode: "JMP_IF_ZERO", target: 18 },
+    { opcode: "JMP", target: 22 },
     // else
     { opcode: "PUSH", value: 3 },
     { opcode: "DUP" },
-    { opcode: "STORE_G", name: "x" },
+    { opcode: "STORE", name: "x" },
     { opcode: "POP" },
 
-    { opcode: "LOAD_G", name: "x" },
+    { opcode: "LOAD", name: "x" },
     { opcode: "HALT" },
   ]);
 });
@@ -484,8 +523,8 @@ test("function body: add with explicit return and implicit epilogue", () => {
   const m = compile(parse("def add(a, b)\nreturn a + b\nend"));
   expect(m.functions).toHaveLength(1);
   expect(m.functions[0]!.code).toEqual([
-    { opcode: "LOAD_L", name: "a" },
-    { opcode: "LOAD_L", name: "b" },
+    { opcode: "LOAD", name: "a" },
+    { opcode: "LOAD", name: "b" },
     { opcode: "ADD" },
     { opcode: "RETURN" },
     { opcode: "PUSH", value: 0 },
@@ -496,13 +535,13 @@ test("function body: add with explicit return and implicit epilogue", () => {
 test("function body: local assignment then return", () => {
   const m = compile(parse("def f(a)\nx = a + 1\nreturn x\nend"));
   expect(m.functions[0]!.code).toEqual([
-    { opcode: "LOAD_L", name: "a" },
+    { opcode: "LOAD", name: "a" },
     { opcode: "PUSH", value: 1 },
     { opcode: "ADD" },
     { opcode: "DUP" },
-    { opcode: "STORE_L", name: "x" },
+    { opcode: "STORE", name: "x" },
     { opcode: "POP" },
-    { opcode: "LOAD_L", name: "x" },
+    { opcode: "LOAD", name: "x" },
     { opcode: "RETURN" },
     { opcode: "PUSH", value: 0 },
     { opcode: "RETURN" },

@@ -646,19 +646,6 @@ a + b + c + d
   expect(evalExpr(source)).toBe(16 + 15 + 8 + 3);
 });
 
-test("simple", () => {
-  const source = `
-x = 1
-def foo()
-  return x + 2
-end
-
-foo()
-`.trim();
-
-  expect(evalExpr(source)).toBe(3);
-});
-
 test.each([
   ["if 1\ndef f()\nend\nend", "def is only allowed at the top level"],
   ["while 1\ndef f()\nend\nend", "def is only allowed at the top level"],

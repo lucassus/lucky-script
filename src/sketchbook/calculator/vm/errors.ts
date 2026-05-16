@@ -30,7 +30,7 @@ export class FrameStackOverflow extends VmError {
   }
 }
 
-/** `LOAD_G` for a name not present in globals (should be rare if bytecode comes from the compiler). */
+/** `LOAD` for a name not present in the current frame's locals (should be rare if bytecode comes from the compiler). */
 export class UndefinedVariable extends VmError {
   override readonly name = "UndefinedVariable";
 

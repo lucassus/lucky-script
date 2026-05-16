@@ -54,23 +54,15 @@ export function compile(program: Program): BytecodeModule {
       case "Assign":
         visit(expr.value);
         targetCode.push({ opcode: "DUP" });
-        if (inFunction) {
-          knownLocals.add(expr.name);
-          targetCode.push({ opcode: "STORE_L", name: expr.name });
-        } else {
-          targetCode.push({ opcode: "STORE_G", name: expr.name });
-        }
+        knownLocals.add(expr.name);
+        targetCode.push({ opcode: "STORE", name: expr.name });
         return;
 
       case "Identifier":
-        if (inFunction) {
-          if (!knownLocals.has(expr.name)) {
-            throw new Error(`unknown name: ${expr.name}`);
-          }
-          targetCode.push({ opcode: "LOAD_L", name: expr.name });
-        } else {
-          targetCode.push({ opcode: "LOAD_G", name: expr.name });
+        if (!knownLocals.has(expr.name)) {
+          throw new Error(`unknown name: ${expr.name}`);
         }
+        targetCode.push({ opcode: "LOAD", name: expr.name });
         return;
 
       case "Arithmetic":

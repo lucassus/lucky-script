@@ -4,24 +4,15 @@ export type Instruction =
   /** Duplicate the top value on the stack. */
   | { opcode: "DUP" }
   /**
-   * Look up a global variable by name and push its value; undefined names are a runtime error.
-   * Emitted only from `__main` compilation — accesses the VM-level globals map.
+   * Push the value of the named binding from the **current** frame's locals map.
+   * The compiler guarantees the name is bound before any read.
    */
-  | { opcode: "LOAD_G"; name: string }
-  /**
-   * Pop the top value and store it under `name` in the VM-level globals map (main frame only).
-   */
-  | { opcode: "STORE_G"; name: string }
-  /**
-   * Push the value of the named local from the **current** frame's locals map.
-   * The compiler guarantees the name is bound before any read inside function bodies.
-   */
-  | { opcode: "LOAD_L"; name: string }
+  | { opcode: "LOAD"; name: string }
   /**
    * Pop one value and store it under `name` in the current frame's locals map
    * (creates the binding if not present).
    */
-  | { opcode: "STORE_L"; name: string }
+  | { opcode: "STORE"; name: string }
   /** Pop the top value and discard it (e.g. for expression statements). */
   | { opcode: "POP" }
   /** Pop `right`, then `left`, push `left + right`. */

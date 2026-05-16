@@ -27,8 +27,8 @@ test("run throws StackOverflow when stack exceeds maxStackDepth", () => {
   expect(() => run(mod, { maxStackDepth: 2 })).toThrow(StackOverflow);
 });
 
-test("run throws UndefinedVariable on LOAD_G of missing binding", () => {
-  const mod = mainModule([{ opcode: "LOAD_G", name: "nope" }]);
+test("run throws UndefinedVariable on LOAD of missing binding", () => {
+  const mod = mainModule([{ opcode: "LOAD", name: "nope" }]);
   expect(() => run(mod)).toThrow(UndefinedVariable);
 });
 
@@ -50,7 +50,7 @@ test("CALL / RETURN: no-arg callee returns constant", () => {
   expect(run(mod)).toBe(42);
 });
 
-test("CALL / RETURN: single-arg callee doubles via LOAD_L", () => {
+test("CALL / RETURN: single-arg callee doubles via LOAD", () => {
   const mod: BytecodeModule = {
     main: {
       name: "__main",
@@ -66,7 +66,7 @@ test("CALL / RETURN: single-arg callee doubles via LOAD_L", () => {
         name: "double",
         params: ["x"],
         code: [
-          { opcode: "LOAD_L", name: "x" },
+          { opcode: "LOAD", name: "x" },
           { opcode: "PUSH", value: 2 },
           { opcode: "MUL" },
           { opcode: "RETURN" },
@@ -93,9 +93,9 @@ test("CALL / RETURN: recursion counts down to zero", () => {
         name: "count",
         params: ["n"],
         code: [
-          { opcode: "LOAD_L", name: "n" },
+          { opcode: "LOAD", name: "n" },
           { opcode: "JMP_IF_ZERO", target: 7 },
-          { opcode: "LOAD_L", name: "n" },
+          { opcode: "LOAD", name: "n" },
           { opcode: "PUSH", value: 1 },
           { opcode: "SUB" },
           { opcode: "CALL", fnIndex: 0, argc: 1 },
@@ -109,7 +109,7 @@ test("CALL / RETURN: recursion counts down to zero", () => {
   expect(run(mod)).toBe(0);
 });
 
-test("STORE_L then LOAD_L round-trips inside a callee", () => {
+test("STORE then LOAD round-trips inside a callee", () => {
   const mod: BytecodeModule = {
     main: {
       name: "__main",
@@ -122,8 +122,8 @@ test("STORE_L then LOAD_L round-trips inside a callee", () => {
         params: [],
         code: [
           { opcode: "PUSH", value: 99 },
-          { opcode: "STORE_L", name: "x" },
-          { opcode: "LOAD_L", name: "x" },
+          { opcode: "STORE", name: "x" },
+          { opcode: "LOAD", name: "x" },
           { opcode: "RETURN" },
         ],
       },
@@ -145,9 +145,9 @@ test("nested CALL isolates locals named x", () => {
         params: [],
         code: [
           { opcode: "PUSH", value: 1 },
-          { opcode: "STORE_L", name: "x" },
+          { opcode: "STORE", name: "x" },
           { opcode: "CALL", fnIndex: 1, argc: 0 },
-          { opcode: "LOAD_L", name: "x" },
+          { opcode: "LOAD", name: "x" },
           { opcode: "RETURN" },
         ],
       },
@@ -156,7 +156,7 @@ test("nested CALL isolates locals named x", () => {
         params: [],
         code: [
           { opcode: "PUSH", value: 99 },
-          { opcode: "STORE_L", name: "x" },
+          { opcode: "STORE", name: "x" },
           { opcode: "PUSH", value: 0 },
           { opcode: "RETURN" },
         ],
