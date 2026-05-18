@@ -2,19 +2,19 @@ import { describe, expect, expectTypeOf, it, test } from "vitest";
 
 import { parse } from "../parser";
 import { run } from "../vm";
-import type { BytecodeModule, Instruction } from "./index";
+import type { Bytecode, Instruction } from "./index";
 import { compile } from "./index";
 
 function compiledMain(source: string): Instruction[] {
   return compile(parse(source)).main.code;
 }
 
-function compiledModule(source: string): BytecodeModule {
+function compiledModule(source: string): Bytecode {
   return compile(parse(source));
 }
 
 /** Extract a number from a run result; throws if the result is a closure. */
-function numResult(mod: BytecodeModule): number | undefined {
+function numResult(mod: Bytecode): number | undefined {
   const v = run(mod);
   if (v === undefined) return undefined;
   if (v.kind !== "number") throw new Error("expected number result");

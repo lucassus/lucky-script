@@ -1,7 +1,7 @@
 import type { Expr, Program, Stmt } from "../parser";
-import type { BytecodeModule, FunctionProto, Instruction } from "./bytecode";
+import type { Bytecode, FunctionProto, Instruction } from "./bytecode";
 
-export function compile(program: Program): BytecodeModule {
+export function compile(program: Program): Bytecode {
   const main: FunctionProto = { name: "__main", params: [], code: [] };
   const functions: FunctionProto[] = [];
 

@@ -51,7 +51,7 @@ export type Instruction =
   /** Unconditionally set the instruction pointer to `target`. */
   | { opcode: "JMP"; target: number }
   /**
-   * Create a ClosureValue from `module.functions[fnIndex]` and the current
+   * Create a ClosureValue from `bytecode.functions[fnIndex]` and the current
    * frame's Environment, then push it. The enclosing Environment is captured
    * by reference, so mutations via ASSIGN are visible to the closure.
    */
@@ -73,8 +73,6 @@ export type Instruction =
    */
   | { opcode: "HALT" };
 
-export type Bytecode = Instruction[];
-
 export interface FunctionProto {
   readonly name: string;
   readonly params: readonly string[];
@@ -82,11 +80,11 @@ export interface FunctionProto {
 }
 
 /**
- * A compiled module: top-level script (`main`) plus all named function bodies
+ * A compiled bytecode: top-level script (`main`) plus all named function bodies
  * (`functions`). `MAKE_CLOSURE` references `functions` by index; `main` is
  * never referenced by index.
  */
-export interface BytecodeModule {
+export interface Bytecode {
   readonly main: FunctionProto;
   readonly functions: readonly FunctionProto[];
 }

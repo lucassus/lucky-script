@@ -1,6 +1,6 @@
 import { expect, test } from "vitest";
 
-import type { BytecodeModule } from "../compiler/bytecode";
+import type { Bytecode } from "../compiler/bytecode";
 import {
   ArityMismatch,
   FrameStackOverflow,
@@ -10,13 +10,15 @@ import {
   UndefinedVariable,
 } from "./errors";
 import { run } from "./run";
+import { asm, jmp, jumpIfZero, label } from "./testing/asm";
 
-function mainModule(code: BytecodeModule["main"]["code"]): BytecodeModule {
+function buildMainBytecode(code: Bytecode["main"]["code"]): Bytecode {
   return { main: { name: "__main", params: [], code }, functions: [] };
 }
 
+// TODO: Refactor this helper
 /** Extract the numeric result from run(); throws if the result is a closure. */
-function numResult(mod: BytecodeModule): number | undefined {
+function numResult(mod: Bytecode): number | undefined {
   const v = run(mod);
   if (v === undefined) return undefined;
   if (v.kind !== "number") throw new Error(`expected number, got closure`);
@@ -26,12 +28,12 @@ function numResult(mod: BytecodeModule): number | undefined {
 // ── Error cases ───────────────────────────────────────────────────────────────
 
 test("run throws StackUnderflow when ADD has too few operands", () => {
-  const mod = mainModule([{ opcode: "ADD" }]);
+  const mod = buildMainBytecode([{ opcode: "ADD" }]);
   expect(() => run(mod)).toThrow(StackUnderflow);
 });
 
 test("run throws StackOverflow when stack exceeds maxStackDepth", () => {
-  const mod = mainModule([
+  const mod = buildMainBytecode([
     { opcode: "PUSH", value: 1 },
     { opcode: "PUSH", value: 2 },
     { opcode: "PUSH", value: 3 },
@@ -40,12 +42,12 @@ test("run throws StackOverflow when stack exceeds maxStackDepth", () => {
 });
 
 test("run throws UndefinedVariable on LOAD of missing binding", () => {
-  const mod = mainModule([{ opcode: "LOAD", name: "nope" }]);
+  const mod = buildMainBytecode([{ opcode: "LOAD", name: "nope" }]);
   expect(() => run(mod)).toThrow(UndefinedVariable);
 });
 
 test("CALL throws NotCallable when callee is a number", () => {
-  const mod = mainModule([
+  const mod = buildMainBytecode([
     { opcode: "PUSH", value: 42 },
     { opcode: "CALL", argc: 0 },
     { opcode: "HALT" },
@@ -53,10 +55,67 @@ test("CALL throws NotCallable when callee is a number", () => {
   expect(() => run(mod)).toThrow(NotCallable);
 });
 
+// ── Control flow via ASM labels ───────────────────────────────────────────────
+
+test("asm+jmp skips over instructions until target label", () => {
+  const mod = buildMainBytecode(
+    asm([
+      jmp("done"),
+      { opcode: "PUSH", value: 99 }, // skipped
+      label("done"),
+      { opcode: "PUSH", value: 7 },
+      { opcode: "HALT" },
+    ]),
+  );
+  expect(numResult(mod)).toBe(7);
+});
+
+test("asm+jumpIfZero jumps to zero branch", () => {
+  const mod = buildMainBytecode(
+    asm([
+      { opcode: "PUSH", value: 0 },
+      jumpIfZero("zero"),
+      { opcode: "PUSH", value: 5 }, // skipped
+      { opcode: "HALT" },
+      label("zero"),
+      { opcode: "PUSH", value: 42 },
+      { opcode: "HALT" },
+    ]),
+  );
+  expect(numResult(mod)).toBe(42);
+});
+
+test("asm labels make loops readable: countdown sum 3+2+1", () => {
+  const mod = buildMainBytecode(
+    asm([
+      { opcode: "PUSH", value: 0 },
+      { opcode: "DEFINE", name: "sum" },
+      { opcode: "PUSH", value: 3 },
+      { opcode: "DEFINE", name: "n" },
+      label("loop"),
+      { opcode: "LOAD", name: "n" },
+      jumpIfZero("done"),
+      { opcode: "LOAD", name: "sum" },
+      { opcode: "LOAD", name: "n" },
+      { opcode: "ADD" },
+      { opcode: "ASSIGN", name: "sum" },
+      { opcode: "LOAD", name: "n" },
+      { opcode: "PUSH", value: 1 },
+      { opcode: "SUB" },
+      { opcode: "ASSIGN", name: "n" },
+      jmp("loop"),
+      label("done"),
+      { opcode: "LOAD", name: "sum" },
+      { opcode: "HALT" },
+    ]),
+  );
+  expect(numResult(mod)).toBe(6);
+});
+
 // ── CALL / RETURN ─────────────────────────────────────────────────────────────
 
 test("CALL / RETURN: no-arg callee returns constant", () => {
-  const mod: BytecodeModule = {
+  const mod: Bytecode = {
     main: {
       name: "__main",
       params: [],
@@ -79,7 +138,7 @@ test("CALL / RETURN: no-arg callee returns constant", () => {
 });
 
 test("CALL / RETURN: single-arg callee doubles via LOAD", () => {
-  const mod: BytecodeModule = {
+  const mod: Bytecode = {
     main: {
       name: "__main",
       params: [],
@@ -109,7 +168,7 @@ test("CALL / RETURN: single-arg callee doubles via LOAD", () => {
 test("CALL / RETURN: recursion counts down to zero", () => {
   // Main binds "count" in the global env before calling it so that the
   // recursive LOAD "count" inside the function body can find itself.
-  const mod: BytecodeModule = {
+  const mod: Bytecode = {
     main: {
       name: "__main",
       params: [],
@@ -126,18 +185,19 @@ test("CALL / RETURN: recursion counts down to zero", () => {
       {
         name: "count",
         params: ["n"],
-        code: [
-          { opcode: "LOAD", name: "n" }, // 0
-          { opcode: "JMP_IF_ZERO", target: 8 }, // 1
-          { opcode: "LOAD", name: "count" }, // 2 — load self via env chain
-          { opcode: "LOAD", name: "n" }, // 3
-          { opcode: "PUSH", value: 1 }, // 4
-          { opcode: "SUB" }, // 5
-          { opcode: "CALL", argc: 1 }, // 6
-          { opcode: "RETURN" }, // 7
-          { opcode: "PUSH", value: 0 }, // 8
-          { opcode: "RETURN" }, // 9
-        ],
+        code: asm([
+          { opcode: "LOAD", name: "n" },
+          jumpIfZero("base"),
+          { opcode: "LOAD", name: "count" }, // load self via env chain
+          { opcode: "LOAD", name: "n" },
+          { opcode: "PUSH", value: 1 },
+          { opcode: "SUB" },
+          { opcode: "CALL", argc: 1 },
+          { opcode: "RETURN" },
+          label("base"),
+          { opcode: "PUSH", value: 0 },
+          { opcode: "RETURN" },
+        ]),
       },
     ],
   };
@@ -147,7 +207,7 @@ test("CALL / RETURN: recursion counts down to zero", () => {
 // ── DEFINE / ASSIGN ───────────────────────────────────────────────────────────
 
 test("DEFINE then LOAD round-trips inside a callee", () => {
-  const mod: BytecodeModule = {
+  const mod: Bytecode = {
     main: {
       name: "__main",
       params: [],
@@ -176,7 +236,7 @@ test("DEFINE then LOAD round-trips inside a callee", () => {
 test("nested CALL: DEFINE in inner does not affect outer's binding", () => {
   // outer defines x=1, calls inner which defines its OWN x=99, then outer
   // reads its x and expects to still see 1 (DEFINE is always current scope).
-  const mod: BytecodeModule = {
+  const mod: Bytecode = {
     main: {
       name: "__main",
       params: [],
@@ -217,7 +277,7 @@ test("nested CALL: DEFINE in inner does not affect outer's binding", () => {
 // ── Frame depth limits ────────────────────────────────────────────────────────
 
 test("FrameStackOverflow when frame depth cap exceeded", () => {
-  const mod: BytecodeModule = {
+  const mod: Bytecode = {
     main: {
       name: "__main",
       params: [],
@@ -245,7 +305,7 @@ test("FrameStackOverflow when frame depth cap exceeded", () => {
 });
 
 test("maxStackDepth and maxFrameDepth are independent", () => {
-  const mod: BytecodeModule = {
+  const mod: Bytecode = {
     main: {
       name: "__main",
       params: [],
@@ -278,7 +338,7 @@ test("maxStackDepth and maxFrameDepth are independent", () => {
 });
 
 test("CALL throws ArityMismatch on wrong argument count", () => {
-  const mod: BytecodeModule = {
+  const mod: Bytecode = {
     main: {
       name: "__main",
       params: [],

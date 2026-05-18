@@ -1,4 +1,4 @@
-import type { BytecodeModule, FunctionProto } from "../compiler";
+import type { Bytecode, FunctionProto } from "../compiler";
 import { Environment } from "./Environment";
 import {
   ArityMismatch,
@@ -38,7 +38,7 @@ function num(value: number): Value {
 }
 
 export function run(
-  module: BytecodeModule,
+  bytecode: Bytecode,
   options?: RunOptions,
 ): Value | undefined {
   const stack = new OperandStack<Value>(
@@ -48,7 +48,7 @@ export function run(
 
   const frames: CallFrame[] = [
     {
-      proto: module.main,
+      proto: bytecode.main,
       ip: 0,
       // The global environment is shared by all top-level closures via reference.
       // DEFINE "f" in main mutates this object, so closures created by MAKE_CLOSURE
@@ -206,7 +206,7 @@ export function run(
       }
 
       case "MAKE_CLOSURE": {
-        const proto = module.functions[instruction.fnIndex];
+        const proto = bytecode.functions[instruction.fnIndex];
         if (!proto) {
           throw new Error(`Invalid function index: ${instruction.fnIndex}`);
         }
