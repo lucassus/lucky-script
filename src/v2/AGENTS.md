@@ -26,7 +26,17 @@ integration.test.ts  # End-to-end parse / compile / run tests
 
 ## Tests
 
-Colocated `*.test.ts` under `parser/`, `compiler/`, `vm/`. Broad coverage: **`integration.test.ts`**.
+Tests live colocated with the layer they exercise. Each file has a distinct responsibility — **do not duplicate positive-path program behavior across layers**, since doing so just couples the suite to internal artifacts (token stream, AST shape, bytecode calling convention) without adding coverage.
+
+| File | Responsibility |
+|------|----------------|
+| `parser/parser.test.ts`, `parser/parser.spans.test.ts` | Grammar shape, AST construction, source-span reporting, parse errors. Asserts on AST nodes, not on program results. |
+| `compiler/compiler.test.ts` | Bytecode emitted for representative AST shapes, compile-time errors (e.g. `unknown name`, `return outside of a function`). Asserts on instruction lists, not on runtime values. |
+| `vm/Environment.test.ts`, `vm/OperandStack.test.ts` | Unit-level invariants of the runtime data structures (chain walking, push/pop bounds, etc.). |
+| `vm/run.test.ts` | **VM-only edge cases** — runtime errors (`StackUnderflow`, `NotCallable`, `ArityMismatch`, `UndefinedVariable`, …), resource limits (`StackOverflow`, `FrameStackOverflow`), and opcode semantics that the surface language cannot conveniently express (e.g. `DIV` by zero, `NaN` comparisons, `MAKE_CLOSURE` capture-by-reference, cross-kind `EQ`). Built from hand-crafted `Bytecode` literals. **Not** for happy-path programs. |
+| `integration.test.ts` | End-to-end behavior of real Lucky programs through the full parse → compile → run pipeline. **This is where positive-path tests for any language feature belong** (`def`, `let`, `while`, recursion, closures, comparisons, control flow, …). |
+
+Rule of thumb: if a test could be written by feeding a string source to `run()`, it belongs in `integration.test.ts`. Bytecode-level tests in `vm/run.test.ts` should only exist for behavior the compiler does not (or cannot) emit, or for failure modes that are awkward to provoke from source.
 
 ## Development workflow (preferred for language work)
 

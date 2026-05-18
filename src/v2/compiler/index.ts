@@ -1,6 +1,5 @@
 export type {
   Bytecode,
-  Bytecode,
   FunctionProto,
   Instruction,
 } from "./bytecode";
