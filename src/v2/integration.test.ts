@@ -1,29 +1,7 @@
 import { expect, test } from "vitest";
 
-import { compile } from "./compiler";
-import { parse } from "./parser";
-import { FrameStackOverflow, run, type RunOptions } from "./vm";
-
-function evalExpr(source: string): number | undefined {
-  const program = parse(source);
-  const module = compile(program);
-  const result = run(module);
-  if (result === undefined) return undefined;
-  if (result.kind !== "number") throw new Error("expected number, got closure");
-  return result.value;
-}
-
-function evalExprWithOptions(
-  source: string,
-  options: RunOptions,
-): number | undefined {
-  const program = parse(source);
-  const module = compile(program);
-  const result = run(module, options);
-  if (result === undefined) return undefined;
-  if (result.kind !== "number") throw new Error("expected number, got closure");
-  return result.value;
-}
+import { run } from "./index";
+import { FrameStackOverflow } from "./vm";
 
 test.each([
   ["(1 + 2) * -3", -9],
@@ -163,8 +141,8 @@ test.each([
     "let x = 0\nlet y = 0\nwhile x < 5\n  x = x + 1\n  if x == 3\n    continue\n  end\n  y = y + x\nend\ny",
     1 + 2 + 4 + 5,
   ],
-] as const)("evalExpr(%s) === %s", (source, expected) => {
-  expect(evalExpr(source)).toBe(expected);
+] as const)("run(%s) === %s", (source, expected) => {
+  expect(run(source)).toBe(expected);
 });
 
 test("kitchen sink: all features in one script", () => {
@@ -204,7 +182,7 @@ test("kitchen sink: all features in one script", () => {
     result
   `.trim();
 
-  expect(evalExpr(program)).toBe(1);
+  expect(run(program)).toBe(1);
 });
 
 test.each([
@@ -285,7 +263,7 @@ quad(2)
     8,
   ],
 ] as const)("simple calls: evalExpr === %s", (source, expected) => {
-  expect(evalExpr(source.trim())).toBe(expected);
+  expect(run(source.trim())).toBe(expected);
 });
 
 const FACT_PROG = `
@@ -305,7 +283,7 @@ test.each([
   [5, 120],
   [10, 3628800],
 ] as const)("recursive factorial fact(%s) === %s", (n, expected) => {
-  expect(evalExpr(FACT_PROG.replace("K", String(n)))).toBe(expected);
+  expect(run(FACT_PROG.replace("K", String(n)))).toBe(expected);
 });
 
 const FIB_PROG = `
@@ -328,7 +306,7 @@ test.each([
   [10, 55],
   [15, 610],
 ] as const)("recursive fib fib(%s) === %s", (n, expected) => {
-  expect(evalExpr(FIB_PROG.replace("K", String(n)))).toBe(expected);
+  expect(run(FIB_PROG.replace("K", String(n)))).toBe(expected);
 });
 
 // Variables introduced inside a function body must use `let`.
@@ -359,7 +337,7 @@ test.each([
   [10, 55],
   [15, 610],
 ] as const)("iterative fib fibIt(%s) === %s", (n, expected) => {
-  expect(evalExpr(FIB_IT_PROG.replace("K", String(n)))).toBe(expected);
+  expect(run(FIB_IT_PROG.replace("K", String(n)))).toBe(expected);
 });
 
 // even/odd is mutual recursion — a known limitation; compile error because
@@ -382,7 +360,7 @@ even(K)
 `.trim();
 
 test("mutual recursion is a compile error (no hoisting)", () => {
-  expect(() => evalExpr(PARITY_PROG.replace("K", "0"))).toThrow("unknown name");
+  expect(() => run(PARITY_PROG.replace("K", "0"))).toThrow("unknown name");
 });
 
 const GCD_PROG = `
@@ -409,9 +387,9 @@ test.each([
   [17, 5, 1],
   [270, 192, 6],
 ] as const)("gcd(%s, %s) === %s", (a, b, expected) => {
-  expect(
-    evalExpr(GCD_PROG.replace("A", String(a)).replace("B", String(b))),
-  ).toBe(expected);
+  expect(run(GCD_PROG.replace("A", String(a)).replace("B", String(b)))).toBe(
+    expected,
+  );
 });
 
 // `let x = e` inside a function creates a LOCAL binding that shadows any outer
@@ -467,7 +445,7 @@ f(7)
     14,
   ],
 ] as const)("isolated locals: pipeline value === %s", (source, expected) => {
-  expect(evalExpr(source.trim())).toBe(expected);
+  expect(run(source.trim())).toBe(expected);
 });
 
 test.each([
@@ -529,7 +507,7 @@ firstEven(14)
     14,
   ],
 ] as const)("return semantics", (source, expected) => {
-  expect(evalExpr(source.trim())).toBe(expected);
+  expect(run(source.trim())).toBe(expected);
 });
 
 test.each([
@@ -607,7 +585,7 @@ add(1, 2) > sub(10, 5)
     0,
   ],
 ] as const)("calls inside expressions", (source, expected) => {
-  expect(evalExpr(source.trim())).toBe(expected);
+  expect(run(source.trim())).toBe(expected);
 });
 
 test("kitchen sink: functions mixed with globals and control flow", () => {
@@ -649,7 +627,7 @@ let d = early(3)
 a + b + c + d
 `.trim();
 
-  expect(evalExpr(source)).toBe(16 + 15 + 8 + 3);
+  expect(run(source)).toBe(16 + 15 + 8 + 3);
 });
 
 // ── Closure tests ─────────────────────────────────────────────────────────────
@@ -698,8 +676,8 @@ f(1) + g(1)
 `,
     102,
   ],
-] as const)("closure makeAdder: evalExpr === %s", (source, expected) => {
-  expect(evalExpr(source.trim())).toBe(expected);
+] as const)("closure makeAdder: run === %s", (source, expected) => {
+  expect(run(source.trim())).toBe(expected);
 });
 
 // Bare `x = e` inside a closure updates the binding in the environment where
@@ -714,7 +692,7 @@ inc()
 inc()
 counter
 `.trim();
-  expect(evalExpr(source)).toBe(2);
+  expect(run(source)).toBe(2);
 });
 
 // `let x = e` inside a function always creates a fresh local binding,
@@ -728,7 +706,7 @@ def f()
 end
 f() + x
 `.trim();
-  expect(evalExpr(source)).toBe(109);
+  expect(run(source)).toBe(109);
 });
 
 // def is now allowed inside if/while bodies (no longer restricted to top level).
@@ -742,7 +720,7 @@ if x > 0
 end
 double(5)
 `.trim();
-  expect(evalExpr(source)).toBe(10);
+  expect(run(source)).toBe(10);
 });
 
 test("def inside while block is valid", () => {
@@ -756,7 +734,7 @@ while i < 1
 end
 triple(4)
 `.trim();
-  expect(evalExpr(source)).toBe(12);
+  expect(run(source)).toBe(12);
 });
 
 // ── Compile / runtime errors ───────────────────────────────────────────────────
@@ -780,12 +758,12 @@ f()
   ["def g(a)\nend\ng(1, 2)", "arity mismatch"],
   ["def dup()\nend\ndef dup()\nend", "duplicate function"],
 ] as const)("compile errors for %s", (source, fragment) => {
-  expect(() => evalExpr(source.trim())).toThrow(fragment);
+  expect(() => run(source.trim())).toThrow(fragment);
 });
 
 test("runtime FrameStackOverflow for deep recursion with tight frame cap", () => {
   const fibSource = FIB_PROG.replace("K", "50");
-  expect(() => evalExprWithOptions(fibSource, { maxFrameDepth: 10 })).toThrow(
+  expect(() => run(fibSource, { maxFrameDepth: 10 })).toThrow(
     FrameStackOverflow,
   );
 });
@@ -804,6 +782,6 @@ test("regression: legacy calculator suite table remains stable", () => {
     ],
   ] as const;
   for (const [src, expected] of rows) {
-    expect(evalExpr(src)).toBe(expected);
+    expect(run(src)).toBe(expected);
   }
 });
