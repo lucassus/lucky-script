@@ -6,7 +6,13 @@ const simpleImportSort = require("eslint-plugin-simple-import-sort");
 
 module.exports = [
   {
-    ignores: ["dist/**", "node_modules/**"],
+    ignores: [
+      "dist/**",
+      "node_modules/**",
+      "src/sketchbook/inspirations/**",
+      "src/**/*.ohm-bundle.d.ts",
+      "src/**/*.ohm-bundle.js",
+    ],
   },
   tsPlugin.configs["flat/eslint-recommended"],
   ...tsPlugin.configs["flat/recommended-type-checked"],

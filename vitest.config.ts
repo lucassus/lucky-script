@@ -8,7 +8,11 @@ export default defineConfig({
       provider: "v8",
       reporter: [["text", { skipFull: true }], "text-summary"],
       include: ["src/**/*.ts"],
-      exclude: ["src/**/*.test.ts", "src/repl.ts"],
+      exclude: [
+        "src/**/*.test.ts",
+        "src/sketchbook/inspirations/**",
+        "src/repl.ts",
+      ],
     },
   },
 });
